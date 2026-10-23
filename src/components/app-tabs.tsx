@@ -27,6 +27,11 @@ export default function AppTabs() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="exercise">
+        <NativeTabs.Trigger.Label>Exercise</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="dumbbell" md="fitness_center" />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
