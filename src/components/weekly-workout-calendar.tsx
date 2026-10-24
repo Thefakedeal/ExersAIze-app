@@ -39,7 +39,7 @@ export function WeeklyWorkoutCalendar({
   const scheme = useColorScheme();
   const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
   const theme = useTheme();
-
+  const todaysdate = 4; // for now
   const getDayStyle = (status: DayStatus) => {
     switch (status) {
       case 'worked':
@@ -100,7 +100,8 @@ export function WeeklyWorkoutCalendar({
           const textColor = getDayTextColor(day.status);
           return (
             <View key={index} style={styles.dayColumn}>
-              <ThemedText type="small" style={[styles.dayLabel, { color: actualColors.textSecondary }]}>
+              
+              <ThemedText type="small" style={[styles.dayLabel, {color: (day.date === todaysdate) ? actualColors.primary : actualColors.textSecondary,fontWeight: (day.date === todaysdate)? 'bold' : 'normal',}]}>
                 {day.day}
               </ThemedText>
               <View style={[styles.dayCircle, dayStyle]}>
