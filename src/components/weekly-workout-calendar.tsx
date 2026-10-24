@@ -55,7 +55,7 @@ export function WeeklyWorkoutCalendar({
       case 'missed':
         return {
           backgroundColor: 'transparent',
-          borderColor: actualColors.warning,
+          borderColor: actualColors.error,
         };
       case 'rest':
         return {
