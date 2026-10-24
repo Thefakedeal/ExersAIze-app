@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StepTracker } from '@/components/step-tracker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { TodaysWorkout } from '@/components/todays-workout';
 import { WebBadge } from '@/components/web-badge';
 import { WeeklyWorkoutCalendar } from '@/components/weekly-workout-calendar';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -22,6 +23,13 @@ export default function HomeScreen() {
 
           <StepTracker currentSteps={6420} goalSteps={10000} />
 
+          <ThemedView style={styles.sectionHeader}>
+            <ThemedText type="subtitle">Today's Workout</ThemedText>
+          </ThemedView>
+
+          <TodaysWorkout type="strength" name="Full Body Strength" bodyPart="Full Body" />
+          <TodaysWorkout type="cardio" name="Morning Run" duration="30 min" />
+          
           <WeeklyWorkoutCalendar
             weekDays={[
               { day: 'Mon', status: 'worked', date: 2 },
@@ -33,6 +41,8 @@ export default function HomeScreen() {
               { day: 'Sun', status: 'rest', date: 8 },
             ]}
           />
+
+
 
           {Platform.OS === 'web' && <WebBadge />}
         </ScrollView>
@@ -60,5 +70,8 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     textAlign: 'left',
+  },
+  sectionHeader: {
+    marginTop: Spacing.two,
   },
 });
