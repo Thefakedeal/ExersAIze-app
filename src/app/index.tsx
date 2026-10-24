@@ -1,6 +1,7 @@
 import { Platform, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { QuoteCard } from '@/components/quote-card';
 import { StepTracker } from '@/components/step-tracker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -20,7 +21,6 @@ export default function HomeScreen() {
           <ThemedText type="title" style={styles.welcomeTitle}>
             Welcome
           </ThemedText>
-
           <StepTracker currentSteps={6420} goalSteps={10000} />
 
           <ThemedView style={styles.sectionHeader}>
@@ -42,7 +42,7 @@ export default function HomeScreen() {
             ]}
           />
 
-
+          <QuoteCard />
 
           {Platform.OS === 'web' && <WebBadge />}
         </ScrollView>

@@ -1,0 +1,802 @@
+[
+  {
+    "id": 1,
+    "quote": "Our doubts are traitors, and make us lose the good we oft might win, by fearing to attempt.",
+    "author": "William Shakespeare",
+    "source": "Measure for Measure, Act 1, Scene 4",
+    "category": "getting_started",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 2,
+    "quote": "Well done is better than well said.",
+    "author": "Benjamin Franklin",
+    "source": "Poor Richard's Almanack",
+    "category": "taking_action",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 3,
+    "quote": "Lost time is never found again.",
+    "author": "Benjamin Franklin",
+    "source": "Poor Richard's Almanack, 1748",
+    "category": "consistency",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 4,
+    "quote": "Diligence is the mother of good luck.",
+    "author": "Benjamin Franklin",
+    "source": "Poor Richard's Almanack, 1735",
+    "category": "hard_work",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 5,
+    "quote": "The credit belongs to the man who is actually in the arena.",
+    "author": "Theodore Roosevelt",
+    "source": "Citizenship in a Republic, Sorbonne speech, 1910",
+    "category": "courage",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 6,
+    "quote": "It is hard to fail, but it is worse never to have tried to succeed.",
+    "author": "Theodore Roosevelt",
+    "source": "The Strenuous Life, 1900",
+    "category": "getting_started",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 7,
+    "quote": "Never give in, never give in, never, never, never, never—in nothing, great or small, large or petty.",
+    "author": "Winston Churchill",
+    "source": "Harrow School speech, October 29, 1941",
+    "category": "perseverance",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 8,
+    "quote": "The impediment to action advances action. What stands in the way becomes the way.",
+    "author": "Marcus Aurelius",
+    "source": "Meditations, Book 5",
+    "category": "overcoming_obstacles",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 9,
+    "quote": "You have power over your mind—not outside events. Realize this, and you will find strength.",
+    "author": "Marcus Aurelius",
+    "source": "Meditations, Book 12",
+    "category": "mental_strength",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 10,
+    "quote": "Waste no more time arguing what a good man should be. Be one.",
+    "author": "Marcus Aurelius",
+    "source": "Meditations, Book 10",
+    "category": "taking_action",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 11,
+    "quote": "The happiness of your life depends upon the quality of your thoughts.",
+    "author": "Marcus Aurelius",
+    "source": "Meditations, Book 3",
+    "category": "mindset",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 12,
+    "quote": "If it is not right, do not do it; if it is not true, do not say it.",
+    "author": "Marcus Aurelius",
+    "source": "Meditations, Book 12",
+    "category": "discipline",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 13,
+    "quote": "Our life is what our thoughts make it.",
+    "author": "Marcus Aurelius",
+    "source": "Meditations, Book 4",
+    "category": "mindset",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 14,
+    "quote": "The soul becomes dyed with the colour of its thoughts.",
+    "author": "Marcus Aurelius",
+    "source": "Meditations, Book 5",
+    "category": "mindset",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 15,
+    "quote": "Begin at once to live, and count each separate day as a separate life.",
+    "author": "Seneca",
+    "source": "Letters from a Stoic, Letter 101",
+    "category": "getting_started",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 16,
+    "quote": "While we are postponing, life speeds by.",
+    "author": "Seneca",
+    "source": "On the Shortness of Life",
+    "category": "taking_action",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 17,
+    "quote": "Difficulties strengthen the mind, as labour does the body.",
+    "author": "Seneca",
+    "source": "Moral Epistles, Letter 78",
+    "category": "resilience",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 18,
+    "quote": "Luck is what happens when preparation meets opportunity.",
+    "author": "Seneca",
+    "source": null,
+    "category": "preparation",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 19,
+    "quote": "It is not that we have a short time to live, but that we waste a lot of it.",
+    "author": "Seneca",
+    "source": "On the Shortness of Life",
+    "category": "consistency",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 20,
+    "quote": "He suffers more than necessary, who suffers before it is necessary.",
+    "author": "Seneca",
+    "source": "Letters from a Stoic, Letter 98",
+    "category": "mental_strength",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 21,
+    "quote": "Great things are done by a series of small things brought together.",
+    "author": "Vincent van Gogh",
+    "source": "Letter to Theo van Gogh, 1882",
+    "category": "small_steps",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 22,
+    "quote": "I am seeking. I am striving. I am in it with all my heart.",
+    "author": "Vincent van Gogh",
+    "source": "Letters of Vincent van Gogh",
+    "category": "commitment",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 23,
+    "quote": "What would life be if we had no courage to attempt anything?",
+    "author": "Vincent van Gogh",
+    "source": "Letters of Vincent van Gogh",
+    "category": "courage",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 24,
+    "quote": "I put my heart and my soul into my work, and have lost my mind in the process.",
+    "author": "Vincent van Gogh",
+    "source": "Commonly attributed to van Gogh; exact wording requires verification",
+    "category": "dedication",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 25,
+    "quote": "How vain it is to sit down to write when you have not stood up to live.",
+    "author": "Henry David Thoreau",
+    "source": "Journal, August 19, 1851",
+    "category": "taking_action",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 26,
+    "quote": "If one advances confidently in the direction of his dreams, and endeavors to live the life which he has imagined, he will meet with a success unexpected in common hours.",
+    "author": "Henry David Thoreau",
+    "source": "Walden, 1854",
+    "category": "personal_growth",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 27,
+    "quote": "Things do not change; we change.",
+    "author": "Henry David Thoreau",
+    "source": "Journal, 1840s",
+    "category": "personal_growth",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 28,
+    "quote": "Go confidently in the direction of your dreams. Live the life you have imagined.",
+    "author": "Henry David Thoreau",
+    "source": "Walden-related quotation; commonly reproduced in shortened form",
+    "category": "personal_growth",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 29,
+    "quote": "The question is not what you look at, but what you see.",
+    "author": "Henry David Thoreau",
+    "source": "Journal, 1851",
+    "category": "mindfulness",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 30,
+    "quote": "Success is counted sweetest by those who ne'er succeed.",
+    "author": "Emily Dickinson",
+    "source": "Poem 67, Success is counted sweetest",
+    "category": "perseverance",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 31,
+    "quote": "Hope is the thing with feathers that perches in the soul.",
+    "author": "Emily Dickinson",
+    "source": "Poem 254, Hope is the thing with feathers",
+    "category": "hope",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 32,
+    "quote": "Forever is composed of nows.",
+    "author": "Emily Dickinson",
+    "source": "Poem 690",
+    "category": "present_moment",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 33,
+    "quote": "I dwell in Possibility.",
+    "author": "Emily Dickinson",
+    "source": "Poem 657",
+    "category": "potential",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 34,
+    "quote": "Not knowing when the dawn will come, I open every door.",
+    "author": "Emily Dickinson",
+    "source": "Poem 1619",
+    "category": "new_beginnings",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 35,
+    "quote": "The future depends on what you do today.",
+    "author": "Mahatma Gandhi",
+    "source": null,
+    "category": "taking_action",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 36,
+    "quote": "Strength does not come from physical capacity. It comes from an indomitable will.",
+    "author": "Mahatma Gandhi",
+    "source": null,
+    "category": "mental_strength",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 37,
+    "quote": "In a gentle way, you can shake the world.",
+    "author": "Mahatma Gandhi",
+    "source": null,
+    "category": "personal_growth",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 38,
+    "quote": "The weak can never forgive. Forgiveness is the attribute of the strong.",
+    "author": "Mahatma Gandhi",
+    "source": "Commonly attributed to Gandhi; primary wording requires verification",
+    "category": "mental_strength",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 39,
+    "quote": "First they ignore you, then they laugh at you, then they fight you, then you win.",
+    "author": "Mahatma Gandhi",
+    "source": null,
+    "category": "perseverance",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 40,
+    "quote": "Optimism is the faith that leads to achievement; nothing can be done without hope.",
+    "author": "Helen Keller",
+    "source": "Optimism, 1903",
+    "category": "hope",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 41,
+    "quote": "Alone we can do so little; together we can do so much.",
+    "author": "Helen Keller",
+    "source": "Commonly attributed to Helen Keller",
+    "category": "community",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 42,
+    "quote": "Life is either a daring adventure or nothing.",
+    "author": "Helen Keller",
+    "source": "The Open Door, 1957",
+    "category": "courage",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 43,
+    "quote": "Keep your face to the sunshine and you cannot see a shadow.",
+    "author": "Helen Keller",
+    "source": "Commonly attributed to Helen Keller",
+    "category": "positive_mindset",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 44,
+    "quote": "Life is a succession of lessons which must be lived to be understood.",
+    "author": "Ralph Waldo Emerson",
+    "source": "Commonly attributed to Emerson",
+    "category": "learning",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 45,
+    "quote": "Nothing great was ever achieved without enthusiasm.",
+    "author": "Ralph Waldo Emerson",
+    "source": null,
+    "category": "motivation",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 46,
+    "quote": "Self-trust is the first secret of success.",
+    "author": "Ralph Waldo Emerson",
+    "source": "Success, 1870",
+    "category": "self_belief",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 47,
+    "quote": "The only person you are destined to become is the person you decide to be.",
+    "author": "Ralph Waldo Emerson",
+    "source": null,
+    "category": "self_improvement",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 48,
+    "quote": "Do not go where the path may lead, go instead where there is no path and leave a trail.",
+    "author": "Ralph Waldo Emerson",
+    "source": null,
+    "category": "courage",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 49,
+    "quote": "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
+    "author": "Ralph Waldo Emerson",
+    "source": null,
+    "category": "inner_strength",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 50,
+    "quote": "The only way to have a friend is to be one.",
+    "author": "Ralph Waldo Emerson",
+    "source": "Friendship, Essays: First Series, 1841",
+    "category": "community",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 51,
+    "quote": "The secret of getting ahead is getting started.",
+    "author": "Mark Twain",
+    "source": null,
+    "category": "getting_started",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 52,
+    "quote": "Continuous improvement is better than delayed perfection.",
+    "author": "Mark Twain",
+    "source": null,
+    "category": "consistency",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 53,
+    "quote": "The secret of success is making your vocation your vacation.",
+    "author": "Mark Twain",
+    "source": null,
+    "category": "motivation",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 54,
+    "quote": "Courage is resistance to fear, mastery of fear, not absence of fear.",
+    "author": "Mark Twain",
+    "source": null,
+    "category": "courage",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 55,
+    "quote": "The two most important days in your life are the day you are born and the day you find out why.",
+    "author": "Mark Twain",
+    "source": null,
+    "category": "purpose",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 56,
+    "quote": "We know what we are, but know not what we may be.",
+    "author": "William Shakespeare",
+    "source": "Hamlet, Act 4, Scene 5",
+    "category": "potential",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 57,
+    "quote": "It is not in the stars to hold our destiny but in ourselves.",
+    "author": "William Shakespeare",
+    "source": "Julius Caesar, Act 1, Scene 2",
+    "category": "personal_responsibility",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 58,
+    "quote": "Our remedies oft in ourselves do lie.",
+    "author": "William Shakespeare",
+    "source": "All's Well That Ends Well, Act 1, Scene 1",
+    "category": "self_improvement",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 59,
+    "quote": "Things won are done; joy's soul lies in the doing.",
+    "author": "William Shakespeare",
+    "source": "Troilus and Cressida, Act 1, Scene 2",
+    "category": "process",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 60,
+    "quote": "Wisely, and slow. They stumble that run fast.",
+    "author": "William Shakespeare",
+    "source": "Romeo and Juliet, Act 2, Scene 3",
+    "category": "patience",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 61,
+    "quote": "Nothing will come of nothing.",
+    "author": "William Shakespeare",
+    "source": "King Lear, Act 1, Scene 1",
+    "category": "taking_action",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 62,
+    "quote": "Action is eloquence.",
+    "author": "William Shakespeare",
+    "source": "Coriolanus, Act 3, Scene 2",
+    "category": "taking_action",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 63,
+    "quote": "The readiness is all.",
+    "author": "William Shakespeare",
+    "source": "Hamlet, Act 5, Scene 2",
+    "category": "preparation",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 64,
+    "quote": "To climb steep hills requires slow pace at first.",
+    "author": "William Shakespeare",
+    "source": "Henry VIII, Act 1, Scene 1",
+    "category": "small_steps",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 65,
+    "quote": "Our doubts are traitors.",
+    "author": "William Shakespeare",
+    "source": "Measure for Measure, Act 1, Scene 4",
+    "category": "self_belief",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 66,
+    "quote": "We are such stuff as dreams are made on.",
+    "author": "William Shakespeare",
+    "source": "The Tempest, Act 4, Scene 1",
+    "category": "potential",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 67,
+    "quote": "The fault, dear Brutus, is not in our stars, but in ourselves.",
+    "author": "William Shakespeare",
+    "source": "Julius Caesar, Act 1, Scene 2",
+    "category": "personal_responsibility",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 68,
+    "quote": "There is nothing either good or bad, but thinking makes it so.",
+    "author": "William Shakespeare",
+    "source": "Hamlet, Act 2, Scene 2",
+    "category": "mindset",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 69,
+    "quote": "The better part of Valour, is Discretion.",
+    "author": "William Shakespeare",
+    "source": "Henry IV, Part 1, Act 5, Scene 4",
+    "category": "smart_effort",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 70,
+    "quote": "How far that little candle throws his beams! So shines a good deed in a naughty world.",
+    "author": "William Shakespeare",
+    "source": "The Merchant of Venice, Act 5, Scene 1",
+    "category": "positive_impact",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 71,
+    "quote": "The journey of a thousand miles begins with a single step.",
+    "author": "Laozi",
+    "source": "Tao Te Ching, Chapter 64, common translation",
+    "category": "getting_started",
+    "verification_status": "traditional_translation"
+  },
+  {
+    "id": 72,
+    "quote": "He who knows that enough is enough will always have enough.",
+    "author": "Laozi",
+    "source": "Tao Te Ching, Chapter 46, common translation",
+    "category": "balance",
+    "verification_status": "traditional_translation"
+  },
+  {
+    "id": 73,
+    "quote": "A journey of a thousand miles begins beneath one's feet.",
+    "author": "Laozi",
+    "source": "Tao Te Ching, Chapter 64, alternative translation",
+    "category": "small_steps",
+    "verification_status": "traditional_translation"
+  },
+  {
+    "id": 74,
+    "quote": "Knowing others is intelligence; knowing yourself is true wisdom.",
+    "author": "Laozi",
+    "source": "Tao Te Ching, Chapter 33, common translation",
+    "category": "self_awareness",
+    "verification_status": "traditional_translation"
+  },
+  {
+    "id": 75,
+    "quote": "When I let go of what I am, I become what I might be.",
+    "author": "Laozi",
+    "source": null,
+    "category": "personal_growth",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 76,
+    "quote": "The superior man acts before he speaks, and afterwards speaks according to his actions.",
+    "author": "Confucius",
+    "source": "Analects, traditional translation",
+    "category": "taking_action",
+    "verification_status": "traditional_translation"
+  },
+  {
+    "id": 77,
+    "quote": "The man who moves a mountain begins by carrying away small stones.",
+    "author": "Confucius",
+    "source": null,
+    "category": "small_steps",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 78,
+    "quote": "It does not matter how slowly you go as long as you do not stop.",
+    "author": "Confucius",
+    "source": null,
+    "category": "consistency",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 79,
+    "quote": "The will to win, the desire to succeed, the urge to reach your full potential... these are the keys that will unlock the door to personal excellence.",
+    "author": "Confucius",
+    "source": null,
+    "category": "personal_growth",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 80,
+    "quote": "Study the past if you would define the future.",
+    "author": "Confucius",
+    "source": "Analects, traditional translation",
+    "category": "learning",
+    "verification_status": "traditional_translation"
+  },
+  {
+    "id": 81,
+    "quote": "It always seems impossible until it's done.",
+    "author": "Nelson Mandela",
+    "source": null,
+    "category": "perseverance",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 82,
+    "quote": "Education is the most powerful weapon which you can use to change the world.",
+    "author": "Nelson Mandela",
+    "source": "Speech at the launch of Mindset Network, July 16, 2003",
+    "category": "personal_growth",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 83,
+    "quote": "A winner is a dreamer who never gives up.",
+    "author": "Nelson Mandela",
+    "source": null,
+    "category": "perseverance",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 84,
+    "quote": "After climbing a great hill, one only finds that there are many more hills to climb.",
+    "author": "Nelson Mandela",
+    "source": "Long Walk to Freedom, 1994",
+    "category": "long_term_progress",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 85,
+    "quote": "It is in your hands to create a better world for all who live in it.",
+    "author": "Nelson Mandela",
+    "source": "Commonly attributed to Mandela",
+    "category": "personal_responsibility",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 86,
+    "quote": "Character, not circumstances, makes the man.",
+    "author": "Booker T. Washington",
+    "source": null,
+    "category": "discipline",
+    "verification_status": "source_unverified"
+  },
+  {
+    "id": 87,
+    "quote": "Nothing ever comes to me, that is worth having, except as the result of hard work.",
+    "author": "Booker T. Washington",
+    "source": "Up from Slavery, 1901",
+    "category": "hard_work",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 88,
+    "quote": "I think I have learned that the best way to lift one's self up is to help someone else.",
+    "author": "Booker T. Washington",
+    "source": "The Story of My Life and Work, 1900",
+    "category": "community",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 89,
+    "quote": "The world cares very little what you or I know, but it does care a great deal what you or I do.",
+    "author": "Booker T. Washington",
+    "source": null,
+    "category": "taking_action",
+    "verification_status": "source_unverified"
+  },
+  {
+    "id": 90,
+    "quote": "Excellence is to do a common thing in an uncommon way.",
+    "author": "Booker T. Washington",
+    "source": null,
+    "category": "effort",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 91,
+    "quote": "The heights by great men reached and kept were not attained by sudden flight.",
+    "author": "Henry Wadsworth Longfellow",
+    "source": "The Ladder of St. Augustine, 1858",
+    "category": "consistency",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 92,
+    "quote": "Let us, then, be up and doing, with a heart for any fate.",
+    "author": "Henry Wadsworth Longfellow",
+    "source": "A Psalm of Life, 1838",
+    "category": "taking_action",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 93,
+    "quote": "Learn to labor and to wait.",
+    "author": "Henry Wadsworth Longfellow",
+    "source": "A Psalm of Life, 1838",
+    "category": "patience",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 94,
+    "quote": "Lives of great men all remind us we can make our lives sublime.",
+    "author": "Henry Wadsworth Longfellow",
+    "source": "A Psalm of Life, 1838",
+    "category": "potential",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 95,
+    "quote": "Footprints on the sands of time.",
+    "author": "Henry Wadsworth Longfellow",
+    "source": "A Psalm of Life, 1838",
+    "category": "legacy",
+    "verification_status": "primary_source"
+  },
+  {
+    "id": 96,
+    "quote": "For every minute you are angry you lose sixty seconds of happiness.",
+    "author": "Ralph Waldo Emerson",
+    "source": null,
+    "category": "mindset",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 97,
+    "quote": "The first wealth is health.",
+    "author": "Ralph Waldo Emerson",
+    "source": "Nature, 1836",
+    "category": "health",
+    "verification_status": "historical_attribution"
+  },
+  {
+    "id": 98,
+    "quote": "Nothing can bring you peace but yourself.",
+    "author": "Ralph Waldo Emerson",
+    "source": "Self-Reliance, Essays: First Series, 1841",
+    "category": "mental_wellbeing",
+    "verification_status": "published_work"
+  },
+  {
+    "id": 99,
+    "quote": "Do the thing you fear and the death of fear is certain.",
+    "author": "Ralph Waldo Emerson",
+    "source": null,
+    "category": "courage",
+    "verification_status": "attribution_unverified"
+  },
+  {
+    "id": 100,
+    "quote": "Nothing is at last sacred but the integrity of your own mind.",
+    "author": "Ralph Waldo Emerson",
+    "source": "Self-Reliance, Essays: First Series, 1841",
+    "category": "self_belief",
+    "verification_status": "published_work"
+  }
+]
