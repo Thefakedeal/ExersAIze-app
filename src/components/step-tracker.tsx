@@ -1,9 +1,9 @@
 import { Colors, Spacing } from '@/constants/theme';
-import { useColorScheme } from 'react-native';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import Svg, { Circle, Path } from 'react-native-svg';
 
+import { useTodaySteps } from '@/hooks/use-today-steps';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
@@ -44,10 +44,10 @@ function describeArc(x: number, y: number, radius: number, startAngle: number, e
   return d;
 }
 
-export function StepTracker({ currentSteps = 6420, goalSteps = 10000 }: StepTrackerProps) {
+export function StepTracker({ goalSteps = 10000 }: StepTrackerProps) {
   const scheme = useColorScheme();
   const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
-
+  const { steps: currentSteps = 50 } = useTodaySteps();
   const size = 220;
   const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;

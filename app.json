@@ -17,7 +17,25 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.exersaizemobileapp",
+      "permissions": [
+        "ACTIVITY_RECOGNITION",
+        "BODY_SENSORS",
+        "CAMERA",
+        "FOREGROUND_SERVICE",
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "VIBRATE",
+        "WAKE_LOCK",
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.health.READ_STEPS",
+        "com.google.android.gms.permission.ACTIVITY_RECOGNITION",
+        "com.google.android.gms.permission.BODY_SENSORS",
+        "com.google.android.gms.permission.BODY_SENSORS_BACKGROUND",
+        "com.google.android.gms.permission.HEALTH_CONNECT"
+      ]
     },
     "web": {
       "output": "server",
@@ -32,11 +50,31 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      "react-native-health-connect",
+      "@kingstinct/react-native-healthkit",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "be8153c8-07bc-40bd-9066-27f6c13c0ac6"
+      }
     }
   }
 }
