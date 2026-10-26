@@ -1,4 +1,4 @@
-import { useStepCount } from "@/hooks/use-step-count";
+import { useStepCount } from "./use-step-count";
 import { useEffect, useMemo, useState } from "react";
 
 export const useTodaySteps = () => {

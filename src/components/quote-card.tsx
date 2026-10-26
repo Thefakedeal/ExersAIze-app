@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import quotes from '@/assets/quotes.json';
@@ -9,7 +10,7 @@ export function QuoteCard() {
   const scheme = useColorScheme();
   const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
 
-  const quote = quotes[Math.floor(Math.random() * quotes.length)];
+  const quote = useMemo(() => quotes[Math.floor(Math.random() * quotes.length)], []);
 
   return (
     <View  style={[styles.container, { borderColor: 'transparent' }]}>

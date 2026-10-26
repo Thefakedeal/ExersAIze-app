@@ -24,7 +24,7 @@ export default function HomeScreen() {
           <StepTracker currentSteps={6420} goalSteps={10000} />
 
           <ThemedView style={styles.sectionHeader}>
-            <ThemedText type="subtitle">Today's Workout</ThemedText>
+            <ThemedText type="subtitle">{"Today's Workout"}</ThemedText>
           </ThemedView>
 
           <TodaysWorkout type="strength" name="Full Body Strength" bodyPart="Full Body" />
