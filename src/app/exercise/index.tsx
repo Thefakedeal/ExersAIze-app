@@ -35,7 +35,7 @@ export default function ExerciseScreen() {
       paddingTop: insets.top,
       paddingLeft: insets.left,
       paddingRight: insets.right,
-      paddingBottom: insets.bottom,
+      // paddingBottom: insets.bottom,
     },
     web: {
       paddingTop: Spacing.six,

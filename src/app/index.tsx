@@ -1,5 +1,5 @@
 import { Platform, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { QuoteCard } from '@/components/quote-card';
 import { StepTracker } from '@/components/step-tracker';
@@ -8,12 +8,32 @@ import { ThemedView } from '@/components/themed-view';
 import { TodaysWorkout } from '@/components/todays-workout';
 import { WebBadge } from '@/components/web-badge';
 import { WeeklyWorkoutCalendar } from '@/components/weekly-workout-calendar';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 
 export default function HomeScreen() {
+
+  const safeAreaInsets = useSafeAreaInsets();
+    const insets = {
+      ...safeAreaInsets,
+      bottom: safeAreaInsets.bottom  + Spacing.three,
+    };
+  
+    const contentPlatformStyle = Platform.select({
+      android: {
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+        // paddingBottom: insets.bottom,
+      },
+      web: {
+        paddingTop: Spacing.six,
+        paddingBottom: Spacing.four,
+      },
+    });
+
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <ThemedView style={[styles.safeArea, contentPlatformStyle]}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -46,7 +66,7 @@ export default function HomeScreen() {
 
           {Platform.OS === 'web' && <WebBadge />}
         </ScrollView>
-      </SafeAreaView>
+      </ThemedView>
     </ThemedView>
   );
 }
@@ -57,16 +77,13 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
     width: '100%',
   },
   scrollContent: {
-    paddingTop: Spacing.four,
     gap: Spacing.four,
-    paddingBottom: BottomTabInset + Spacing.four,
-    alignItems: 'stretch',
+    paddingHorizontal: Spacing.four,
   },
   welcomeTitle: {
     textAlign: 'left',

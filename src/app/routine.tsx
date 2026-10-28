@@ -73,7 +73,7 @@ export default function RoutineScreen() {
         paddingTop: insets.top,
         paddingLeft: insets.left,
         paddingRight: insets.right,
-        paddingBottom: insets.bottom,
+        // paddingBottom: insets.bottom,
       },
       web: {
         paddingTop: Spacing.six,
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: Spacing.two,
-    paddingBottom: BottomTabInset + Spacing.four,
+    paddingBottom: Spacing.four,
     gap: Spacing.three,
   },
   routineTouchable: {
