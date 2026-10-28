@@ -34,7 +34,7 @@ export function ExerciseItemComponent({
                                 {
                                     backgroundColor:
                                         exercise.type === 'Bodyweight'
-                                            ? theme.accent
+                                            ? theme.secondaryLight
                                             : theme.primaryLight,
                                 },
                             ]}>
@@ -43,7 +43,7 @@ export function ExerciseItemComponent({
                                 style={{
                                     color:
                                         exercise.type === 'Bodyweight'
-                                            ? '#171717'
+                                            ? theme.secondary
                                             : theme.primary,
                                     fontWeight: '700',
                                 }}>

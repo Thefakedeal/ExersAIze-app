@@ -35,13 +35,13 @@ export default function ExerciseScreen() {
 
   const contentPlatformStyle = Platform.select({
     android: {
-      paddingTop: insets.top,
+      // paddingTop: insets.top,
       paddingLeft: insets.left,
       paddingRight: insets.right,
       paddingBottom: insets.bottom,
     },
     web: {
-      paddingTop: Spacing.six,
+      // paddingTop: Spacing.six,
       paddingBottom: Spacing.four,
     },
   });
@@ -101,57 +101,53 @@ export default function ExerciseScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <View style={styles.headerRow}>
+        <ThemedText type="subtitle">Exercises</ThemedText>
+        <TouchableOpacity
+          onPress={() => router.push('/exercise/add-exercise')}
+          activeOpacity={0.7}
+          style={[
+            styles.addExerciseButton,
+            { backgroundColor: theme.primary },
+          ]}>
+          <PlusIcon size={18} color={theme.textOnPrimary} />
+          <ThemedText
+            type="smallBold"
+            style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
+            Add Exercise
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
+      <View
+        style={[
+          styles.searchContainer,
+          {
+            backgroundColor: theme.backgroundElement,
+            borderColor: theme.border,
+          },
+        ]}>
+        <SearchIcon size={18} color={theme.textSecondary} />
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search exercises or categories..."
+          placeholderTextColor={theme.textSecondary}
+          style={[styles.searchInput, { color: theme.text }]}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearchQuery('')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <CloseIcon size={16} color={theme.textSecondary} />
+          </TouchableOpacity>
+        )}
+      </View>
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
         contentInset={insets}
         contentContainerStyle={[styles.content, contentPlatformStyle]}
         stickySectionHeadersEnabled={false}
-        ListHeaderComponent={
-          <>
-            <View style={styles.headerRow}>
-              <ThemedText type="subtitle">Exercises</ThemedText>
-              <TouchableOpacity
-                onPress={() => router.push('/exercise/add-exercise')}
-                activeOpacity={0.7}
-                style={[
-                  styles.addExerciseButton,
-                  { backgroundColor: theme.primary },
-                ]}>
-                <PlusIcon size={18} color={theme.textOnPrimary} />
-                <ThemedText
-                  type="smallBold"
-                  style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
-                  Add Exercise
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-            <View
-              style={[
-                styles.searchContainer,
-                {
-                  backgroundColor: theme.backgroundElement,
-                  borderColor: theme.border,
-                },
-              ]}>
-              <SearchIcon size={18} color={theme.textSecondary} />
-              <TextInput
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder="Search exercises or categories..."
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.searchInput, { color: theme.text }]}
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setSearchQuery('')}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <CloseIcon size={16} color={theme.textSecondary} />
-                </TouchableOpacity>
-              )}
-            </View>
-          </>
-        }
         renderSectionHeader={({ section }) => (
           <View style={styles.sectionHeaderRow}>
             <ThemedText
