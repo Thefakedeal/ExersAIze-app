@@ -2,16 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useStepCount } from "./use-step-count";
 
 export const useTodaySteps = () => {
-    const [todayStart] = useMemo(() => {
+    const [todayStart, todayEnd] = useMemo(() => {
         const todayStart = new Date(
             new Date().setHours(0, 0, 0, 0)
         );
-
-        return [todayStart];
+        const todayEnd = new Date(
+            new Date().setHours(23, 59, 59, 999)
+        );
+        return [todayStart, todayEnd];
     }, []);
 
-
-    const todayEnd = new Date();
 
     const {
         steps,
@@ -37,7 +37,7 @@ export const useTodaySteps = () => {
 
         const interval = setInterval(() => {
             void refresh();
-        }, 10000);
+        }, 1000);
 
         return () => clearInterval(interval);
     }, [granted, refresh]);
