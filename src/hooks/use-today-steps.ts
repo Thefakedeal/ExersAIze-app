@@ -1,5 +1,5 @@
-import { useStepCount } from "./use-step-count";
 import { useEffect, useMemo, useState } from "react";
+import { useStepCount } from "./use-step-count";
 
 export const useTodaySteps = () => {
     const [todayStart] = useMemo(() => {
@@ -25,10 +25,7 @@ export const useTodaySteps = () => {
 
     useEffect(() => {
         const checkPermissions = async () => {
-            console.log("Features available:", isAvailable);
-            console.log("Checking permissions...");
             const grantedPerm = await requestPermissions();
-            console.log("Permissions granted:", grantedPerm);
             setGranted(grantedPerm);
         };
 

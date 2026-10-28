@@ -47,7 +47,7 @@ function describeArc(x: number, y: number, radius: number, startAngle: number, e
 export function StepTracker({ goalSteps = 10000 }: StepTrackerProps) {
   const scheme = useColorScheme();
   const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
-  const { steps: currentSteps = 50 } = useTodaySteps();
+  const { steps: currentSteps = 0 } = useTodaySteps();
   const size = 220;
   const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;

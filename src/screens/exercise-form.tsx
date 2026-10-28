@@ -2,6 +2,7 @@
  * Shared form UI and logic for adding and editing exercises.
  * Not used directly — consumed by AddExerciseScreen and EditExerciseScreen.
  */
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -14,7 +15,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -31,9 +31,8 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
   DEFAULT_EXERCISE_CATEGORIES,
-  ExerciseItem,
   ExerciseType,
-  TrackMetric,
+  TrackMetric
 } from '@/types/exercise';
 
 const EXERCISE_TYPES: ExerciseType[] = ['Bodyweight', 'Strength'];
@@ -153,7 +152,6 @@ export function ExerciseForm({
       await onSubmit({ name: name.trim(), type, categories: selectedCategories, trackMetrics: selectedMetrics, note });
       router.back();
     } catch (e) {
-      console.error(e);
       Alert.alert('Error', 'Failed to save exercise. Please try again.');
     } finally {
       setIsSubmitting(false);

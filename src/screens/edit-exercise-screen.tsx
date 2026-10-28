@@ -1,7 +1,7 @@
-import { Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { deleteCustomExercise, updateCustomExercise } from '@/services/exercise-storage';
 import { ExerciseItem } from '@/types/exercise';
+import { useRouter } from 'expo-router';
+import { Alert } from 'react-native';
 import { ExerciseForm, ExerciseFormValues } from './exercise-form';
 
 type Props = {
@@ -35,7 +35,6 @@ export function EditExerciseScreen({ exercise }: Props) {
               await deleteCustomExercise(exercise.id);
               router.back();
             } catch (e) {
-              console.error(e);
               Alert.alert('Error', 'Failed to delete exercise. Please try again.');
             }
           },

@@ -2,6 +2,7 @@ import { DEFAULT_EXERCISES } from '@/data/exercises';
 import { getCustomExercises, subscribeToExerciseUpdates } from '@/services/exercise-storage';
 import { ExerciseItem } from '@/types/exercise';
 import { useCallback, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 
 export function useExercises() {
   const [customExercises, setCustomExercises] = useState<ExerciseItem[]>([]);
@@ -12,7 +13,7 @@ export function useExercises() {
       const stored = await getCustomExercises();
       setCustomExercises(stored);
     } catch (e) {
-      console.error(e);
+      Alert.alert('Error', 'Failed to load exercises. Please try again.');
     } finally {
       setLoading(false);
     }

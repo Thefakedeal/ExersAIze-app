@@ -14,7 +14,7 @@ export  function useStepCount(
   endDate: Date,
   options: StepCountOptions = {},
 ): StepCountResult {
-  const [steps, setSteps] = useState(220);
+  const [steps, setSteps] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAvailable, setIsAvailable] = useState(false);
@@ -25,9 +25,7 @@ export  function useStepCount(
 
   const initializeHealthConnect = useCallback(async () => {
     try {
-      console.log("Checking Health Connect SDK status...");
       const status = await getSdkStatus();
-      console.log("Health Connect SDK status:", status);
       if (status !== 3) {
         setIsAvailable(false);
         return false;
@@ -39,7 +37,6 @@ export  function useStepCount(
 
       return initialized;
     } catch(err: any) {
-      console.error("Error initializing Health Connect:", err.message);
       setIsAvailable(false);
       return false;
     }
@@ -47,11 +44,8 @@ export  function useStepCount(
 
   const requestPermissions = useCallback(async () => {
     try {
-      console.log("Requesting step-count permission...");
       const initialized = await initializeHealthConnect();
-      console.log("Health Connect initialized:", initialized);
       if (!initialized) {
-        setError("Health Connect is not available on this device.");
         return false;
       }
 
@@ -61,7 +55,6 @@ export  function useStepCount(
           recordType: "Steps",
         },
       ]);
-      console.log("Step-count permissions:", permissions);
       const granted = permissions.some(
         (permission) =>
           permission.recordType === "Steps" && permission.accessType === "read",
@@ -135,7 +128,6 @@ export  function useStepCount(
   }, [startTime, endTime, hasPermission, initializeHealthConnect]);
 
   useEffect(() => {
-    console.log("Initializing Health Connect...");
     void initializeHealthConnect();
   }, [initializeHealthConnect]);
 
