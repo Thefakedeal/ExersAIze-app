@@ -1,8 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
 
-import { AddExerciseScreen } from '@/screens/add-exercise-screen';
+import { EditExerciseScreen } from '@/screens/edit-exercise-screen';
 import { useExercises } from '@/hooks/use-exercises';
-import { View, ActivityIndicator } from 'react-native';
 
 export default function ViewExercisePage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,5 +17,11 @@ export default function ViewExercisePage() {
   }
 
   const exercise = customExercises.find((ex) => ex.id === id);
-  return <AddExerciseScreen exercise={exercise} />;
+
+  if (!exercise) {
+    // Shouldn't happen, but guard against stale navigation
+    return null;
+  }
+
+  return <EditExerciseScreen exercise={exercise} />;
 }
