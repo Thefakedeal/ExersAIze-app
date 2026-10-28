@@ -70,6 +70,38 @@ export async function saveCustomExercise(data: {
   }
 }
 
+export async function updateCustomExercise(
+  id: string,
+  data: {
+    name: string;
+    type: ExerciseType;
+    categories: string[];
+    trackMetrics: TrackMetric[];
+    note?: string;
+  }
+): Promise<void> {
+  try {
+    const currentList = await getCustomExercises();
+    const updatedList = currentList.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            name: data.name.trim(),
+            type: data.type,
+            categories: data.categories,
+            trackMetrics: data.trackMetrics,
+            note: data.note?.trim() || undefined,
+          }
+        : item
+    );
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    notifyListeners();
+  } catch (error) {
+    console.error('Failed to update custom exercise in storage:', error);
+    throw error;
+  }
+}
+
 export async function deleteCustomExercise(id: string): Promise<void> {
   try {
     const currentList = await getCustomExercises();

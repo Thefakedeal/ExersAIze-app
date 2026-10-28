@@ -1,21 +1,21 @@
 import { ThemedText } from "@/components/themed-text"
 import { ThemedView } from "@/components/themed-view"
-import { CloseIcon } from '@/components/ui/icons'
-import { MaxContentWidth, Spacing } from "@/constants/theme"
+import { ChevronRightIcon } from '@/components/ui/icons'
+import { Spacing } from "@/constants/theme"
 import { useTheme } from "@/hooks/use-theme"
 import { ExerciseItem } from "@/types/exercise"
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native"
+import { useRouter } from "expo-router"
+import { StyleSheet, TouchableOpacity, View } from "react-native"
+
 type Props = {
     exercise: ExerciseItem,
-    handleDeleteExercise?: (item: ExerciseItem) => void
 }
 
-export function ExerciseItemComponent({
-    exercise,
-    handleDeleteExercise = () => {},
-}: Props) {
+export function ExerciseItemComponent({ exercise }: Props) {
     const theme = useTheme()
-    return (
+    const router = useRouter()
+
+    const content = (
         <ThemedView
             type="backgroundElement"
             style={[
@@ -67,12 +67,7 @@ export function ExerciseItemComponent({
                 </View>
 
                 {exercise.isCustom && (
-                    <TouchableOpacity
-                        onPress={() => handleDeleteExercise(exercise)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        style={styles.deleteButton}>
-                    <CloseIcon size={16} color={theme.textSecondary} />
-                    </TouchableOpacity>
+                    <ChevronRightIcon size={18} color={theme.textSecondary} />
                 )}
             </View>
 
@@ -108,60 +103,21 @@ export function ExerciseItemComponent({
             ) : null}
         </ThemedView>
     )
+
+    if (exercise.isCustom) {
+        return (
+            <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push(`/exercise/view-exercise?id=${exercise.id}`)}>
+                {content}
+            </TouchableOpacity>
+        )
+    }
+
+    return content
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    width: '100%',
-    maxWidth: MaxContentWidth,
-    alignSelf: 'center',
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.two,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.two,
-  },
-  addExerciseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Platform.select({ ios: 10, default: 8 }),
-    marginBottom: Spacing.two,
-    gap: Spacing.two,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    padding: 0,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.one,
-  },
-  row: {
-    borderRadius: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 4,
-  },
   customRow: {
     borderRadius: Spacing.three,
     padding: Spacing.three,
@@ -169,7 +125,7 @@ const styles = StyleSheet.create({
   },
   customRowTop: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   exerciseTitle: {
@@ -209,9 +165,5 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
     fontSize: 13,
     fontStyle: 'italic',
-  },
-  deleteButton: {
-    padding: 4,
-    marginLeft: Spacing.two,
   },
 });

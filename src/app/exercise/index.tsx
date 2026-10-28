@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
-  Alert,
   Platform,
   SectionList,
   StyleSheet,
@@ -18,8 +17,6 @@ import { CloseIcon, PlusIcon, SearchIcon } from '@/components/ui/icons';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useExercises } from '@/hooks/use-exercises';
 import { useTheme } from '@/hooks/use-theme';
-import { deleteCustomExercise } from '@/services/exercise-storage';
-import { ExerciseItem } from '@/types/exercise';
 
 export default function ExerciseScreen() {
   const router = useRouter();
@@ -45,27 +42,6 @@ export default function ExerciseScreen() {
       paddingBottom: Spacing.four,
     },
   });
-
-  const handleDeleteExercise = (item: ExerciseItem) => {
-    Alert.alert(
-      'Delete Exercise',
-      `Are you sure you want to delete "${item.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteCustomExercise(item.id);
-            } catch (e) {
-              console.error(e);
-            }
-          },
-        },
-      ]
-    );
-  };
 
   // Filtered lists
   const filteredCustom = useMemo(() => {
@@ -161,10 +137,7 @@ export default function ExerciseScreen() {
           </View>
         )}
         renderItem={({ item }) => (
-          <ExerciseItemComponent
-            exercise={item}
-            handleDeleteExercise={handleDeleteExercise}
-          />
+          <ExerciseItemComponent exercise={item} />
         )}
       />
     </ThemedView>

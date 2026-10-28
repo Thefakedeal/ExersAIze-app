@@ -26,11 +26,12 @@ import {
   CloseIcon,
 } from '@/components/ui/icons';
 import {
+  ExerciseItem,
   ExerciseType,
   TrackMetric,
   DEFAULT_EXERCISE_CATEGORIES,
 } from '@/types/exercise';
-import { saveCustomExercise } from '@/services/exercise-storage';
+import { saveCustomExercise, updateCustomExercise, deleteCustomExercise } from '@/services/exercise-storage';
 
 const EXERCISE_TYPES: ExerciseType[] = ['BodyWeight', 'Strength'];
 
@@ -40,27 +41,43 @@ const TRACK_METRICS: { key: TrackMetric; label: string; desc: string }[] = [
   { key: 'Distance', label: 'Distance', desc: 'Track distance (km, mi, meters)' },
 ];
 
-export function AddExerciseScreen() {
+type Props = {
+  /** When provided, the screen operates in edit mode for the given exercise. */
+  exercise?: ExerciseItem;
+};
+
+export function AddExerciseScreen({ exercise: existingExercise }: Props = {}) {
+  const isEditMode = !!existingExercise;
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
   // Form State
-  const [name, setName] = useState('');
+  const [name, setName] = useState(existingExercise?.name ?? '');
   const [nameError, setNameError] = useState('');
-  const [type, setType] = useState<ExerciseType>('Strength');
+  const [type, setType] = useState<ExerciseType>(existingExercise?.type ?? 'Strength');
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
 
   // Categories
-  const [allCategories, setAllCategories] = useState<string[]>(DEFAULT_EXERCISE_CATEGORIES);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(['Chest']);
+  const existingCustomCats = existingExercise?.categories.filter(
+    (c) => !DEFAULT_EXERCISE_CATEGORIES.includes(c)
+  ) ?? [];
+  const [allCategories, setAllCategories] = useState<string[]>([
+    ...existingCustomCats,
+    ...DEFAULT_EXERCISE_CATEGORIES,
+  ]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    existingExercise?.categories ?? ['Chest']
+  );
   const [categorySearch, setCategorySearch] = useState('');
 
   // Track Metrics
-  const [selectedMetrics, setSelectedMetrics] = useState<TrackMetric[]>(['Reps']);
+  const [selectedMetrics, setSelectedMetrics] = useState<TrackMetric[]>(
+    existingExercise?.trackMetrics ?? ['Reps']
+  );
 
   // Note
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(existingExercise?.note ?? '');
 
   // Saving state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,14 +138,23 @@ export function AddExerciseScreen() {
 
     try {
       setIsSubmitting(true);
-      await saveCustomExercise({
-        name: name.trim(),
-        type,
-        categories: selectedCategories,
-        trackMetrics: selectedMetrics,
-        note: note.trim() || undefined,
-      });
-
+      if (isEditMode) {
+        await updateCustomExercise(existingExercise!.id, {
+          name: name.trim(),
+          type,
+          categories: selectedCategories,
+          trackMetrics: selectedMetrics,
+          note: note.trim() || undefined,
+        });
+      } else {
+        await saveCustomExercise({
+          name: name.trim(),
+          type,
+          categories: selectedCategories,
+          trackMetrics: selectedMetrics,
+          note: note.trim() || undefined,
+        });
+      }
       router.back();
     } catch (e) {
       console.error(e);
@@ -136,6 +162,29 @@ export function AddExerciseScreen() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Exercise',
+      `Are you sure you want to delete "${existingExercise!.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteCustomExercise(existingExercise!.id);
+              router.back();
+            } catch (e) {
+              console.error(e);
+              Alert.alert('Error', 'Failed to delete exercise. Please try again.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -159,7 +208,7 @@ export function AddExerciseScreen() {
         </TouchableOpacity>
 
         <ThemedText type="smallBold" style={styles.headerTitle}>
-          Add Exercise
+          {isEditMode ? 'Edit Exercise' : 'Add Exercise'}
         </ThemedText>
 
         <View style={styles.headerRightPlaceholder} />
@@ -475,7 +524,7 @@ export function AddExerciseScreen() {
               />
             </View>
 
-            {/* 6. Save Button */}
+            {/* 6. Save / Update Button */}
             <TouchableOpacity
               onPress={handleSave}
               disabled={isSubmitting}
@@ -490,9 +539,28 @@ export function AddExerciseScreen() {
               <ThemedText
                 type="smallBold"
                 style={[styles.saveButtonText, { color: theme.textOnPrimary }]}>
-                {isSubmitting ? 'Saving Exercise...' : 'Add Exercise'}
+                {isSubmitting
+                  ? isEditMode ? 'Saving...' : 'Saving Exercise...'
+                  : isEditMode ? 'Update Exercise' : 'Add Exercise'}
               </ThemedText>
             </TouchableOpacity>
+
+            {/* 7. Delete Button (edit mode only) */}
+            {isEditMode && (
+              <TouchableOpacity
+                onPress={handleDelete}
+                activeOpacity={0.8}
+                style={[
+                  styles.deleteButton,
+                  { borderColor: theme.error },
+                ]}>
+                <ThemedText
+                  type="smallBold"
+                  style={{ color: theme.error, fontSize: 16 }}>
+                  Delete Exercise
+                </ThemedText>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -693,5 +761,13 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 16,
+  },
+  deleteButton: {
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.four,
+    borderWidth: 1,
   },
 });

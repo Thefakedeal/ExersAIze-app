@@ -8,6 +8,7 @@ export default function ExerciseLayout() {
       }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="add-exercise" />
+      <Stack.Screen name="view-exercise" />
     </Stack>
   );
 }
