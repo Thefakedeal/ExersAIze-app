@@ -32,13 +32,13 @@ export default function ExerciseScreen() {
 
   const contentPlatformStyle = Platform.select({
     android: {
-      // paddingTop: insets.top,
+      paddingTop: insets.top,
       paddingLeft: insets.left,
       paddingRight: insets.right,
       paddingBottom: insets.bottom,
     },
     web: {
-      // paddingTop: Spacing.six,
+      paddingTop: Spacing.six,
       paddingBottom: Spacing.four,
     },
   });
@@ -76,7 +76,7 @@ export default function ExerciseScreen() {
   );
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container,contentPlatformStyle]}>
       <View style={styles.headerRow}>
         <ThemedText type="subtitle">Exercises</ThemedText>
         <TouchableOpacity
@@ -122,7 +122,7 @@ export default function ExerciseScreen() {
         sections={sections}
         keyExtractor={(item) => item.id}
         contentInset={insets}
-        contentContainerStyle={[styles.content, contentPlatformStyle]}
+        contentContainerStyle={[styles.content]}
         stickySectionHeadersEnabled={false}
         renderSectionHeader={({ section }) => (
           <View style={styles.sectionHeaderRow}>
@@ -147,9 +147,6 @@ export default function ExerciseScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Spacing.four,
-    paddingLeft: Spacing.two,
-    paddingRight: Spacing.two,
   },
   content: {
     width: '100%',
@@ -164,6 +161,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: Spacing.three,
     paddingBottom: Spacing.two,
+    paddingHorizontal: Spacing.four,
   },
   addExerciseButton: {
     flexDirection: 'row',
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.four,
     paddingVertical: Platform.select({ ios: 10, default: 8 }),
     marginBottom: Spacing.two,
     gap: Spacing.two,
