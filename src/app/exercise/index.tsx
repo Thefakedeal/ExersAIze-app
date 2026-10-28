@@ -2,8 +2,8 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Alert,
-  FlatList,
   Platform,
+  SectionList,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -90,88 +90,80 @@ export default function ExerciseScreen() {
     );
   }, [defaultExercises, searchQuery]);
 
- 
+
+  const sections = useMemo(
+    () => [
+      { key: 'custom', title: 'Saved Exercises', count: filteredCustom.length, data: filteredCustom, isPrimary: true },
+      { key: 'defaults', title: 'Exercise Library', count: filteredDefaults.length, data: filteredDefaults, isPrimary: false },
+    ],
+    [filteredCustom, filteredDefaults]
+  );
+
   return (
     <ThemedView style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerRow} >
-        <ThemedText type="subtitle">Exercises</ThemedText>
-        <TouchableOpacity
-          onPress={() => router.push('/exercise/add-exercise')}
-          activeOpacity={0.7}
-          style={[
-            styles.addExerciseButton,
-            { backgroundColor: theme.primary },
-          ]}>
-          <PlusIcon size={18} color={theme.textOnPrimary} />
-          <ThemedText
-            type="smallBold"
-            style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
-            Add Exercise
-          </ThemedText>
-        </TouchableOpacity>
-      </View>
-
-      {/* Search bar */}
-      <View
-        style={[
-          styles.searchContainer,
-          {
-            backgroundColor: theme.backgroundElement,
-            borderColor: theme.border,
-          },
-        ]}>
-        <SearchIcon size={18} color={theme.textSecondary} />
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search exercises or categories..."
-          placeholderTextColor={theme.textSecondary}
-          style={[styles.searchInput, { color: theme.text }]}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity
-            onPress={() => setSearchQuery('')}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <CloseIcon size={16} color={theme.textSecondary} />
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={styles.sectionHeaderRow}>
-        <ThemedText type="smallBold" themeColor="primary">
-          Saved Exercises
-        </ThemedText>
-        <ThemedText type="code" themeColor="textSecondary">
-          {filteredCustom.length}
-        </ThemedText>
-      </View>
-      {/* Custom exercise list */}
-      <FlatList
-        data={filteredCustom}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
         contentInset={insets}
         contentContainerStyle={[styles.content, contentPlatformStyle]}
-        renderItem={({ item }) => (
-          <ExerciseItemComponent
-            exercise={item}
-            handleDeleteExercise={handleDeleteExercise}
-          />
+        stickySectionHeadersEnabled={false}
+        ListHeaderComponent={
+          <>
+            <View style={styles.headerRow}>
+              <ThemedText type="subtitle">Exercises</ThemedText>
+              <TouchableOpacity
+                onPress={() => router.push('/exercise/add-exercise')}
+                activeOpacity={0.7}
+                style={[
+                  styles.addExerciseButton,
+                  { backgroundColor: theme.primary },
+                ]}>
+                <PlusIcon size={18} color={theme.textOnPrimary} />
+                <ThemedText
+                  type="smallBold"
+                  style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
+                  Add Exercise
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+            <View
+              style={[
+                styles.searchContainer,
+                {
+                  backgroundColor: theme.backgroundElement,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <SearchIcon size={18} color={theme.textSecondary} />
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Search exercises or categories..."
+                placeholderTextColor={theme.textSecondary}
+                style={[styles.searchInput, { color: theme.text }]}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchQuery('')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <CloseIcon size={16} color={theme.textSecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </>
+        }
+        renderSectionHeader={({ section }) => (
+          <View style={styles.sectionHeaderRow}>
+            <ThemedText
+              type="smallBold"
+              themeColor={section.isPrimary ? 'primary' : 'textSecondary'}>
+              {section.title}
+            </ThemedText>
+            <ThemedText type="code" themeColor="textSecondary">
+              {section.count}
+            </ThemedText>
+          </View>
         )}
-      />
-      <View style={styles.sectionHeaderRow}>
-        <ThemedText type="smallBold" themeColor="textSecondary">
-          Exercise Library
-        </ThemedText>
-        <ThemedText type="code" themeColor="textSecondary">
-          {filteredDefaults.length}
-        </ThemedText>
-      </View>
-      {/* Default exercise list */}
-      <FlatList
-        data={filteredDefaults}
-        keyExtractor={(item) => item.id}
-        contentInset={insets}
-        contentContainerStyle={[styles.content, contentPlatformStyle]}
         renderItem={({ item }) => (
           <ExerciseItemComponent
             exercise={item}
