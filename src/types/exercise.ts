@@ -1,4 +1,4 @@
-export type ExerciseType = 'BodyWeight' | 'Strength';
+export type ExerciseType = 'Bodyweight' | 'Strength';
 
 export type TrackMetric = 'Reps' | 'Time' | 'Distance';
 

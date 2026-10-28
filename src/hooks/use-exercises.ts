@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { exercises as defaultExerciseNames } from '@/data/exercises';
+import { DEFAULT_EXERCISES } from '@/data/exercises';
 import { getCustomExercises, subscribeToExerciseUpdates } from '@/services/exercise-storage';
 import { ExerciseItem } from '@/types/exercise';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useExercises() {
   const [customExercises, setCustomExercises] = useState<ExerciseItem[]>([]);
@@ -44,7 +44,7 @@ export function useExercises() {
 
   return {
     customExercises,
-    defaultExerciseNames,
+    defaultExercises: DEFAULT_EXERCISES,
     loading,
     refresh: loadData,
   };
