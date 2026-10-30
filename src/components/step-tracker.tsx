@@ -1,17 +1,104 @@
-import { Colors, Spacing } from '@/constants/theme';
-import { StyleSheet, useColorScheme, View } from 'react-native';
-
+import { useState } from 'react';
+import { Modal, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+import { ChevronRightIcon } from '@/components/ui/icons';
+import { Colors, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useTodaySteps } from '@/hooks/use-today-steps';
+import { StepDetailsScreen } from '@/screens/step-details-screen';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
 interface StepTrackerProps {
-  currentSteps?: number;
-  goalSteps?: number;
 }
 
+
+
+export function StepTracker({  }: StepTrackerProps) {
+  const theme = useTheme();
+  const actualColors = theme
+  const { steps } = useTodaySteps();
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // Use hook steps if available, fallback to initialSteps if provided
+  const currentSteps = steps || 0;
+  const goalSteps = 10000;
+
+
+  const clamped = Math.min(Math.max(currentSteps, 0), goalSteps || 1);
+  const progress = (clamped / (goalSteps || 1)) * 100;
+
+ 
+  const formatNumber = (n: number) => n.toLocaleString();
+
+  return (
+    <>
+      <ThemedView
+        type="backgroundElement"
+        style={[styles.container, { borderColor: actualColors.border }]}>
+        <View style={styles.header}>
+          <ThemedText type="subtitle">Steps</ThemedText>
+
+          {/* Small button / link to open the weekly step details stack page */}
+          <TouchableOpacity
+            onPress={() => setIsDetailsOpen(true)}
+            style={[
+              styles.historyLink,
+              { backgroundColor: actualColors.backgroundSelected },
+            ]}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="View weekly steps and breakdown">
+            <ThemedText
+              type="smallBold"
+              style={{ color: actualColors.primary, fontSize: 13 }}>
+              Weekly
+            </ThemedText>
+            <ChevronRightIcon size={14} color={actualColors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.chartContainer}>
+          
+          <Arch progress={progress} />
+          <View style={styles.centerContent}>
+            <ThemedText type="title" style={styles.stepsText}>
+              {formatNumber(currentSteps)}
+            </ThemedText>
+            <ThemedText
+              type="small"
+              style={{ color: actualColors.textSecondary, marginTop: Spacing.one }}>
+              / {formatNumber(goalSteps)} steps
+            </ThemedText>
+          </View>
+        </View>
+
+        <ThemedText type="small" style={{ color: actualColors.textSecondary }}>
+            {/* Show Progress */}
+            {progress.toFixed(1)}% of goal
+        </ThemedText>
+      </ThemedView>
+
+      {/* Opens the new page that's like a stack */}
+      <Modal
+        visible={isDetailsOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setIsDetailsOpen(false)}>
+        <StepDetailsScreen
+          onBack={() => setIsDetailsOpen(false)}
+          goalSteps={goalSteps}
+        />
+      </Modal>
+    </>
+  );
+}
+
+
+type ArchProps = {
+  progress: number; 
+}
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
   const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
 
@@ -44,17 +131,14 @@ function describeArc(x: number, y: number, radius: number, startAngle: number, e
   return d;
 }
 
-export function StepTracker({ goalSteps = 10000 }: StepTrackerProps) {
+export default function Arch({progress=0}: ArchProps) {
   const scheme = useColorScheme();
   const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
-  const { steps: currentSteps = 0 } = useTodaySteps();
   const size = 220;
   const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;
   const center = size / 2;
 
-  const clamped = Math.min(Math.max(currentSteps, 0), goalSteps || 1);
-  const progress = (clamped / (goalSteps || 1)) * 100;
 
   const startAngle = -120;
   const endAngle = startAngle + (progress * 240) / 100;
@@ -62,53 +146,25 @@ export function StepTracker({ goalSteps = 10000 }: StepTrackerProps) {
   const trackPath = describeArc(center, center, radius, startAngle, -120 + 240);
   const progressPath = describeArc(center, center, radius, startAngle, endAngle);
 
-  const formatNumber = (n: number) => n.toLocaleString();
-
   return (
-    <ThemedView type="backgroundElement" style={[styles.container, { borderColor: actualColors.border }]}>
-      <View style={styles.header}>
-        <ThemedText type="subtitle">Steps</ThemedText>
-        <ThemedText type="small" style={{ color: actualColors.textSecondary }}>
-          Today
-        </ThemedText>
-      </View>
-
-      <View style={styles.chartContainer}>
-        <Svg width={size} height={size}>
-          <Path
-            d={trackPath}
-            stroke={actualColors.separator}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          <Path
-            d={progressPath}
-            stroke={actualColors.primary}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          <Circle cx={center} cy={center} r={radius - strokeWidth / 2 - 4} fill="transparent" />
-        </Svg>
-
-        <View style={styles.centerContent}>
-          <ThemedText type="title" style={styles.stepsText}>
-            {formatNumber(currentSteps)}
-          </ThemedText>
-          <ThemedText type="small" style={{ color: actualColors.textSecondary, marginTop: Spacing.one }}>
-            / {formatNumber(goalSteps)} steps
-          </ThemedText>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <ThemedText type="small" style={{ color: actualColors.textSecondary }}>
-          Goal for the day
-        </ThemedText>
-      </View>
-    </ThemedView>
-  );
+   <Svg width={size} height={size}>
+            <Path
+              d={trackPath}
+              stroke={actualColors.separator}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              fill="none"
+            />
+            <Path
+              d={progressPath}
+              stroke={actualColors.primary}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              fill="none"
+            />
+            <Circle cx={center} cy={center} r={radius - strokeWidth / 2 - 4} fill="transparent" />
+          </Svg>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -126,6 +182,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  historyLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
   chartContainer: {
     width: 220,
     height: 220,
@@ -140,9 +204,5 @@ const styles = StyleSheet.create({
   stepsText: {
     fontSize: 36,
     fontWeight: '700',
-  },
-  footer: {
-    width: '100%',
-    alignItems: 'center',
   },
 });

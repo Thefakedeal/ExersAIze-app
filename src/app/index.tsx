@@ -41,7 +41,7 @@ export default function HomeScreen() {
           <ThemedText type="title" style={styles.welcomeTitle}>
             Welcome
           </ThemedText>
-          <StepTracker currentSteps={6420} goalSteps={10000} />
+          <StepTracker />
 
           <ThemedView style={styles.sectionHeader}>
             <ThemedText type="subtitle">{"Today's Workout"}</ThemedText>
