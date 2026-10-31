@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Modal, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { ChevronRightIcon } from '@/components/ui/icons';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTodaySteps } from '@/hooks/use-today-steps';
 import { StepDetailsScreen } from '@/screens/step-details-screen';
@@ -11,19 +11,21 @@ import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
 interface StepTrackerProps {
+  currentSteps?: number;
+  goalSteps?: number;
 }
 
-
-
-export function StepTracker({  }: StepTrackerProps) {
+export function StepTracker({
+  currentSteps: initialSteps,
+  goalSteps = 10000,
+}: StepTrackerProps = {}) {
   const theme = useTheme();
-  const actualColors = theme
+  const actualColors = theme;
   const { steps } = useTodaySteps();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Use hook steps if available, fallback to initialSteps if provided
-  const currentSteps = steps || 0;
-  const goalSteps = 10000;
+  const currentSteps = steps || initialSteps || 0;
 
 
   const clamped = Math.min(Math.max(currentSteps, 0), goalSteps || 1);
@@ -132,8 +134,8 @@ function describeArc(x: number, y: number, radius: number, startAngle: number, e
 }
 
 export default function Arch({progress=0}: ArchProps) {
-  const scheme = useColorScheme();
-  const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
+  const theme = useTheme();
+  const actualColors = theme;
   const size = 220;
   const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;

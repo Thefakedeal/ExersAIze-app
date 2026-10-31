@@ -25,6 +25,7 @@ export interface WeeklyStepsResult {
   goalSteps: number;
   caloriesBurned: number;
   distanceKm: number;
+  loading: boolean;
 }
 
 const DEFAULT_GOAL = 10000;
@@ -54,9 +55,9 @@ export function calculateDistanceKm(steps: number): number {
 }
 
 export function useWeeklySteps(weekOffset = 0, initialGoal = DEFAULT_GOAL): WeeklyStepsResult {
-  const { steps: todayStepsFromHook = 0 } = useTodaySteps();
+  const { steps: todayStepsFromHook = 0, loading = false } = useTodaySteps();
 
-  return useMemo(() => {
+  const data = useMemo(() => {
     const now = new Date();
     const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -163,6 +164,9 @@ export function useWeeklySteps(weekOffset = 0, initialGoal = DEFAULT_GOAL): Week
       goalSteps: initialGoal,
       caloriesBurned: calculateCalories(totalWeekSteps),
       distanceKm: calculateDistanceKm(totalWeekSteps),
+      loading,
     };
-  }, [weekOffset, todayStepsFromHook, initialGoal]);
+  }, [weekOffset, todayStepsFromHook, initialGoal, loading]);
+
+  return data;
 }
