@@ -29,7 +29,6 @@ export const useDistance = ({dateStart, dateEnd}: DayStepsProps) => {
 
     useEffect(() => {
         if (!granted) return;
-        console.log("useDistance useEffect 2");
         void refresh();
     }, [granted, refresh]);
 

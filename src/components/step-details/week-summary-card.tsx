@@ -3,12 +3,13 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useCalorie } from '@/hooks/use-calorie';
 import { useDistance } from '@/hooks/use-distance';
 import { useSteps } from '@/hooks/use-steps';
 import { useTheme } from '@/hooks/use-theme';
 import { compactFormat } from '@/services/number-formatter';
 import { endOfWeek, startOfWeek } from 'date-fns';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 export interface WeekSummaryCardProps {
   weekOffset?: number;
 }
@@ -38,17 +39,13 @@ export function WeekSummaryCard({
     dateEnd: saturday,
   })
 
-  useEffect(() => {
-    console.log("Steps")
-    console.log(steps,loading)
-  },[steps,loading])
+  const {loading:loadingCalories,calories} = useCalorie({
+    dateStart: sunday,
+    dateEnd: saturday,
+  })
+  
 
-  useEffect(() => {
-    console.log("Distance")
-    console.log(distance,loadingDistance)
-  },[distance,loadingDistance])
-
-  if(loading || loadingDistance) {
+  if(loading || loadingDistance  || loadingCalories ) {
     return (
       <ThemedView
       type="backgroundElement"
@@ -72,21 +69,13 @@ export function WeekSummaryCard({
           </ThemedText>
         </View>
 
-        <View style={styles.col}>
-          <ThemedText type="small" themeColor="textSecondary">
-            Daily Avg
-          </ThemedText>
-          <ThemedText type="default" style={{ fontWeight: '600' }}>
-           {compactFormat(steps / 7)}
-          </ThemedText>
-        </View>
 
         <View style={styles.col}>
           <ThemedText type="small" themeColor="textSecondary">
             Total Burned
           </ThemedText>
           <ThemedText type="default" style={{ fontWeight: '600' }}>
-            {compactFormat(steps * 0.04)} kcal
+            {compactFormat(calories)} kcal
           </ThemedText>
         </View>
 

@@ -33,6 +33,7 @@
         "WRITE_EXTERNAL_STORAGE",
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_CALORIES",
         "com.google.android.gms.permission.ACTIVITY_RECOGNITION",
         "com.google.android.gms.permission.BODY_SENSORS",
         "com.google.android.gms.permission.BODY_SENSORS_BACKGROUND",
