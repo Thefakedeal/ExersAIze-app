@@ -21,7 +21,7 @@ export const useCalorie = ({dateStart, dateEnd}: DayCalorieProps) => {
     useEffect(() => {
         const checkPermissions = async () => {
             const grantedPerm = await requestPermissions();
-            console.log("Permissions",grantedPerm);
+            console.log("Calorie Permissions",grantedPerm);
             setGranted(grantedPerm);
         };
         checkPermissions();

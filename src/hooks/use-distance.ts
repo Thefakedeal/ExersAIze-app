@@ -21,7 +21,7 @@ export const useDistance = ({dateStart, dateEnd}: DayStepsProps) => {
     useEffect(() => {
         const checkPermissions = async () => {
             const grantedPerm = await requestPermissions();
-            console.log("Permissions",grantedPerm);
+            console.log("Distance Permissions",grantedPerm);
             setGranted(grantedPerm);
         };
         checkPermissions();

@@ -12,10 +12,9 @@ export const useTodaySteps = () => {
         return [todayStart, todayEnd];
     }, []);
 
-
+    const [loading, setLoading] = useState(true);
     const {
         steps,
-        loading,
         error,
         isAvailable,
         requestPermissions,
@@ -38,7 +37,7 @@ export const useTodaySteps = () => {
         const interval = setInterval(() => {
             void refresh();
         }, 1000);
-
+        setLoading(false);
         return () => clearInterval(interval);
     }, [granted, refresh]);
 

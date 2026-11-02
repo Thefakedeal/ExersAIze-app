@@ -1,10 +1,11 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useCalorie } from '@/hooks/use-calorie';
 import { useDistance } from '@/hooks/use-distance';
+import { useRandomNumber } from '@/hooks/use-random-number';
 import { useSteps } from '@/hooks/use-steps';
 import { useTheme } from '@/hooks/use-theme';
 import { compactFormat } from '@/services/number-formatter';
@@ -43,17 +44,19 @@ export function WeekSummaryCard({
     dateStart: sunday,
     dateEnd: saturday,
   })
-  
-
-  if(loading || loadingDistance  || loadingCalories ) {
-    return (
-      <ThemedView
-      type="backgroundElement"
-      style={[styles.card, { borderColor: theme.border }]}>
-        <ActivityIndicator size="small" color={theme.primary} />
-      </ThemedView>
-    )
-  }
+  const {number: randomStep} = useRandomNumber({
+    lower_bound:0,
+    upper_bound:10000,change:10
+  })
+  const {number: randomDistance} = useRandomNumber({
+    lower_bound:100,
+    upper_bound:10000,change:1
+  })
+  const {number: randomCalories} = useRandomNumber({
+    lower_bound:0,
+    upper_bound:10000,change:100
+  })
+ 
   return (
     <ThemedView
       type="backgroundElement"
@@ -65,7 +68,7 @@ export function WeekSummaryCard({
             Total Steps
           </ThemedText>
           <ThemedText type="default" style={{ fontWeight: '600' }}>
-            {compactFormat(steps)}
+            {loading ? compactFormat(randomStep) : compactFormat(steps)}
           </ThemedText>
         </View>
 
@@ -75,7 +78,7 @@ export function WeekSummaryCard({
             Total Burned
           </ThemedText>
           <ThemedText type="default" style={{ fontWeight: '600' }}>
-            {compactFormat(calories)} kcal
+            {loadingCalories ? compactFormat(randomCalories) : compactFormat(calories)} kcal
           </ThemedText>
         </View>
 
@@ -84,7 +87,7 @@ export function WeekSummaryCard({
             Distance
           </ThemedText>
           <ThemedText type="default" style={{ fontWeight: '600' }}>
-            {compactFormat(distance)}m
+            {loadingDistance ? compactFormat(randomDistance) : compactFormat(distance)} m
           </ThemedText>
         </View>
       </View>

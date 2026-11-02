@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { Spacing } from '@/constants/theme';
+import { useRandomNumber } from '@/hooks/use-random-number';
 import { useTheme } from '@/hooks/use-theme';
 import { useTodaySteps } from '@/hooks/use-today-steps';
 import { StepDetailsScreen } from '@/screens/step-details-screen';
@@ -21,18 +22,32 @@ export function StepTracker({
 }: StepTrackerProps = {}) {
   const theme = useTheme();
   const actualColors = theme;
-  const { steps } = useTodaySteps();
+  const { steps, loading} = useTodaySteps();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const { number: randomSteps } = useRandomNumber({
+    lower_bound: 0,
+    upper_bound: 10000,
+    change: 10,
+  });
+  const [randomProgress] = useMemo(() => {
+    const clamped = Math.min(Math.max(randomSteps, 0), goalSteps || 1);
+    const progress = (clamped / (goalSteps || 1)) * 100;
+    return [progress];
+  }, [randomSteps, goalSteps]);
 
-  // Use hook steps if available, fallback to initialSteps if provided
-  const currentSteps = steps || initialSteps || 0;
 
 
-  const clamped = Math.min(Math.max(currentSteps, 0), goalSteps || 1);
-  const progress = (clamped / (goalSteps || 1)) * 100;
+ 
+  const [progress] = useMemo(() => {
+    const clamped = Math.min(Math.max(steps, 0), goalSteps || 1);
+    const progress = (clamped / (goalSteps || 1)) * 100;
+    return [progress];
+  }, [steps, goalSteps]);
+
 
  
   const formatNumber = (n: number) => n.toLocaleString();
+
 
   return (
     <>
@@ -63,10 +78,10 @@ export function StepTracker({
 
         <View style={styles.chartContainer}>
           
-          <Arch progress={progress} />
+          <Arch progress={loading? randomProgress : progress} />
           <View style={styles.centerContent}>
             <ThemedText type="title" style={styles.stepsText}>
-              {formatNumber(currentSteps)}
+              {loading? randomSteps : formatNumber(steps || 0)}
             </ThemedText>
             <ThemedText
               type="small"
@@ -78,7 +93,7 @@ export function StepTracker({
 
         <ThemedText type="small" style={{ color: actualColors.textSecondary }}>
             {/* Show Progress */}
-            {progress.toFixed(1)}% of goal
+            {loading? randomProgress.toFixed(2): progress.toFixed(2)} % of goal
         </ThemedText>
       </ThemedView>
 
