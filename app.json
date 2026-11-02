@@ -8,7 +8,7 @@
     "scheme": "exersaizemobileapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.exersaizemobileapp"
     },
     "android": {
@@ -26,18 +26,12 @@
         "CAMERA",
         "FOREGROUND_SERVICE",
         "INTERNET",
-        "READ_EXTERNAL_STORAGE",
         "RECORD_AUDIO",
         "VIBRATE",
         "WAKE_LOCK",
-        "WRITE_EXTERNAL_STORAGE",
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_DISTANCE",
-        "android.permission.health.READ_CALORIES",
-        "com.google.android.gms.permission.ACTIVITY_RECOGNITION",
-        "com.google.android.gms.permission.BODY_SENSORS",
-        "com.google.android.gms.permission.BODY_SENSORS_BACKGROUND",
-        "com.google.android.gms.permission.HEALTH_CONNECT"
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED"
       ]
     },
     "web": {
@@ -55,7 +49,13 @@
         }
       ],
       "react-native-health-connect",
-      "@kingstinct/react-native-healthkit",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "healthSharePermission": "Allow ExersAIze to read your health and fitness data.",
+          "healthUpdatePermission": "Allow ExersAIze to save your workout and fitness data."
+        }
+      ],
       [
         "expo-build-properties",
         {
