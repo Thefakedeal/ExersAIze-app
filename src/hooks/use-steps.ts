@@ -20,5 +20,6 @@ export const useSteps = ({dateStart, dateEnd}: DayStepsProps) => {
         loading,
         error,
         isAvailable,
+        granted: isAvailable && !error,
     };
 };

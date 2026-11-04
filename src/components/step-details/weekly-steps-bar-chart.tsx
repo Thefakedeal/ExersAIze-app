@@ -1,250 +1,252 @@
-import { useState } from 'react';
+import { addWeeks, endOfWeek, isSameDay, startOfWeek } from 'date-fns';
+import { useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   LayoutChangeEvent,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Circle, G, Line, Rect, Text as SvgText } from 'react-native-svg';
+import { BarChart } from 'react-native-gifted-charts';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
+import { useDailyStepRecord } from '@/hooks/use-daily-step-record';
 import { useTheme } from '@/hooks/use-theme';
-import { DayStepData, useWeeklySteps } from '@/hooks/use-weekly-steps';
 
 export interface WeeklyStepsBarChartProps {
-  days?: DayStepData[];
-  selectedDayIndex?: number;
-  onSelectDay?: (index: number) => void;
+  weeklyOffset?: number;
   goalSteps?: number;
 }
 
+const formatSteps = (steps: number) => {
+  if (steps >= 1000) return `${(steps / 1000).toFixed(1)}K`;
+  return Math.round(steps).toString();
+};
+
 export function WeeklyStepsBarChart({
-  days: propDays,
-  selectedDayIndex: propSelectedIndex,
-  onSelectDay,
+  weeklyOffset = 0,
   goalSteps = 10000,
 }: WeeklyStepsBarChartProps) {
   const theme = useTheme();
-  const fallbackWeeklyData = useWeeklySteps(0, goalSteps);
-  const days = propDays ?? fallbackWeeklyData.days;
-
-  const [internalSelectedIndex, setInternalSelectedIndex] = useState(() => {
-    const todayIdx = days.findIndex((d) => d.isToday);
-    return todayIdx >= 0 ? todayIdx : 0;
-  });
-
-  const activeIndex = propSelectedIndex ?? internalSelectedIndex;
-
-  const handleSelect = (idx: number) => {
-    if (onSelectDay) {
-      onSelectDay(idx);
-    } else {
-      setInternalSelectedIndex(idx);
-    }
-  };
-
   const [containerWidth, setContainerWidth] = useState(340);
 
-  const onLayout = (e: LayoutChangeEvent) => {
-    const width = e.nativeEvent.layout.width;
+  const [sunday, saturday] = useMemo(() => {
+    const reference = addWeeks(new Date(), weeklyOffset);
+
+    return [
+      startOfWeek(reference, { weekStartsOn: 0 }),
+      endOfWeek(reference, { weekStartsOn: 0 }),
+    ];
+  }, [weeklyOffset]);
+
+  const weeklyReport = useDailyStepRecord({
+    startDate: sunday,
+    endDate: saturday,
+  });
+
+  const onLayout = (event: LayoutChangeEvent) => {
+    const width = event.nativeEvent.layout.width;
+
     if (width > 0) {
-      setContainerWidth(Math.min(width - Spacing.four * 2, MaxContentWidth));
+      setContainerWidth(width);
     }
   };
 
-  const chartHeight = 180;
-  const bottomPadding = 36;
-  const topPadding = 24;
-  const usableHeight = chartHeight - bottomPadding - topPadding;
+  const records = weeklyReport.records ?? [];
+  const isLoading = weeklyReport.loading;
 
-  const maxRecordedSteps = Math.max(...days.map((d) => d.steps), goalSteps);
-  const chartMaxSteps = Math.max(maxRecordedSteps * 1.15, goalSteps * 1.15);
+  const days = useMemo(() => {
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(sunday);
+      date.setDate(sunday.getDate() + index);
 
-  const goalY = topPadding + usableHeight * (1 - goalSteps / chartMaxSteps);
+      const record = records.find((item) =>
+        isSameDay(item.date, date)
+      );
 
-  const barCount = 7;
-  const barWidth = Math.max(18, Math.min(32, (containerWidth - 40) / barCount - 12));
-  const slotWidth = containerWidth / barCount;
+      return {
+        date,
+        steps: record?.steps ?? 0,
+      };
+    });
+  }, [records, sunday]);
+
+  const totalSteps = days.reduce((sum, day) => sum + day.steps, 0);
+  const averageSteps = Math.round(totalSteps / 7);
+  const completedDays = days.filter(
+    (day) => day.steps >= goalSteps
+  ).length;
+
+  const chartMaxSteps = Math.max(
+    goalSteps * 1.2,
+    ...days.map((day) => day.steps * 1.15),
+    1000
+  );
+
+  const barWidth = Math.max(
+    18,
+    Math.min(32, (containerWidth - 64) / 7 - 8)
+  );
+
+  const chartData = days.map((day) => ({
+    value: day.steps,
+    label: day.date.toLocaleDateString('en-US', {
+      weekday: 'short',
+    }),
+    frontColor:
+      day.steps >= goalSteps
+        ? theme.primary
+        : theme.accent,
+    topLabelComponent: () =>
+      day.steps > 0 ? (
+        <ThemedText type="small">
+          {formatSteps(day.steps)}
+        </ThemedText>
+      ) : null,
+  }));
 
   return (
     <ThemedView
       type="backgroundElement"
       style={[styles.card, { borderColor: theme.border }]}
-      onLayout={onLayout}>
-      <View style={styles.cardHeader}>
-        <View>
-          <ThemedText type="subtitle">Weekly Steps</ThemedText>
+      onLayout={onLayout}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <ThemedText type="subtitle">
+            Weekly Steps
+          </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Sunday – Saturday • Tap bar to inspect day
+            Sunday – Saturday
           </ThemedText>
         </View>
 
         <View
           style={[
             styles.goalBadge,
-            { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
-          ]}>
-          <ThemedText type="small" themeColor="textSecondary">
-            Goal: {goalSteps.toLocaleString()}
+            {
+              backgroundColor: theme.primary + '15',
+              borderColor: theme.primary + '40',
+            },
+          ]}
+        >
+          <ThemedText
+            type="small"
+            style={{ color: theme.primary }}
+          >
+            {formatSteps(goalSteps)} goal
           </ThemedText>
         </View>
       </View>
 
-      <View style={styles.chartWrapper}>
-        <Svg width={containerWidth} height={chartHeight}>
-          {/* Goal Line */}
-          <Line
-            x1={8}
-            y1={goalY}
-            x2={containerWidth - 8}
-            y2={goalY}
-            stroke={theme.primary}
-            strokeDasharray="4 4"
-            strokeWidth={1.5}
-            opacity={0.8}
-          />
-          <SvgText
-            x={containerWidth - 12}
-            y={goalY - 6}
-            fill={theme.primary}
-            fontSize={10}
-            fontWeight="600"
-            textAnchor="end">
-            10k Goal
-          </SvgText>
+      {/* Statistics */}
+      <View style={styles.statsRow}>
+        <View>
+          <ThemedText type="title">
+            {formatSteps(totalSteps)}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Total steps
+          </ThemedText>
+        </View>
 
-          {/* 7 Daily Bars */}
-          {days.map((day, idx) => {
-            const isSelected = idx === activeIndex;
-            const centerX = idx * slotWidth + slotWidth / 2;
-            const barX = centerX - barWidth / 2;
+        <View>
+          <ThemedText type="title">
+            {formatSteps(averageSteps)}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Daily average
+          </ThemedText>
+        </View>
 
-            const rawHeight = (day.steps / chartMaxSteps) * usableHeight;
-            const height = Math.max(day.steps > 0 ? 6 : 2, rawHeight);
-            const barY = topPadding + usableHeight - height;
-
-            const barColor = isSelected
-              ? theme.primary
-              : day.metGoal
-              ? theme.primary
-              : day.isFuture
-              ? theme.separator
-              : theme.chartGrid;
-
-            return (
-              <G key={day.dayName}>
-                {/* Highlight background pill */}
-                {isSelected && (
-                  <Rect
-                    x={centerX - slotWidth / 2 + 2}
-                    y={8}
-                    width={slotWidth - 4}
-                    height={chartHeight - 16}
-                    rx={8}
-                    fill={theme.backgroundSelected}
-                    opacity={0.7}
-                  />
-                )}
-
-                {/* Vertical Bar */}
-                <Rect
-                  x={barX}
-                  y={barY}
-                  width={barWidth}
-                  height={height}
-                  rx={barWidth / 2}
-                  fill={barColor}
-                />
-
-                {/* Day Name */}
-                <SvgText
-                  x={centerX}
-                  y={chartHeight - 20}
-                  fill={isSelected ? theme.primary : theme.text}
-                  fontSize={11}
-                  fontWeight={isSelected ? '700' : '500'}
-                  textAnchor="middle">
-                  {day.dayName}
-                </SvgText>
-
-                {/* Day Date Number */}
-                <SvgText
-                  x={centerX}
-                  y={chartHeight - 6}
-                  fill={
-                    isSelected
-                      ? theme.primary
-                      : day.isToday
-                      ? theme.primary
-                      : theme.textSecondary
-                  }
-                  fontSize={10}
-                  fontWeight={day.isToday || isSelected ? '700' : '400'}
-                  textAnchor="middle">
-                  {day.dayNumber}
-                </SvgText>
-
-                {/* Today Dot */}
-                {day.isToday && (
-                  <Circle
-                    cx={centerX}
-                    cy={chartHeight - 32}
-                    r={2.5}
-                    fill={theme.primary}
-                  />
-                )}
-              </G>
-            );
-          })}
-        </Svg>
-
-        {/* Touch overlay columns for each bar */}
-        <View style={[StyleSheet.absoluteFill, styles.touchOverlayRow]}>
-          {days.map((day, idx) => (
-            <TouchableOpacity
-              key={`touch-${day.dayName}`}
-              style={[styles.touchColumn, { width: slotWidth }]}
-              activeOpacity={0.6}
-              onPress={() => handleSelect(idx)}
-              accessibilityLabel={`Select ${day.dayName}, ${day.steps} steps`}
-            />
-          ))}
+        <View>
+          <ThemedText type="title">
+            {completedDays}/7
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Goals reached
+          </ThemedText>
         </View>
       </View>
 
-      {/* Quick Day Selector Pills */}
-      <View style={styles.dayPillsRow}>
-        {days.map((day, idx) => {
-          const isSelected = idx === activeIndex;
-          return (
-            <TouchableOpacity
-              key={`pill-${day.dayName}`}
-              onPress={() => handleSelect(idx)}
-              activeOpacity={0.7}
-              style={[
-                styles.dayPill,
-                {
-                  backgroundColor: isSelected
-                    ? theme.primary
-                    : theme.backgroundSecondary,
-                  borderColor: isSelected ? theme.primary : theme.border,
-                },
-              ]}>
-              <ThemedText
-                type="small"
-                style={{
-                  color: isSelected ? theme.textOnPrimary : theme.text,
-                  fontWeight: isSelected ? '700' : '500',
-                  fontSize: 12,
-                }}>
-                {day.dayName}
-              </ThemedText>
-            </TouchableOpacity>
-          );
-        })}
+      {/* Chart */}
+      <View style={styles.chartWrapper}>
+        {isLoading ? (
+          <View style={styles.stateContainer}>
+            <ActivityIndicator
+              size="large"
+              color={theme.primary}
+            />
+            <ThemedText
+              type="small"
+              themeColor="textSecondary"
+            >
+              Loading weekly activity...
+            </ThemedText>
+          </View>
+        ) : (
+          <BarChart
+            data={chartData}
+            width={containerWidth - Spacing.four * 2}
+            height={180}
+            barWidth={barWidth}
+            maxValue={chartMaxSteps}
+            noOfSections={4}
+            yAxisLabelTexts={[]}
+            hideYAxisText
+            hideRules={false}
+            rulesColor={theme.border}
+            xAxisColor={theme.border}
+            yAxisColor="transparent"
+            xAxisLabelTextStyle={{
+              color: theme.textSecondary,
+              fontSize: 11,
+            }}
+            barBorderTopLeftRadius={6}
+            barBorderTopRightRadius={6}
+            initialSpacing={8}
+            endSpacing={8}
+            spacing={Math.max(
+              4,
+              (containerWidth - 64 - barWidth * 7) / 6
+            )}
+            isAnimated
+            animationDuration={400}
+          />
+        )}
       </View>
+
+      {/* Footer */}
+      {!isLoading && (
+        <View
+          style={[
+            styles.footer,
+            { borderTopColor: theme.border },
+          ]}
+        >
+          <View
+            style={[
+              styles.legendDot,
+              { backgroundColor: theme.primary },
+            ]}
+          /> 
+          <ThemedText type="small" themeColor="textSecondary">
+            Daily goal achieved
+          </ThemedText>
+
+          <View
+            style={[
+              styles.legendDot,
+              { backgroundColor: theme.accent },
+            ]}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Below goal
+          </ThemedText>
+        </View>
+      )}
     </ThemedView>
   );
 }
@@ -256,41 +258,46 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     gap: Spacing.three,
   },
-  cardHeader: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+  },
+  headerText: {
+    gap: 2,
   },
   goalBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
     borderWidth: 1,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.two,
   },
   chartWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-    marginVertical: Spacing.one,
+    minHeight: 210,
   },
-  touchOverlayRow: {
-    flexDirection: 'row',
-  },
-  touchColumn: {
-    height: '100%',
-  },
-  dayPillsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 4,
-    marginTop: Spacing.two,
-  },
-  dayPill: {
-    flex: 1,
-    paddingVertical: 6,
+  stateContainer: {
+    height: 210,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: Spacing.two,
-    borderWidth: 1,
+    gap: Spacing.three,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: Spacing.three,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

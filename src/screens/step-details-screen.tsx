@@ -92,9 +92,7 @@ export function StepDetailsScreen({
 
           {/* Sunday - Saturday Daily Steps Bar Graph */}
           <WeeklyStepsBarChart
-            days={weeklyData.days}
-            selectedDayIndex={activeIndex}
-            onSelectDay={setSelectedDayIndex}
+            weeklyOffset={weekOffset}
             goalSteps={goalSteps}
           />
 
