@@ -5,10 +5,8 @@ import type { DistanceCountOptions, HealthResult } from "./types";
 export function useDistanceCount(
   _startDate: Date,
   _endDate: Date,
-  _options: DistanceCountOptions = {
-  },
+  _options: DistanceCountOptions = {},
 ): HealthResult {
-  const requestPermissions = useCallback(async () => false, []);
   const refresh = useCallback(async () => {}, []);
 
   return {
@@ -16,7 +14,6 @@ export function useDistanceCount(
     loading: false,
     error: "",
     isAvailable: false,
-    requestPermissions,
     refresh,
   };
 }

@@ -15,7 +15,6 @@ export function useStepCount(
     loading: false,
     error: "Step tracking is not supported on this web platform.",
     isAvailable: false,
-    requestPermissions,
     refresh,
   };
 }

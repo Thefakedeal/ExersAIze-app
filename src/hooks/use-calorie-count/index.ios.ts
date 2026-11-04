@@ -1,13 +1,9 @@
-import {
-  isHealthDataAvailable,
-  queryQuantitySamples,
-  requestAuthorization,
-} from "@kingstinct/react-native-healthkit";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
+
+import { IOSHealthService } from "@/services";
 import type { DistanceCountOptions, HealthResult } from "./types";
 
-const CALORIE_COUNT = "HKQuantityTypeIdentifierActiveEnergyBurned";
 
 export function useCalorieCount(
   startDate: Date,
@@ -20,99 +16,43 @@ export function useCalorieCount(
   const [isAvailable, setIsAvailable] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
 
-  const startTime = startDate.getTime();
-  const endTime = endDate.getTime();
-
-  const requestPermissions = useCallback(async () => {
-    try {
-      const available = isHealthDataAvailable();
-
-      setIsAvailable(available);
-
-      if (!available) {
-        setError("Apple Health is not available on this device.");
-        return false;
-      }
-
-      await requestAuthorization({
-        toRead: [CALORIE_COUNT],
-      });
-
-      setHasPermission(true);
-      setError(null);
-
-      return true;
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to request Apple Health permission.",
-      );
-
-      return false;
-    }
-  }, []);
-
-  const refresh = useCallback(async () => {
-    if (
-      !Number.isFinite(startTime) ||
-      !Number.isFinite(endTime) ||
-      startTime >= endTime
-    ) {
-      setError("Please provide a valid date range.");
-      setCalories(0);
-      return;
-    }
-
-    if (!hasPermission) {
-      setError("Health permission is required. Please grant access first.");
-      return;
-    }
-
+  const getCalories = async () => {
     setLoading(true);
-    setError(null);
-
     try {
-      const samples = await queryQuantitySamples(CALORIE_COUNT, {
-        filter: {
-          date: {
-            startDate: new Date(startTime),
-            endDate: new Date(endTime),
-          },
-        },
-        limit: 0,
-      });
-
-      const total = samples.reduce((sum, sample) => sum + sample.quantity, 0);
-
-      setCalories(Math.round(total));
+      const iosHealthService = new IOSHealthService();
+      const isAvailable = await iosHealthService.isAvailable();
+      setIsAvailable(isAvailable);
+      if (!isAvailable) {
+        setError("Health service is not available");
+        return;
+      }
+      await iosHealthService.initialize();
+      const hasPermission = await iosHealthService.requestPermissions(["activeCalories"]);
+      setHasPermission(hasPermission);
+      if (!hasPermission) {
+        setError("No permission to access health data");
+        return;
+      }
+      const caloriesResult = await iosHealthService.getActiveCalories(startDate, endDate);
+      setCalories(caloriesResult.value);
+      setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to retrieve Apple Health steps.",
-      );
+      console.log(err);
+      setError("Failed to fetch calories");
     } finally {
       setLoading(false);
     }
-  }, [startTime, endTime, hasPermission]);
+  };
 
   useEffect(() => {
-    setIsAvailable(isHealthDataAvailable());
-  }, []);
-
-  useEffect(() => {
-    if (options.autoFetch && hasPermission) {
-      void refresh();
-    }
-  }, [options.autoFetch, hasPermission, refresh]);
+    getCalories();
+  }, [startDate, endDate]);
 
   return {
     calories,
     loading,
     error,
     isAvailable,
-    requestPermissions,
-    refresh,
+    refresh: getCalories,
   };
 }

@@ -215,8 +215,41 @@ export class AndroidHealthService implements IHealthService {
       if (!initialized) {
         return false;
       }
-      const granted = await requestPermission(toRequest);
-      return granted.length > 0;
+
+      const isPermissionGranted = (req: Permission, grantedList: Permission[]) =>
+        grantedList.some(
+          (g) =>
+            'recordType' in g &&
+            g.recordType === req.recordType &&
+            g.accessType === req.accessType
+        );
+
+      // Check if permissions are already granted
+      const currentGranted = (await getGrantedPermissions()) as Permission[];
+      const allAlreadyGranted = toRequest.every((req) =>
+        isPermissionGranted(req, currentGranted)
+      );
+
+      if (allAlreadyGranted) {
+        return true;
+      }
+
+      // Request pending permissions through Health Connect dialog
+      const pending = toRequest.filter(
+        (req) => !isPermissionGranted(req, currentGranted)
+      );
+      if (pending.length > 0) {
+        await requestPermission(pending);
+      }
+
+      // Re-verify granted permissions from system
+      const updatedGranted = (await getGrantedPermissions()) as Permission[];
+
+      if (Array.isArray(permissions) || permissions) {
+        return toRequest.every((req) => isPermissionGranted(req, updatedGranted));
+      }
+
+      return toRequest.some((req) => isPermissionGranted(req, updatedGranted));
     } catch {
       return false;
     }

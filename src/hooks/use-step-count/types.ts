@@ -3,7 +3,6 @@ export interface StepCountResult {
   loading: boolean;
   error: string | null;
   isAvailable: boolean;
-  requestPermissions: () => Promise<boolean>;
   refresh: () => Promise<void>;
 }
 

@@ -73,42 +73,47 @@ export class IOSHealthService implements IHealthService {
       }
     };
 
-    let hasRequested = false;
-    try {
-      const status = await getRequestStatusForAuthorization({
-        toRead: [
-          'HKQuantityTypeIdentifierStepCount',
-          'HKQuantityTypeIdentifierActiveEnergyBurned',
-          'HKQuantityTypeIdentifierDistanceWalkingRunning',
-          'HKQuantityTypeIdentifierHeight',
-          'HKQuantityTypeIdentifierBodyMass',
-          'HKCharacteristicTypeIdentifierDateOfBirth',
-          'HKCharacteristicTypeIdentifierBiologicalSex',
-        ],
-        toShare: [
-          'HKQuantityTypeIdentifierHeight',
-          'HKQuantityTypeIdentifierBodyMass',
-        ],
-      });
-      hasRequested = status === AuthorizationRequestStatus.unnecessary;
-    } catch {
-      hasRequested = false;
-    }
+    const checkReadStatus = async (type: ObjectTypeIdentifier): Promise<boolean> => {
+      try {
+        const status = await getRequestStatusForAuthorization({ toRead: [type] });
+        return status === AuthorizationRequestStatus.unnecessary;
+      } catch {
+        return false;
+      }
+    };
+
+    const [
+      stepsRead,
+      activeCaloriesRead,
+      distanceRead,
+      heightRead,
+      weightRead,
+      dateOfBirthRead,
+      biologicalSexRead,
+    ] = await Promise.all([
+      checkReadStatus('HKQuantityTypeIdentifierStepCount'),
+      checkReadStatus('HKQuantityTypeIdentifierActiveEnergyBurned'),
+      checkReadStatus('HKQuantityTypeIdentifierDistanceWalkingRunning'),
+      checkReadStatus('HKQuantityTypeIdentifierHeight'),
+      checkReadStatus('HKQuantityTypeIdentifierBodyMass'),
+      checkReadStatus('HKCharacteristicTypeIdentifierDateOfBirth'),
+      checkReadStatus('HKCharacteristicTypeIdentifierBiologicalSex'),
+    ]);
 
     return {
-      steps: { read: hasRequested, write: false },
-      activeCalories: { read: hasRequested, write: false },
-      distance: { read: hasRequested, write: false },
+      steps: { read: stepsRead, write: false },
+      activeCalories: { read: activeCaloriesRead, write: false },
+      distance: { read: distanceRead, write: false },
       height: {
-        read: hasRequested,
+        read: heightRead,
         write: isWriteAuthorized('HKQuantityTypeIdentifierHeight'),
       },
       weight: {
-        read: hasRequested,
+        read: weightRead,
         write: isWriteAuthorized('HKQuantityTypeIdentifierBodyMass'),
       },
-      dateOfBirth: { read: hasRequested, write: false },
-      biologicalSex: { read: hasRequested, write: false },
+      dateOfBirth: { read: dateOfBirthRead, write: false },
+      biologicalSex: { read: biologicalSexRead, write: false },
     };
   }
 

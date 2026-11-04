@@ -1,19 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  aggregateRecord,
-  getSdkStatus,
-  initialize,
-  requestPermission,
-} from "react-native-health-connect";
+import { useEffect, useState } from "react";
 
+import { AndroidHealthService } from "@/services";
 import type { DistanceCountOptions, HealthResult } from "./types";
 
-
-export  function useDistanceCount(
+export function useDistanceCount(
   startDate: Date,
   endDate: Date,
-  options: DistanceCountOptions = {
-  },
+  options: DistanceCountOptions = {},
 ): HealthResult {
   const [distance, setDistance] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -21,129 +14,45 @@ export  function useDistanceCount(
   const [isAvailable, setIsAvailable] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
 
-  const startTime = startDate.getTime();
-  const endTime = endDate.getTime();
-
-  const initializeHealthConnect = useCallback(async () => {
-    try {
-      const status = await getSdkStatus();
-      if (status !== 3) {
-        setIsAvailable(false);
-        return false;
-      }
-
-      const initialized = await initialize();
-
-      setIsAvailable(initialized);
-
-      return initialized;
-    } catch(err: any) {
-      setIsAvailable(false);
-      return false;
-    }
-  }, []);
-
-  const requestPermissions = useCallback(async () => {
-    try {
-      const initialized = await initializeHealthConnect();
-      if (!initialized) {
-        return false;
-      }
-
-      const permissions = await requestPermission([
-        {
-          accessType: "read",
-          recordType: "Distance",
-        },
-      ]);
-      const granted = permissions.some(
-        (permission) =>
-          permission.recordType === "Distance" && permission.accessType === "read",
-      );
-
-      setHasPermission(granted);
-
-      if (granted) {
-        setError(null);
-      } else {
-        setError("Health permission was not granted.");
-      }
-
-      return granted;
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to request permission.",
-      );
-
-      return false;
-    }
-  }, [initializeHealthConnect]);
-
-  const refresh = useCallback(async () => {
-    if (
-      !Number.isFinite(startTime) ||
-      !Number.isFinite(endTime) ||
-      startTime >= endTime
-    ) {
-      setError("Please provide a valid date range.");
-      setDistance(0);
-      return;
-    }
-
+  const getDistance = async () => {
     setLoading(true);
-    setError(null);
-
     try {
-      const initialized = await initializeHealthConnect();
-
-      if (!initialized) {
-        throw new Error("Health Connect is not available.");
+      const androidHealthService = new AndroidHealthService();
+      const isAvailable = await androidHealthService.isAvailable();
+      setIsAvailable(isAvailable);
+      if (!isAvailable) {
+        setError("Health service is not available");
+        console.log("Health service is not available");
+        return;
       }
-
-      // Do not silently prompt for permission during every refresh.
+      await androidHealthService.initialize();
+      const hasPermission = await androidHealthService.requestPermissions(["distance"]);
+      setHasPermission(hasPermission);
       if (!hasPermission) {
-        throw new Error(
-          "Health permission is required. Please grant access first.",
-        );
+        setError("No permission to access health data");
+        console.log("No permission to access health data");
+        return;
       }
-
-      const result = await aggregateRecord({
-        recordType: "Distance",
-        timeRangeFilter: {
-          operator: "between",
-          startTime: new Date(startTime).toISOString(),
-          endTime: new Date(endTime).toISOString(),
-        },
-      });
-
-      setDistance(Math.round(result.DISTANCE.inMeters ?? 0));
+      const distanceResult = await androidHealthService.getDistance(startDate, endDate);
+      setDistance(distanceResult.value);
+      setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to retrieve steps.",
-      );
+      console.log(err);
+      setError("Failed to fetch distance");
     } finally {
       setLoading(false);
     }
-  }, [startTime, endTime, hasPermission, initializeHealthConnect]);
+  };
 
   useEffect(() => {
-    void initializeHealthConnect();
-  }, [initializeHealthConnect]);
-
-  useEffect(() => {
-    if (options.autoFetch && hasPermission) {
-      void refresh();
-    }
-  }, [options.autoFetch, hasPermission, refresh]);
+    getDistance();
+  }, [startDate, endDate]);
 
   return {
     distance,
     loading,
     error,
     isAvailable,
-    requestPermissions,
-    refresh,
+    refresh: getDistance,
   };
 }

@@ -17,35 +17,22 @@ export const useTodaySteps = () => {
         steps,
         error,
         isAvailable,
-        requestPermissions,
         refresh,
     } = useStepCount(todayStart, todayEnd);
-    const [granted, setGranted] = useState(false);
+
 
     useEffect(() => {
-        const checkPermissions = async () => {
-            const grantedPerm = await requestPermissions();
-            setGranted(grantedPerm);
-        };
-
-        checkPermissions();
-    }, []);
-
-    useEffect(() => {
-        if (!granted) return;
-
         const interval = setInterval(() => {
             void refresh();
         }, 1000);
         setLoading(false);
         return () => clearInterval(interval);
-    }, [granted, refresh]);
+    }, [refresh]);
 
     return {
         steps,
         loading,
         error,
         isAvailable,
-        granted,
     };
 };

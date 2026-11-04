@@ -16,7 +16,6 @@ export function useCalorieCount(
     loading: false,
     error: "",
     isAvailable: false,
-    requestPermissions,
     refresh,
   };
 }
