@@ -1,5 +1,5 @@
 import { AndroidHealthService } from "@/services";
-import { endOfDay, startOfDay } from "date-fns";
+import { addDays, endOfDay, startOfDay } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { UseDailyStepRecordOptions } from "./types";
 export const useDailyStepRecord = ({ startDate, endDate }: UseDailyStepRecordOptions) => {
@@ -9,13 +9,11 @@ export const useDailyStepRecord = ({ startDate, endDate }: UseDailyStepRecordOpt
     const [records, setRecords] = useState<{ date: Date; steps: number }[]>([]);
 
     const dateArray = useMemo(() => {
-       const startOfDate = startOfDay(startDate);
-       const endOfDate = endOfDay(endDate);
         const dateArray = [];
         let currentDate = startDate;
         while (currentDate <= endDate) {
             dateArray.push(currentDate);
-            currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+            currentDate = addDays(currentDate, 1);
         }
         return dateArray;
     }, [startDate, endDate]);

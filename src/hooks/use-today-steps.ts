@@ -3,19 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import { useStepCount } from "./use-step-count";
 export const useTodaySteps = () => {
     const [todayStart, todayEnd] = useMemo(() => {
-        const todayStart = startOfDay(new Date());
-        const todayEnd = endOfDay(new Date());
+        const now = new Date();
+        const todayStart = startOfDay(now);
+        const todayEnd = endOfDay(now);
         return [todayStart, todayEnd];
     }, []);
 
+    
     const [loading, setLoading] = useState(true);
     const {
         steps,
         error,
         isAvailable,
         refresh,
+        loading: stepCountLoading
     } = useStepCount(todayStart, todayEnd);
-
 
     useEffect(() => {
         const interval = setInterval(() => {

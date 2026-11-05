@@ -13,7 +13,6 @@ export  function useStepCount(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
 
   const getSteps = async () => {
       setLoading(true);
@@ -28,7 +27,6 @@ export  function useStepCount(
         }
         await androidHealthService.initialize();
         const hasPermission = await androidHealthService.requestPermissions(["steps"]);
-        setHasPermission(hasPermission);
         if (!hasPermission) {
           setError("No permission to access health data");
           console.log("No permission to access health data");
