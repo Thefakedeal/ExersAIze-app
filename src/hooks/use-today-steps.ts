@@ -1,14 +1,10 @@
+import { endOfDay, startOfDay } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { useStepCount } from "./use-step-count";
-
 export const useTodaySteps = () => {
     const [todayStart, todayEnd] = useMemo(() => {
-        const todayStart = new Date(
-            new Date().setHours(0, 0, 0, 0)
-        );
-        const todayEnd = new Date(
-            new Date().setHours(23, 59, 59, 999)
-        );
+        const todayStart = startOfDay(new Date());
+        const todayEnd = endOfDay(new Date());
         return [todayStart, todayEnd];
     }, []);
 

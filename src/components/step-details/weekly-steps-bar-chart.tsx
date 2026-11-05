@@ -1,10 +1,10 @@
 import { addWeeks, endOfWeek, isSameDay, startOfWeek } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   LayoutChangeEvent,
   StyleSheet,
-  View,
+  View
 } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 
@@ -33,7 +33,6 @@ export function WeeklyStepsBarChart({
 
   const [sunday, saturday] = useMemo(() => {
     const reference = addWeeks(new Date(), weeklyOffset);
-
     return [
       startOfWeek(reference, { weekStartsOn: 0 }),
       endOfWeek(reference, { weekStartsOn: 0 }),
@@ -45,6 +44,12 @@ export function WeeklyStepsBarChart({
     endDate: saturday,
   });
 
+  useEffect(() => {
+    if(!weeklyReport.loading){
+      console.log("Weekly Report Records:", weeklyReport);
+    }
+  }, [weeklyReport]);
+ 
   const onLayout = (event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width;
 
@@ -100,7 +105,7 @@ export function WeeklyStepsBarChart({
         : theme.accent,
     topLabelComponent: () =>
       day.steps > 0 ? (
-        <ThemedText type="small">
+        <ThemedText type="small" style={{ fontSize: 10 }}>
           {formatSteps(day.steps)}
         </ThemedText>
       ) : null,
@@ -127,14 +132,14 @@ export function WeeklyStepsBarChart({
           style={[
             styles.goalBadge,
             {
-              backgroundColor: theme.primary + '15',
-              borderColor: theme.primary + '40',
+              backgroundColor: theme.primary,
+              borderColor: theme.primaryHover,
             },
           ]}
         >
           <ThemedText
             type="small"
-            style={{ color: theme.primary }}
+            style={{ color: theme.textOnPrimary }}
           >
             {formatSteps(goalSteps)} goal
           </ThemedText>
@@ -144,7 +149,7 @@ export function WeeklyStepsBarChart({
       {/* Statistics */}
       <View style={styles.statsRow}>
         <View>
-          <ThemedText type="title">
+          <ThemedText type="smallBold">
             {formatSteps(totalSteps)}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -153,7 +158,7 @@ export function WeeklyStepsBarChart({
         </View>
 
         <View>
-          <ThemedText type="title">
+          <ThemedText type="smallBold">
             {formatSteps(averageSteps)}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -162,7 +167,7 @@ export function WeeklyStepsBarChart({
         </View>
 
         <View>
-          <ThemedText type="title">
+          <ThemedText type="smallBold">
             {completedDays}/7
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -193,7 +198,7 @@ export function WeeklyStepsBarChart({
             height={180}
             barWidth={barWidth}
             maxValue={chartMaxSteps}
-            noOfSections={4}
+            noOfSections={7}
             yAxisLabelTexts={[]}
             hideYAxisText
             hideRules={false}

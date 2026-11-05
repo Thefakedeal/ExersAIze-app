@@ -11,8 +11,7 @@ import {
   DayMetricsCard,
   WalkingBreakdownChart,
   WeeklyStepsBarChart,
-  WeekNavigator,
-  WeekSummaryCard,
+  WeekNavigator
 } from '@/components/step-details';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -86,9 +85,9 @@ export function StepDetailsScreen({
             onNextWeek={() => setWeekOffset((prev) => Math.min(prev + 1, 0))}
           />
           {/* Week Overview Summary Card */}
-          <WeekSummaryCard
+          {/* <WeekSummaryCard
             weekOffset={weekOffset}
-          />
+          /> */}
 
           {/* Sunday - Saturday Daily Steps Bar Graph */}
           <WeeklyStepsBarChart

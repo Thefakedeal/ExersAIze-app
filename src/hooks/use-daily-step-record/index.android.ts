@@ -1,4 +1,5 @@
 import { AndroidHealthService } from "@/services";
+import { endOfDay, startOfDay } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { UseDailyStepRecordOptions } from "./types";
 export const useDailyStepRecord = ({ startDate, endDate }: UseDailyStepRecordOptions) => {
@@ -8,11 +9,13 @@ export const useDailyStepRecord = ({ startDate, endDate }: UseDailyStepRecordOpt
     const [records, setRecords] = useState<{ date: Date; steps: number }[]>([]);
 
     const dateArray = useMemo(() => {
+       const startOfDate = startOfDay(startDate);
+       const endOfDate = endOfDay(endDate);
         const dateArray = [];
         let currentDate = startDate;
         while (currentDate <= endDate) {
             dateArray.push(currentDate);
-            currentDate.setDate(currentDate.getDate() + 1);
+            currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
         }
         return dateArray;
     }, [startDate, endDate]);
@@ -38,15 +41,12 @@ export const useDailyStepRecord = ({ startDate, endDate }: UseDailyStepRecordOpt
                 console.log("No permission to access health data");
                 throw new Error("No permission to access health data");
             }
-
             const records = await Promise.all(
                 dateArray.map(async (date) => {
                     // startof-day and end-of-day for the current date
-                    const startOfDay = new Date(date);
-                    startOfDay.setHours(0, 0, 0, 0);
-                    const endOfDay = new Date(date);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    const stepsResult = await androidHealthService.getSteps(startOfDay, endOfDay);
+                    const startDate = startOfDay(date);
+                    const endDate = endOfDay(date);
+                    const stepsResult = await androidHealthService.getSteps(startDate, endDate);
                     return {
                         date,
                         steps: stepsResult.value,
