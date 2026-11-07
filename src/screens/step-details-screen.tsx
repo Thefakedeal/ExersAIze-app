@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
-  DayMetricsCard,
+  DaySelectorRow,
   WalkingBreakdownChart,
   WeeklyStepsBarChart,
   WeekNavigator
@@ -17,8 +17,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ChevronLeftIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useDatesBetween } from '@/hooks/use-dates-between';
 import { useTheme } from '@/hooks/use-theme';
-import { useWeeklySteps } from '@/hooks/use-weekly-steps';
+import { addWeeks, endOfWeek, format, getDate, startOfWeek } from 'date-fns';
 
 interface StepDetailsScreenProps {
   onBack: () => void;
@@ -32,15 +33,25 @@ export function StepDetailsScreen({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [weekOffset, setWeekOffset] = useState(0);
+  
+  const [startDate, endDate] = useMemo(() => {
+    const reference = addWeeks(new Date(), weekOffset);
+    return [
+      startOfWeek(reference, { weekStartsOn: 0 }),
+      endOfWeek(reference, { weekStartsOn: 0 }),
+    ];
+  }, [weekOffset]);
 
-  const weeklyData = useWeeklySteps(weekOffset, goalSteps);
+  const days = useDatesBetween({ startDate, endDate });
 
-  const todayIndex = weeklyData.days.findIndex((d) => d.isToday);
+  const todayIndex = days.findIndex((d) => d.toDateString() === new Date().toDateString());
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex >= 0 ? todayIndex : 0);
 
-  const activeIndex = Math.min(Math.max(selectedDayIndex, 0), 6);
-  const selectedDay = weeklyData.days[activeIndex] || weeklyData.days[0];
+  const selectedDay = useMemo(() => {
+    return days[selectedDayIndex];
+  }, [selectedDayIndex]);
 
+  
   return (
     <ThemedView style={styles.container}>
       {/* Top Header */}
@@ -80,7 +91,7 @@ export function StepDetailsScreen({
           {/* Week Navigation */}
           <WeekNavigator
             weekOffset={weekOffset}
-            weekRangeLabel={weeklyData.weekRangeLabel}
+            weekRangeLabel={`${format(startDate, 'MMM')} ${getDate(startDate)} - ${format(endDate, 'MMM')} ${getDate(endDate)}`}
             onPrevWeek={() => setWeekOffset((prev) => prev - 1)}
             onNextWeek={() => setWeekOffset((prev) => Math.min(prev + 1, 0))}
           />
@@ -95,8 +106,13 @@ export function StepDetailsScreen({
             goalSteps={goalSteps}
           />
 
-          {/* Selected Day Stats & Metrics */}
-          <DayMetricsCard day={selectedDay} goalSteps={goalSteps} />
+          {/* Active Day Selector Tabs/Buttons Row */}
+          <DaySelectorRow
+            days={days}
+            selectedIndex={selectedDayIndex}
+            onSelectDay={setSelectedDayIndex}
+          />
+
 
           {/* Walking Breakdown Line Graph */}
           <WalkingBreakdownChart day={selectedDay} />

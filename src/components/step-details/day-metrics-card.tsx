@@ -5,6 +5,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { DayStepData, useWeeklySteps } from '@/hooks/use-weekly-steps';
+import { useEffect } from 'react';
 
 export interface DayMetricsCardProps {
   day?: DayStepData;
@@ -18,6 +19,9 @@ export function DayMetricsCard({ day: propDay, goalSteps = 10000 }: DayMetricsCa
     fallbackWeeklyData.days.find((d) => d.isToday) ?? fallbackWeeklyData.days[0];
   const day = propDay ?? fallbackDay;
 
+  useEffect(() => {
+      console.log('DayMetricsCard day updated:', JSON.stringify(day, null, 2));
+  }, [day]);
   return (
     <ThemedView
       type="backgroundElement"
