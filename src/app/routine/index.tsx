@@ -134,6 +134,7 @@ export default function RoutineScreen() {
               <TouchableOpacity
                 key={routine.id}
                 activeOpacity={0.7}
+                onPress={() => router.push(`/routine/view-routine?id=${routine.id}`)}
                 style={styles.routineTouchable}>
                 <ThemedView
                   type="backgroundElement"

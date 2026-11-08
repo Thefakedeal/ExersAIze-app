@@ -9,6 +9,7 @@ export default function RoutineLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="add-routine" />
       <Stack.Screen name="edit-routine" />
+      <Stack.Screen name="view-routine" />
     </Stack>
   );
 }
