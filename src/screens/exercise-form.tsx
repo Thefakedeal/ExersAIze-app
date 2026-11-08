@@ -17,15 +17,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Header } from '@/components/header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
   CheckIcon,
   ChevronDownIcon,
-  ChevronLeftIcon,
   CloseIcon,
   PlusIcon,
-  SearchIcon,
+  SearchIcon
 } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -161,29 +161,7 @@ export function ExerciseForm({
   return (
     <ThemedView style={styles.container}>
       {/* Header */}
-      <View
-        style={[
-          styles.headerContainer,
-          {
-            paddingTop: Math.max(insets.top, Spacing.two),
-            borderBottomColor: theme.separator,
-          },
-        ]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          accessibilityLabel="Go back"
-          accessibilityRole="button">
-          <ChevronLeftIcon size={24} color={theme.text} />
-        </TouchableOpacity>
-
-        <ThemedText type="smallBold" style={styles.headerTitle}>
-          {title}
-        </ThemedText>
-
-        <View style={styles.headerRightPlaceholder} />
-      </View>
+      <Header onBackPress={router.back} title={title} />
 
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
@@ -506,22 +484,8 @@ export function ExerciseForm({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.four,
-    paddingBottom: Spacing.three,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  backButton: {
-    padding: Spacing.one,
-    marginLeft: -Spacing.one,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: { fontSize: 18, textAlign: 'center' },
-  headerRightPlaceholder: { width: 32 },
+  
+
   keyboardContainer: { flex: 1 },
   scrollView: { flex: 1 },
   scrollContent: {
