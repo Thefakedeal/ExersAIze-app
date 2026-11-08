@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -43,7 +42,7 @@ export function ViewRoutineScreen({ routine }: Props) {
               <ThemedText type="default" style={styles.routineNameText}>
                 {routine.name}
               </ThemedText>
-              <View
+              {/* <View
                 style={[
                   styles.libraryBadge,
                   { backgroundColor: theme.backgroundSelected },
@@ -51,7 +50,7 @@ export function ViewRoutineScreen({ routine }: Props) {
                 <ThemedText type="code" themeColor="primary">
                   Library
                 </ThemedText>
-              </View>
+              </View> */}
             </ThemedView>
           </View>
 
