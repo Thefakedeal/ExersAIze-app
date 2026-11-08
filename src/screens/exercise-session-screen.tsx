@@ -57,7 +57,6 @@ export function ExerciseSessionScreen({
   const [now, setNow] = useState<number>(startTime);
   const [exercises, setExercises] = useState<SessionExercise[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   // The persisted session ID — set once on first save, then used for all updates
   const activeSessionId = useRef<string | null>(sessionId ?? null);
@@ -195,8 +194,7 @@ export function ExerciseSessionScreen({
       }).catch(() => {/* silent */});
     }, 800);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exercises, endTime, isInitialized]);
+  }, [exercises, title, description, startTime, endTime, isInitialized]);
 
   // Exercise operations
   const handleOpenAddExercise = () => {
@@ -312,11 +310,26 @@ export function ExerciseSessionScreen({
   );
 
   // Time handling
-  const handleFinishWorkout = async () => {
+  const finishWorkout = async () => {
     const finishedAt = Date.now();
     setEndTime(finishedAt);
     setNow(finishedAt);
     await persistUpdate({ endTime: finishedAt });
+  };
+
+  const handleFinishWorkout = () => {
+    if (exercises.length === 0) {
+      Alert.alert(
+        'No Exercises',
+        'This workout has no exercises. Do you want to finish it anyway?',
+        [
+          { text: 'Keep Editing', style: 'cancel' },
+          { text: 'Finish Anyway', onPress: () => void finishWorkout() },
+        ]
+      );
+      return;
+    }
+    void finishWorkout();
   };
 
   const handleResetStartTime = () => {
@@ -345,19 +358,6 @@ export function ExerciseSessionScreen({
 
     if (Platform.OS !== 'ios') {
       setPickerTarget(null);
-    }
-  };
-
-  // Save & go back
-  const handleDone = async () => {
-    setIsSaving(true);
-    try {
-      await persistUpdate();
-      router.back();
-    } catch {
-      Alert.alert('Error', 'Failed to save workout. Please try again.');
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -570,21 +570,6 @@ export function ExerciseSessionScreen({
                 </View>
               )}
             </View>
-
-            {/* Bottom Actions */}
-            <View style={styles.bottomActionsCol}>
-              <TouchableOpacity
-                onPress={handleDone}
-                disabled={isSaving}
-                style={[
-                  styles.finishButton,
-                  { backgroundColor: theme.primary, opacity: isSaving ? 0.7 : 1 },
-                ]}>
-                <ThemedText type="smallBold" style={{ color: theme.textOnPrimary, fontSize: 16 }}>
-                  {isSaving ? 'Saving...' : 'Done'}
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -755,16 +740,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: 'dashed',
-  },
-  bottomActionsCol: {
-    gap: Spacing.two,
-    paddingTop: Spacing.two,
-  },
-  finishButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   pickerBackdrop: {
     flex: 1,
