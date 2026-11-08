@@ -4,11 +4,25 @@ import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
+import { syncDefaultExercises } from '@/services/default-exercises';
+import { syncDefaultRoutines } from '@/services/default-routines';
+import { useEffect } from 'react';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  // sync default routines and exercises with storage
+  const syncDefaults = async () => {
+    await syncDefaultRoutines();
+    await syncDefaultExercises();
+  }
+
+  useEffect(() => {
+    syncDefaults();
+    SplashScreen.hideAsync();
+  },[]);
+  
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />

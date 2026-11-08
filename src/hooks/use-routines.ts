@@ -1,60 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { getDefaultRoutines, syncDefaultRoutines } from '@/services/default-routines';
 import {
   deleteCustomRoutine,
   getCustomRoutines,
   subscribeToRoutineUpdates,
 } from '@/services/routine-storage';
 import { RoutineItem } from '@/types/routine';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 
-export const DEFAULT_ROUTINES: RoutineItem[] = [
-  {
-    id: '1',
-    name: 'Full Body Blast',
-    description: 'Compound lifts targeting all major muscle groups',
-    exerciseCount: 6,
-  },
-  {
-    id: '2',
-    name: 'Push Day (Chest, Shoulders, Triceps)',
-    description: 'Focus on bench, overhead press, and dips',
-    exerciseCount: 5,
-  },
-  {
-    id: '3',
-    name: 'Pull Day (Back & Biceps)',
-    description: 'Deadlifts, rows, pull-ups, and curls',
-    exerciseCount: 5,
-  },
-  {
-    id: '4',
-    name: 'Leg Day (Quads & Hamstrings)',
-    description: 'Squats, lunges, leg press, and calves',
-    exerciseCount: 6,
-  },
-  {
-    id: '5',
-    name: 'Upper Body Hypertrophy',
-    description: 'High volume muscle building workout',
-    exerciseCount: 7,
-  },
-  {
-    id: '6',
-    name: 'Core & HIIT Cardio',
-    description: 'High intensity interval training with core work',
-    exerciseCount: 4,
-  },
-  {
-    id: '7',
-    name: 'Morning Mobility & Stretching',
-    description: 'Flexibility and active joint recovery',
-    exerciseCount: 5,
-  },
-];
+
 
 export function useRoutines() {
   const [customRoutines, setCustomRoutines] = useState<RoutineItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingDefault, setLoadingDefault] = useState(true);
+  const [defaultRoutines, setDefaultRoutines] = useState<RoutineItem[]>([]);
 
   const loadData = useCallback(async () => {
     try {
@@ -64,6 +24,18 @@ export function useRoutines() {
       Alert.alert('Error', 'Failed to load routines. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const loadDefaultRoutines = useCallback(async () => {
+    try {
+      await syncDefaultRoutines();
+      const stored = await getDefaultRoutines();
+      setDefaultRoutines(stored.data);
+    } catch {
+      Alert.alert('Error', 'Failed to load routines. Please try again.');
+    } finally {
+      setLoadingDefault(false);
     }
   }, []);
 
@@ -91,6 +63,21 @@ export function useRoutines() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    void getDefaultRoutines().then((stored) => {
+      if (isMounted) {
+        setDefaultRoutines(stored.data);
+        setLoadingDefault(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const removeRoutine = useCallback(async (id: string) => {
     try {
       await deleteCustomRoutine(id);
@@ -101,9 +88,10 @@ export function useRoutines() {
 
   return {
     customRoutines,
-    defaultRoutines: DEFAULT_ROUTINES,
-    loading,
+    defaultRoutines,
+    loading: loading || loadingDefault,
     refresh: loadData,
     removeRoutine,
+    syncDefault: loadDefaultRoutines,
   };
 }

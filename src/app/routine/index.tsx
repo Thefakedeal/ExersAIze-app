@@ -84,15 +84,7 @@ export default function RoutineScreen() {
                           <ThemedText type="default" style={styles.routineName}>
                             {routine.name}
                           </ThemedText>
-                          <View
-                            style={[
-                              styles.savedBadge,
-                              { backgroundColor: theme.backgroundSelected },
-                            ]}>
-                            <ThemedText type="code" themeColor="primary">
-                              Custom
-                            </ThemedText>
-                          </View>
+                         
                         </View>
                         {routine.description ? (
                           <ThemedText
@@ -108,9 +100,9 @@ export default function RoutineScreen() {
                               styles.countBadge,
                               { backgroundColor: theme.backgroundSecondary },
                             ]}>
-                            <ThemedText type="code" themeColor="textSecondary">
+                          <ThemedText type="code" themeColor="primary">
                               {`${count} ${count === 1 ? 'exercise' : 'exercises'}`}
-                            </ThemedText>
+                          </ThemedText>
                           </View>
                         </View>
                       </View>
@@ -166,7 +158,7 @@ export default function RoutineScreen() {
                             { backgroundColor: theme.backgroundSelected },
                           ]}>
                           <ThemedText type="code" themeColor="primary">
-                            {`${routine.exerciseCount} exercises`}
+                            {`${routine.exercises.length} exercises`}
                           </ThemedText>
                         </View>
                       </View>
