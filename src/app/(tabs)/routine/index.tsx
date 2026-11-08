@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ChevronRightIcon, PlusIcon } from '@/components/ui/icons';
+import { ChevronRightIcon, PlayIcon, PlusIcon } from '@/components/ui/icons';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRoutines } from '@/hooks/use-routines';
 import { useTheme } from '@/hooks/use-theme';
@@ -164,7 +164,16 @@ export default function RoutineScreen() {
                       </View>
                   </View>
 
-                  <View style={styles.arrowContainer}>
+                  <View style={styles.cardActions}>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => router.push(`/session/exercise-session?routineId=${routine.id}`)}
+                      style={[styles.startButton, { backgroundColor: theme.primary }]}>
+                      <PlayIcon size={12} color={theme.textOnPrimary} />
+                      <ThemedText type="smallBold" style={{ color: theme.textOnPrimary, fontSize: 12 }}>
+                        Start
+                      </ThemedText>
+                    </TouchableOpacity>
                     <ChevronRightIcon size={20} color={theme.textSecondary} />
                   </View>
                 </ThemedView>
@@ -262,5 +271,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: Spacing.one,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
 });
