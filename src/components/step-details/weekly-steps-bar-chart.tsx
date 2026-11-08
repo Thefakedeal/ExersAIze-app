@@ -1,5 +1,5 @@
 import { addWeeks, endOfWeek, isSameDay, startOfWeek } from 'date-fns';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   LayoutChangeEvent,
@@ -44,12 +44,7 @@ export function WeeklyStepsBarChart({
     endDate: saturday,
   });
 
-  useEffect(() => {
-    if(!weeklyReport.loading){
-      console.log("Weekly Report Records:", weeklyReport);
-    }
-  }, [weeklyReport]);
- 
+
   const onLayout = (event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width;
 
