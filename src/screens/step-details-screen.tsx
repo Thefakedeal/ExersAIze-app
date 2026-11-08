@@ -2,20 +2,18 @@ import { useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Header } from '@/components/header';
 import {
   DaySelectorRow,
   WalkingBreakdownChart,
   WeeklyStepsBarChart,
   WeekNavigator
 } from '@/components/step-details';
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ChevronLeftIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useDatesBetween } from '@/hooks/use-dates-between';
 import { useTheme } from '@/hooks/use-theme';
@@ -55,30 +53,7 @@ export function StepDetailsScreen({
   return (
     <ThemedView style={styles.container}>
       {/* Top Header */}
-      <View
-        style={[
-          styles.headerBar,
-          {
-            paddingTop: Math.max(insets.top, Spacing.two),
-            borderBottomColor: theme.separator,
-          },
-        ]}>
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.backButton}
-          activeOpacity={0.7}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          accessibilityLabel="Go back"
-          accessibilityRole="button">
-          <ChevronLeftIcon size={24} color={theme.text} />
-        </TouchableOpacity>
-
-        <ThemedText type="smallBold" style={styles.headerTitle}>
-          Step Details
-        </ThemedText>
-
-        <View style={styles.headerRightPlaceholder} />
-      </View>
+      <Header onBackPress={onBack} title="Step Details" />
 
 
       <ScrollView
