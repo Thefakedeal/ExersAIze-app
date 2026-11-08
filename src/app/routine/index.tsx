@@ -150,7 +150,6 @@ export default function RoutineScreen() {
                         {routine.description}
                       </ThemedText>
                     ) : null}
-                    {routine.exerciseCount ? (
                       <View style={styles.badgeRow}>
                         <View
                           style={[
@@ -158,11 +157,10 @@ export default function RoutineScreen() {
                             { backgroundColor: theme.backgroundSelected },
                           ]}>
                           <ThemedText type="code" themeColor="primary">
-                            {`${routine.exercises.length} exercises`}
+                            {`${routine.exercises?.length || 0} exercises`}
                           </ThemedText>
                         </View>
                       </View>
-                    ) : null}
                   </View>
 
                   <View style={styles.arrowContainer}>
