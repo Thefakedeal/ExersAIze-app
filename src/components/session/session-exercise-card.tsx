@@ -14,19 +14,19 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { TrackMetric } from '@/types/exercise';
 import { SessionExercise, SessionSet } from '@/types/session';
+import { getMetricVisibility } from '@/utils/session-metrics';
 import { SessionSetRow } from './session-set-row';
 
-function isSetComplete(set: SessionSet, trackMetrics: TrackMetric[] = ['Reps']) {
-  const metrics = trackMetrics.length > 0 ? trackMetrics : ['Reps'];
+function isSetComplete(set: SessionSet, metrics: TrackMetric[]) {
   return metrics.every((metric) => {
     switch (metric) {
       case 'Time':
-        return set.timeInSeconds !== undefined && set.timeInSeconds !== null;
+        return set.timeInSeconds != null;
       case 'Distance':
-        return set.distance !== undefined && set.distance !== null;
+        return set.distance != null;
       case 'Reps':
       default:
-        return set.reps !== undefined && set.reps !== null;
+        return set.reps != null;
     }
   });
 }
@@ -55,35 +55,42 @@ export function SessionExerciseCard({
   onUpdateExercise,
 }: SessionExerciseCardProps) {
   const theme = useTheme();
+  const { metrics, hasTime, hasDistance, hasReps, showWeight } = getMetricVisibility(
+    exercise.trackMetrics,
+    exercise.type
+  );
+
+  const updateSets = (sets: SessionSet[]) => onUpdateExercise({ ...exercise, sets });
 
   const handleUpdateSet = (setIndex: number, updatedFields: Partial<SessionSet>) => {
-    const nextSets = exercise.sets.map((s, idx) => {
-      if (idx !== setIndex) return s;
-      const next = { ...s, ...updatedFields };
-      return { ...next, completed: isSetComplete(next, exercise.trackMetrics) };
-    });
-    onUpdateExercise({ ...exercise, sets: nextSets });
+    updateSets(
+      exercise.sets.map((set, idx) => {
+        if (idx !== setIndex) return set;
+        const updated = { ...set, ...updatedFields };
+        return { ...updated, completed: isSetComplete(updated, metrics) };
+      })
+    );
   };
 
   const handleAddSet = () => {
-    const newSet: SessionSet = {
-      id: `set_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      setNumber: exercise.sets.length + 1,
-      completed: false,
-      note: '',
-    };
-    onUpdateExercise({ ...exercise, sets: [...exercise.sets, newSet] });
+    updateSets([
+      ...exercise.sets,
+      {
+        id: `set_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        setNumber: exercise.sets.length + 1,
+        completed: false,
+        note: '',
+      },
+    ]);
   };
 
   const handleRemoveSet = (setIndex: number) => {
-    const filtered = exercise.sets.filter((_, idx) => idx !== setIndex);
-    const reindexed = filtered.map((s, idx) => ({ ...s, setNumber: idx + 1 }));
-    onUpdateExercise({ ...exercise, sets: reindexed });
+    updateSets(
+      exercise.sets
+        .filter((_, idx) => idx !== setIndex)
+        .map((set, idx) => ({ ...set, setNumber: idx + 1 }))
+    );
   };
-
-  const hasTime = exercise.trackMetrics?.includes('Time');
-  const hasDistance = exercise.trackMetrics?.includes('Distance');
-  const showWeight = exercise.type === 'Strength' || (!hasDistance && !hasTime);
 
   return (
     <ThemedView
@@ -165,11 +172,11 @@ export function SessionExerciseCard({
               LBS / KG
             </ThemedText>
           )}
-          {(!hasTime && !hasDistance) || exercise.trackMetrics?.includes('Reps') ? (
+          {hasReps && (
             <ThemedText type="code" themeColor="textSecondary" style={styles.colMetric}>
               REPS
             </ThemedText>
-          ) : null}
+          )}
           {hasTime && (
             <ThemedText type="code" themeColor="textSecondary" style={styles.colMetric}>
               TIME

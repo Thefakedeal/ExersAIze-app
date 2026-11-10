@@ -19,6 +19,7 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { deleteWorkoutSession, getWorkoutSessionById, subscribeToSessionUpdates } from '@/services/session-storage';
 import { WorkoutSession } from '@/types/session';
+import { getMetricVisibility } from '@/utils/session-metrics';
 
 interface ViewSessionScreenProps {
   id: string;
@@ -259,9 +260,10 @@ export function ViewSessionScreen({ id }: ViewSessionScreenProps) {
 
           <View style={styles.exercisesList}>
             {session.exercises?.map((ex, eIdx) => {
-              const hasTime = ex.trackMetrics?.includes('Time');
-              const hasDistance = ex.trackMetrics?.includes('Distance');
-              const showWeight = ex.type === 'Strength' || (!hasDistance && !hasTime);
+              const { hasTime, hasDistance, showWeight } = getMetricVisibility(
+                ex.trackMetrics,
+                ex.type
+              );
 
               return (
                 <ThemedView

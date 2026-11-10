@@ -8,6 +8,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { ExerciseType, TrackMetric } from '@/types/exercise';
 import { SessionSet } from '@/types/session';
+import { getMetricVisibility } from '@/utils/session-metrics';
 
 interface SessionSetRowProps {
   set: SessionSet;
@@ -19,11 +20,51 @@ interface SessionSetRowProps {
   canRemove: boolean;
 }
 
+interface MetricInputProps {
+  value?: number;
+  unit: string;
+  decimal?: boolean;
+  onChange: (value?: number) => void;
+}
+
+function MetricInput({ value, unit, decimal = false, onChange }: MetricInputProps) {
+  const theme = useTheme();
+
+  const handleChange = (text: string) => {
+    const cleaned = text.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, '');
+    if (cleaned === '') return onChange(undefined);
+    onChange(decimal ? Number(cleaned) : parseInt(cleaned, 10));
+  };
+
+  return (
+    <View style={styles.inputGroup}>
+      <TextInput
+        value={String(value ?? '')}
+        onChangeText={handleChange}
+        keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
+        placeholder="-"
+        placeholderTextColor={theme.textDisabled}
+        style={[
+          styles.metricInput,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.inputBorder,
+            color: theme.text,
+          },
+        ]}
+      />
+      <ThemedText type="code" themeColor="textSecondary" style={styles.unitText}>
+        {unit}
+      </ThemedText>
+    </View>
+  );
+}
+
 export function SessionSetRow({
   set,
   index,
   exerciseType = 'Strength',
-  trackMetrics = ['Reps'],
+  trackMetrics,
   onUpdateSet,
   onRemoveSet,
   canRemove,
@@ -31,11 +72,10 @@ export function SessionSetRow({
   const theme = useTheme();
   const [showNoteInput, setShowNoteInput] = useState(Boolean(set.note && set.note.length > 0));
 
-  const hasTime = trackMetrics.includes('Time');
-  const hasDistance = trackMetrics.includes('Distance');
-  const hasReps = trackMetrics.includes('Reps') || (!hasTime && !hasDistance);
-  // Weight is relevant for Strength or if user wants to log load
-  const showWeight = exerciseType === 'Strength' || (!hasDistance && !hasTime);
+  const { hasTime, hasDistance, hasReps, showWeight } = getMetricVisibility(
+    trackMetrics,
+    exerciseType
+  );
 
   return (
     <View style={[styles.container, set.completed && { opacity: 0.9 }]}>
@@ -61,115 +101,37 @@ export function SessionSetRow({
         {/* Inputs row */}
         <View style={styles.inputsRow}>
           {showWeight && (
-            <View style={styles.inputGroup}>
-              <TextInput
-                value={set.weight !== undefined && set.weight !== null ? String(set.weight) : ''}
-                onChangeText={(text) => {
-                  const cleaned = text.replace(/[^0-9.]/g, '');
-                  onUpdateSet({ weight: cleaned === '' ? undefined : Number(cleaned) });
-                }}
-                keyboardType="decimal-pad"
-                placeholder="-"
-                placeholderTextColor={theme.textDisabled}
-                style={[
-                  styles.metricInput,
-                  {
-                    backgroundColor: theme.inputBackground,
-                    borderColor: theme.inputBorder,
-                    color: theme.text,
-                  },
-                ]}
-              />
-              <ThemedText type="code" themeColor="textSecondary" style={styles.unitText}>
-                kg
-              </ThemedText>
-            </View>
+            <MetricInput
+              value={set.weight}
+              unit="kg"
+              decimal
+              onChange={(weight) => onUpdateSet({ weight })}
+            />
           )}
 
           {hasReps && (
-            <View style={styles.inputGroup}>
-              <TextInput
-                value={set.reps !== undefined && set.reps !== null ? String(set.reps) : ''}
-                onChangeText={(text) => {
-                  const cleaned = text.replace(/[^0-9]/g, '');
-                  onUpdateSet({ reps: cleaned === '' ? undefined : parseInt(cleaned, 10) });
-                }}
-                keyboardType="number-pad"
-                placeholder="-"
-                placeholderTextColor={theme.textDisabled}
-                style={[
-                  styles.metricInput,
-                  {
-                    backgroundColor: theme.inputBackground,
-                    borderColor: theme.inputBorder,
-                    color: theme.text,
-                  },
-                ]}
-              />
-              <ThemedText type="code" themeColor="textSecondary" style={styles.unitText}>
-                reps
-              </ThemedText>
-            </View>
+            <MetricInput
+              value={set.reps}
+              unit="reps"
+              onChange={(reps) => onUpdateSet({ reps })}
+            />
           )}
 
           {hasTime && (
-            <View style={styles.inputGroup}>
-              <TextInput
-                value={
-                  set.timeInSeconds !== undefined && set.timeInSeconds !== null
-                    ? String(set.timeInSeconds)
-                    : ''
-                }
-                onChangeText={(text) => {
-                  const cleaned = text.replace(/[^0-9]/g, '');
-                  onUpdateSet({
-                    timeInSeconds: cleaned === '' ? undefined : parseInt(cleaned, 10),
-                  });
-                }}
-                keyboardType="number-pad"
-                placeholder="-"
-                placeholderTextColor={theme.textDisabled}
-                style={[
-                  styles.metricInput,
-                  {
-                    backgroundColor: theme.inputBackground,
-                    borderColor: theme.inputBorder,
-                    color: theme.text,
-                  },
-                ]}
-              />
-              <ThemedText type="code" themeColor="textSecondary" style={styles.unitText}>
-                sec
-              </ThemedText>
-            </View>
+            <MetricInput
+              value={set.timeInSeconds}
+              unit="sec"
+              onChange={(timeInSeconds) => onUpdateSet({ timeInSeconds })}
+            />
           )}
 
           {hasDistance && (
-            <View style={styles.inputGroup}>
-              <TextInput
-                value={
-                  set.distance !== undefined && set.distance !== null ? String(set.distance) : ''
-                }
-                onChangeText={(text) => {
-                  const cleaned = text.replace(/[^0-9.]/g, '');
-                  onUpdateSet({ distance: cleaned === '' ? undefined : Number(cleaned) });
-                }}
-                keyboardType="decimal-pad"
-                placeholder="-"
-                placeholderTextColor={theme.textDisabled}
-                style={[
-                  styles.metricInput,
-                  {
-                    backgroundColor: theme.inputBackground,
-                    borderColor: theme.inputBorder,
-                    color: theme.text,
-                  },
-                ]}
-              />
-              <ThemedText type="code" themeColor="textSecondary" style={styles.unitText}>
-                km
-              </ThemedText>
-            </View>
+            <MetricInput
+              value={set.distance}
+              unit="km"
+              decimal
+              onChange={(distance) => onUpdateSet({ distance })}
+            />
           )}
         </View>
 
