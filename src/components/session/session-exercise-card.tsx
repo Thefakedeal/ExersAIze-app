@@ -12,8 +12,24 @@ import {
 } from '@/components/ui/icons';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { TrackMetric } from '@/types/exercise';
 import { SessionExercise, SessionSet } from '@/types/session';
 import { SessionSetRow } from './session-set-row';
+
+function isSetComplete(set: SessionSet, trackMetrics: TrackMetric[] = ['Reps']) {
+  const metrics = trackMetrics.length > 0 ? trackMetrics : ['Reps'];
+  return metrics.every((metric) => {
+    switch (metric) {
+      case 'Time':
+        return set.timeInSeconds !== undefined && set.timeInSeconds !== null;
+      case 'Distance':
+        return set.distance !== undefined && set.distance !== null;
+      case 'Reps':
+      default:
+        return set.reps !== undefined && set.reps !== null;
+    }
+  });
+}
 
 interface SessionExerciseCardProps {
   exercise: SessionExercise;
@@ -41,21 +57,18 @@ export function SessionExerciseCard({
   const theme = useTheme();
 
   const handleUpdateSet = (setIndex: number, updatedFields: Partial<SessionSet>) => {
-    const nextSets = exercise.sets.map((s, idx) =>
-      idx === setIndex ? { ...s, ...updatedFields } : s
-    );
+    const nextSets = exercise.sets.map((s, idx) => {
+      if (idx !== setIndex) return s;
+      const next = { ...s, ...updatedFields };
+      return { ...next, completed: isSetComplete(next, exercise.trackMetrics) };
+    });
     onUpdateExercise({ ...exercise, sets: nextSets });
   };
 
   const handleAddSet = () => {
-    const lastSet = exercise.sets[exercise.sets.length - 1];
     const newSet: SessionSet = {
       id: `set_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       setNumber: exercise.sets.length + 1,
-      weight: lastSet?.weight,
-      reps: lastSet?.reps,
-      timeInSeconds: lastSet?.timeInSeconds,
-      distance: lastSet?.distance,
       completed: false,
       note: '',
     };
@@ -171,9 +184,7 @@ export function SessionExerciseCard({
         <ThemedText type="code" themeColor="textSecondary" style={styles.colNote}>
           NOTE
         </ThemedText>
-        <ThemedText type="code" themeColor="textSecondary" style={styles.colDone}>
-          DONE
-        </ThemedText>
+        <View style={styles.colDoneSpacer} />
       </View>
 
       {/* Sets List */}
@@ -283,11 +294,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginRight: 4,
   },
-  colDone: {
+  colDoneSpacer: {
     width: 32,
-    textAlign: 'center',
-    fontSize: 10,
-    fontWeight: '700',
   },
   setsContainer: {
     gap: Spacing.one,

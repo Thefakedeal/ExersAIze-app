@@ -39,6 +39,16 @@ interface ExerciseSessionScreenProps {
   sessionId?: string;
 }
 
+function hasExerciseDetails(exercise: SessionExercise) {
+  return exercise.sets.some(
+    (set) =>
+      set.weight !== undefined ||
+      set.reps !== undefined ||
+      set.timeInSeconds !== undefined ||
+      set.distance !== undefined
+  );
+}
+
 export function ExerciseSessionScreen({
   routineId,
   sessionId,
@@ -181,10 +191,11 @@ export function ExerciseSessionScreen({
     return () => clearInterval(interval);
   }, [endTime]);
 
-  // Auto-persist exercises changes (debounced 800ms)
+  // Auto-persist changes: immediately once finished, debounced while ongoing
   useEffect(() => {
     if (!isInitialized || !activeSessionId.current) return;
-    const timer = setTimeout(() => {
+
+    const persist = () =>
       void updateWorkoutSession(activeSessionId.current!, {
         title: title.trim() || 'Workout Session',
         description: description.trim() || undefined,
@@ -192,7 +203,13 @@ export function ExerciseSessionScreen({
         endTime,
         exercises,
       }).catch(() => {/* silent */});
-    }, 800);
+
+    if (endTime) {
+      persist();
+      return;
+    }
+
+    const timer = setTimeout(persist, 800);
     return () => clearTimeout(timer);
   }, [exercises, title, description, startTime, endTime, isInitialized]);
 
@@ -329,6 +346,21 @@ export function ExerciseSessionScreen({
       );
       return;
     }
+
+    const incomplete = exercises.filter((exercise) => !hasExerciseDetails(exercise));
+    if (incomplete.length > 0) {
+      const message =
+        incomplete.length === 1
+          ? `"${incomplete[0].name}" has no details filled in. Do you want to finish the workout anyway?`
+          : `${incomplete.length} exercises have no details filled in. Do you want to finish the workout anyway?`;
+
+      Alert.alert('Incomplete Exercises', message, [
+        { text: 'Keep Editing', style: 'cancel' },
+        { text: 'Finish Anyway', onPress: () => void finishWorkout() },
+      ]);
+      return;
+    }
+
     void finishWorkout();
   };
 

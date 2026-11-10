@@ -17,7 +17,7 @@ import { ThemedView } from '@/components/themed-view';
 import { CheckIcon, ClockIcon, EditIcon, NoteIcon, TrashIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { deleteWorkoutSession, getWorkoutSessionById } from '@/services/session-storage';
+import { deleteWorkoutSession, getWorkoutSessionById, subscribeToSessionUpdates } from '@/services/session-storage';
 import { WorkoutSession } from '@/types/session';
 
 interface ViewSessionScreenProps {
@@ -34,14 +34,22 @@ export function ViewSessionScreen({ id }: ViewSessionScreenProps) {
 
   useEffect(() => {
     let isMounted = true;
-    void getWorkoutSessionById(id).then((data) => {
-      if (isMounted) {
-        setSession(data);
-        setLoading(false);
-      }
-    });
+
+    const loadSession = () => {
+      void getWorkoutSessionById(id).then((data) => {
+        if (isMounted) {
+          setSession(data);
+          setLoading(false);
+        }
+      });
+    };
+
+    loadSession();
+    const unsubscribe = subscribeToSessionUpdates(loadSession);
+
     return () => {
       isMounted = false;
+      unsubscribe();
     };
   }, [id]);
 

@@ -196,17 +196,10 @@ export function SessionSetRow({
           />
         </TouchableOpacity>
 
-        {/* Completed Toggle Button */}
-        <TouchableOpacity
-          onPress={() => onUpdateSet({ completed: !set.completed })}
-          style={[
-            styles.checkButton,
-            set.completed
-              ? { backgroundColor: theme.primary, borderColor: theme.primary }
-              : { borderColor: theme.border, backgroundColor: theme.inputBackground },
-          ]}>
-          {set.completed && <CheckIcon size={14} color={theme.textOnPrimary} />}
-        </TouchableOpacity>
+        {/* Completion indicator — set automatically from the tracked values */}
+        <View style={styles.checkIndicator}>
+          {set.completed && <CheckIcon size={16} color={theme.primary} />}
+        </View>
 
         {/* Remove Set Button */}
         {canRemove && (
@@ -288,11 +281,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkButton: {
+  checkIndicator: {
     width: 32,
     height: 32,
-    borderRadius: 8,
-    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
