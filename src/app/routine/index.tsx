@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ChevronRightIcon, PlayIcon, PlusIcon } from '@/components/ui/icons';
@@ -35,21 +36,14 @@ export default function RoutineScreen() {
   return (
     <ThemedView style={[styles.container, contentPlatformStyle]}>
       <View style={[styles.safeArea]}>
-        <View style={styles.headerRow}>
-          <ThemedText type="subtitle">Routines</ThemedText>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push('/routine/add-routine')}
-            style={[styles.addRoutineButton, { backgroundColor: theme.primary }]}>
-            <PlusIcon size={18} color={theme.textOnPrimary} />
-            <ThemedText
-              type="smallBold"
-              style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
-              Add Routine
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
-
+        <ScreenHeader
+          title="Routines"
+          action={{
+            label: 'Add Routine',
+            icon: <PlusIcon size={18} color={theme.textOnPrimary} />,
+            onPress: () => router.push('/routine/add-routine'),
+          }}
+        />
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
@@ -196,20 +190,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
     paddingHorizontal: Spacing.four,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.three,
-  },
-  addRoutineButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: 10,
-    borderRadius: 20,
   },
   scrollContent: {
     paddingTop: Spacing.two,

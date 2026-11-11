@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ExerciseItemComponent } from '@/components/exercise-item';
+import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CloseIcon, PlusIcon, SearchIcon } from '@/components/ui/icons';
@@ -77,23 +78,15 @@ export default function ExerciseScreen() {
 
   return (
     <ThemedView style={[styles.container,contentPlatformStyle]}>
-      <View style={styles.headerRow}>
-        <ThemedText type="subtitle">Exercises</ThemedText>
-        <TouchableOpacity
-          onPress={() => router.push('/exercise/add-exercise')}
-          activeOpacity={0.7}
-          style={[
-            styles.addExerciseButton,
-            { backgroundColor: theme.primary },
-          ]}>
-          <PlusIcon size={18} color={theme.textOnPrimary} />
-          <ThemedText
-            type="smallBold"
-            style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
-            Add Exercise
-          </ThemedText>
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="Exercises"
+        style={styles.header}
+        action={{
+          label: 'Add Exercise',
+          icon: <PlusIcon size={18} color={theme.textOnPrimary} />,
+          onPress: () => router.push('/exercise/add-exercise'),
+        }}
+      />
       <View
         style={[
           styles.searchContainer,
@@ -155,20 +148,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     gap: Spacing.two,
   },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Spacing.three,
+  header: {
     paddingBottom: Spacing.two,
     paddingHorizontal: Spacing.four,
-  },
-  addExerciseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: 10,
-    borderRadius: 20,
   },
   searchContainer: {
     flexDirection: 'row',

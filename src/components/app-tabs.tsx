@@ -20,9 +20,9 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="routine">
-        <NativeTabs.Trigger.Label>Routine</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="repeat" md="repeat" />
+      <NativeTabs.Trigger name="session">
+        <NativeTabs.Trigger.Label>Sessions</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="target" md="track_changes" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="exercise">
