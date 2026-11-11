@@ -1,4 +1,4 @@
-import { DEFAULT_EXERCISES } from '@/data/exercises';
+import { getDefaultExercises, syncDefaultExercises } from '@/services/default-exercises';
 import { getCustomExercises, subscribeToExerciseUpdates } from '@/services/exercise-storage';
 import { ExerciseItem } from '@/types/exercise';
 import { useCallback, useEffect, useState } from 'react';
@@ -7,6 +7,8 @@ import { Alert } from 'react-native';
 export function useExercises() {
   const [customExercises, setCustomExercises] = useState<ExerciseItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [defaultExercises, setDefaultExercises] = useState<ExerciseItem[]>([]);
+  const [loadingDefault, setLoadingDefault] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
@@ -16,6 +18,18 @@ export function useExercises() {
       Alert.alert('Error', 'Failed to load exercises. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const loadDefaultExercises = useCallback(async () => {
+    try {
+      await syncDefaultExercises();
+      const stored = await getDefaultExercises();
+      setDefaultExercises(stored.data);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to load exercises. Please try again.');
+    } finally {
+      setLoadingDefault(false);
     }
   }, []);
 
@@ -43,10 +57,26 @@ export function useExercises() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    void getDefaultExercises().then((stored) => {
+      if (isMounted) {
+        setDefaultExercises(stored.data);
+        setLoadingDefault(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return {
     customExercises,
-    defaultExercises: DEFAULT_EXERCISES,
-    loading,
+    defaultExercises,
+    loading: loading || loadingDefault,
     refresh: loadData,
+    syncDefault: loadDefaultExercises
   };
 }

@@ -7,10 +7,11 @@ import { ChevronLeftIcon } from './ui/icons';
 
 type Props = {
     onBackPress: () => void,
-    title: string
+    title: string,
+    rightAction?: React.ReactNode,
 }
 
-export function Header({onBackPress, title}: Props) {
+export function Header({onBackPress, title, rightAction}: Props) {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
   return (
@@ -35,7 +36,11 @@ export function Header({onBackPress, title}: Props) {
           {title}
         </ThemedText>
 
-        <View style={styles.headerRightPlaceholder} />
+        {rightAction ? (
+          <View style={styles.headerRightAction}>{rightAction}</View>
+        ) : (
+          <View style={styles.headerRightPlaceholder} />
+        )}
       </View>
   )
 }
@@ -55,6 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerTitle: { fontSize: 18, textAlign: 'center' },
+  headerTitle: { fontSize: 18, textAlign: 'center', flex: 1, paddingHorizontal: Spacing.two },
   headerRightPlaceholder: { width: 32 },
+  headerRightAction: { minWidth: 32, alignItems: 'flex-end', justifyContent: 'center' },
 })
