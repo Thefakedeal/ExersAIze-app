@@ -1,12 +1,11 @@
 import { useRouter } from 'expo-router';
-import { Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { ScreenHeader } from '@/components/screen-header';
+import { Header } from '@/components/header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ChevronRightIcon, PlayIcon, PlusIcon } from '@/components/ui/icons';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRoutines } from '@/hooks/use-routines';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -15,40 +14,25 @@ export default function RoutineScreen() {
   const theme = useTheme();
   const { customRoutines, defaultRoutines } = useRoutines();
 
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
-
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
-
   return (
-    <ThemedView style={[styles.container, contentPlatformStyle]}>
+    <ThemedView style={[styles.container]}>
+      <Header
+        title="Routines"
+        onBackPress={() => router.push("/")}
+        rightAction={
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[styles.startButton, { backgroundColor: theme.primary }]}
+            onPress={() => router.push('/routine/add-routine')}>
+            <PlusIcon size={18} color={theme.textOnPrimary} />
+          </TouchableOpacity>
+        }
+      />
       <View style={[styles.safeArea]}>
-        <ScreenHeader
-          title="Routines"
-          action={{
-            label: 'Add Routine',
-            icon: <PlusIcon size={18} color={theme.textOnPrimary} />,
-            onPress: () => router.push('/routine/add-routine'),
-          }}
-        />
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: insets.bottom + Spacing.four },
+            styles.scrollContent
           ]}>
           {/* Custom / Saved Routines Section if any exist */}
           {customRoutines.length > 0 && (
@@ -78,7 +62,7 @@ export default function RoutineScreen() {
                           <ThemedText type="default" style={styles.routineName}>
                             {routine.name}
                           </ThemedText>
-                         
+
                         </View>
                         {routine.description ? (
                           <ThemedText
@@ -94,9 +78,9 @@ export default function RoutineScreen() {
                               styles.countBadge,
                               { backgroundColor: theme.backgroundSecondary },
                             ]}>
-                          <ThemedText type="code" themeColor="primary">
+                            <ThemedText type="code" themeColor="primary">
                               {`${count} ${count === 1 ? 'exercise' : 'exercises'}`}
-                          </ThemedText>
+                            </ThemedText>
                           </View>
                         </View>
                       </View>
@@ -145,17 +129,17 @@ export default function RoutineScreen() {
                         {routine.description}
                       </ThemedText>
                     ) : null}
-                      <View style={styles.badgeRow}>
-                        <View
-                          style={[
-                            styles.countBadge,
-                            { backgroundColor: theme.backgroundSelected },
-                          ]}>
-                          <ThemedText type="code" themeColor="primary">
-                            {`${routine.exercises?.length || 0} exercises`}
-                          </ThemedText>
-                        </View>
+                    <View style={styles.badgeRow}>
+                      <View
+                        style={[
+                          styles.countBadge,
+                          { backgroundColor: theme.backgroundSelected },
+                        ]}>
+                        <ThemedText type="code" themeColor="primary">
+                          {`${routine.exercises?.length || 0} exercises`}
+                        </ThemedText>
                       </View>
+                    </View>
                   </View>
 
                   <View style={styles.cardActions}>
@@ -183,6 +167,13 @@ export default function RoutineScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+
   },
   safeArea: {
     flex: 1,
