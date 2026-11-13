@@ -1,4 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { DateTimePicker } from '@expo/ui/community/datetime-picker';
+import { format } from 'date-fns';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -11,10 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { DateTimePicker } from '@expo/ui/community/datetime-picker';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { format } from 'date-fns';
 
 import { Header } from '@/components/header';
 import { SessionExerciseCard } from '@/components/session/session-exercise-card';
@@ -57,7 +57,7 @@ export function ExerciseSessionScreen({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const { defaultRoutines, customRoutines } = useRoutines();
+  const { defaultRoutines, customRoutines, loading: routinesLoading } = useRoutines();
   const { defaultExercises, customExercises } = useExercises();
 
   const [title, setTitle] = useState('');
@@ -98,7 +98,9 @@ export function ExerciseSessionScreen({
         }
       }
 
-      let resolvedTitle = 'Workout Session';
+      if (routineId && routinesLoading) return;
+
+      let resolvedTitle = '';
       let resolvedDescription = '';
       let resolvedStartTime = Date.now();
       let resolvedExercises: SessionExercise[] = [];
@@ -147,6 +149,10 @@ export function ExerciseSessionScreen({
 
       if (!isMounted) return;
 
+      if (!resolvedTitle) {
+        resolvedTitle = `${format(new Date(resolvedStartTime), 'MMMM d, yyyy')} Workout`;
+      }
+
       // Auto-create the session immediately on start
       try {
         const created = await saveWorkoutSession({
@@ -182,7 +188,7 @@ export function ExerciseSessionScreen({
       isMounted = false;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, routineId]);
+  }, [sessionId, routineId, routinesLoading]);
 
   // Keep the ongoing duration updating while the workout has no end time
   useEffect(() => {
