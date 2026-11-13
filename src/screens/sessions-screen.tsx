@@ -1,9 +1,9 @@
-import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Header } from '@/components/header';
+import { SafeArea } from '@/components/safe-area';
+import { ScreenHeader } from '@/components/screen-header';
 import { SessionCard } from '@/components/session/session-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -20,7 +20,7 @@ export function SessionsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Header
+      {/* <Header
         onBackPress={router.back}
         title="Workout Sessions"
         rightAction={
@@ -30,47 +30,59 @@ export function SessionsScreen() {
             <PlusIcon size={22} color={theme.primary} />
           </TouchableOpacity>
         }
-      />
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + Spacing.six },
-        ]}
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.innerContainer}>
-          {sessions.length === 0 ? (
-            <ThemedView
-              type="backgroundElement"
-              style={[styles.emptyCard, { borderColor: theme.border }]}>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
-                No workout sessions yet.{'\n'}Start a workout to log your first session.
-              </ThemedText>
-              <TouchableOpacity
-                onPress={() => router.push('/session/exercise-session')}
-                style={[styles.startBtn, { backgroundColor: theme.primary }]}>
-                <PlusIcon size={16} color={theme.textOnPrimary} />
-                <ThemedText type="smallBold" style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
-                  Start Workout
+      /> */}
+      <SafeArea>
+        <ScreenHeader
+          style={{ paddingBottom: Spacing.two, paddingHorizontal: Spacing.four }}
+        title="Sessions"
+          action={
+            {
+              onPress: () => router.push('/session/exercise-session'),
+              icon: <PlusIcon size={22} color={theme.textOnPrimary} />,
+              label: 'New Session',
+            }
+          }
+        />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: insets.bottom + Spacing.six },
+          ]}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.innerContainer}>
+            {sessions.length === 0 ? (
+              <ThemedView
+                type="backgroundElement"
+                style={[styles.emptyCard, { borderColor: theme.border }]}>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
+                  No workout sessions yet.{'\n'}Start a workout to log your first session.
                 </ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-          ) : (
-            <View style={styles.list}>
-              {sessions.map((session) => (
-                <SessionCard
-                  key={session.id}
-                  session={session}
-                  onPress={() =>
-                    router.push(`/session/view-session?id=${session.id}`)
-                  }
-                />
-              ))}
-            </View>
-          )}
-        </View>
-      </ScrollView>
+                <TouchableOpacity
+                  onPress={() => router.push('/session/exercise-session')}
+                  style={[styles.startBtn, { backgroundColor: theme.primary }]}>
+                  <PlusIcon size={16} color={theme.textOnPrimary} />
+                  <ThemedText type="smallBold" style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
+                    Start Workout
+                  </ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            ) : (
+              <View style={styles.list}>
+                {sessions.map((session) => (
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onPress={() =>
+                      router.push(`/session/view-session?id=${session.id}`)
+                    }
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </SafeArea>
     </ThemedView>
   );
 }

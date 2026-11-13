@@ -20,13 +20,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '@/components/header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  CloseIcon,
-  PlusIcon,
-  SearchIcon
-} from '@/components/ui/icons';
+import { CheckIcon, ChevronDownIcon, PlusIcon } from '@/components/ui/icons';
+import { SearchField } from '@/components/ui/search-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -290,30 +285,12 @@ export function ExerciseForm({
                 )}
               </View>
 
-              <View
-                style={[
-                  styles.searchContainer,
-                  {
-                    backgroundColor: theme.backgroundElement,
-                    borderColor: theme.border,
-                  },
-                ]}>
-                <SearchIcon size={18} color={theme.textSecondary} />
-                <TextInput
-                  value={categorySearch}
-                  onChangeText={setCategorySearch}
-                  placeholder="Search or add category..."
-                  placeholderTextColor={theme.textSecondary}
-                  style={[styles.searchInput, { color: theme.text }]}
-                />
-                {categorySearch.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setCategorySearch('')}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                    <CloseIcon size={16} color={theme.textSecondary} />
-                  </TouchableOpacity>
-                )}
-              </View>
+              <SearchField
+                value={categorySearch}
+                onChangeText={setCategorySearch}
+                placeholder="Search or add category..."
+                style={styles.searchField}
+              />
 
               {canAddCustomCategory && (
                 <TouchableOpacity
@@ -541,17 +518,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(150,150,150,0.15)',
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Platform.select({ ios: 10, default: 8 }),
+  searchField: {
     marginBottom: Spacing.two,
-    gap: Spacing.two,
   },
-  searchInput: { flex: 1, fontSize: 14, padding: 0 },
   addCustomBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',

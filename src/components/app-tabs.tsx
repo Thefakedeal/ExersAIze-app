@@ -12,7 +12,7 @@ export default function AppTabs() {
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
+      <NativeTabs.Trigger name="(home)">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/home.png')}
@@ -20,14 +20,9 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="routine">
-        <NativeTabs.Trigger.Label>Routine</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="repeat" md="repeat" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="exercise">
-        <NativeTabs.Trigger.Label>Exercise</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="dumbbell" md="fitness_center" />
+      <NativeTabs.Trigger name="session">
+        <NativeTabs.Trigger.Label>Sessions</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="target" md="track_changes" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );
