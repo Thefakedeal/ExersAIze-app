@@ -3,10 +3,10 @@ import Svg, { Path, Polyline, Line, Circle } from 'react-native-svg';
 
 export interface IconProps {
   size?: number;
-  color?: string;
+  color: string;
 }
 
-export function ChevronLeftIcon({ size = 24, color = '#000000' }: IconProps) {
+export function ChevronLeftIcon({ size = 24, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -20,7 +20,7 @@ export function ChevronLeftIcon({ size = 24, color = '#000000' }: IconProps) {
   );
 }
 
-export function ChevronDownIcon({ size = 20, color = '#000000' }: IconProps) {
+export function ChevronDownIcon({ size = 20, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -34,7 +34,7 @@ export function ChevronDownIcon({ size = 20, color = '#000000' }: IconProps) {
   );
 }
 
-export function CheckIcon({ size = 16, color = '#000000' }: IconProps) {
+export function CheckIcon({ size = 16, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Polyline
@@ -48,7 +48,7 @@ export function CheckIcon({ size = 16, color = '#000000' }: IconProps) {
   );
 }
 
-export function SearchIcon({ size = 18, color = '#000000' }: IconProps) {
+export function SearchIcon({ size = 18, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="11" cy="11" r="7" stroke={color} strokeWidth={2} />
@@ -57,7 +57,7 @@ export function SearchIcon({ size = 18, color = '#000000' }: IconProps) {
   );
 }
 
-export function PlusIcon({ size = 20, color = '#000000' }: IconProps) {
+export function PlusIcon({ size = 20, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Line x1="12" y1="5" x2="12" y2="19" stroke={color} strokeWidth={2.2} strokeLinecap="round" />
@@ -66,7 +66,7 @@ export function PlusIcon({ size = 20, color = '#000000' }: IconProps) {
   );
 }
 
-export function ChevronRightIcon({ size = 24, color = '#000000' }: IconProps) {
+export function ChevronRightIcon({ size = 24, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -80,7 +80,7 @@ export function ChevronRightIcon({ size = 24, color = '#000000' }: IconProps) {
   );
 }
 
-export function CloseIcon({ size = 16, color = '#000000' }: IconProps) {
+export function CloseIcon({ size = 16, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Line x1="18" y1="6" x2="6" y2="18" stroke={color} strokeWidth={2} strokeLinecap="round" />
@@ -89,7 +89,7 @@ export function CloseIcon({ size = 16, color = '#000000' }: IconProps) {
   );
 }
 
-export function ChevronUpIcon({ size = 20, color = '#000000' }: IconProps) {
+export function ChevronUpIcon({ size = 20, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -103,7 +103,7 @@ export function ChevronUpIcon({ size = 20, color = '#000000' }: IconProps) {
   );
 }
 
-export function TrashIcon({ size = 18, color = '#000000' }: IconProps) {
+export function TrashIcon({ size = 18, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -117,7 +117,7 @@ export function TrashIcon({ size = 18, color = '#000000' }: IconProps) {
   );
 }
 
-export function ReplaceIcon({ size = 16, color = '#000000' }: IconProps) {
+export function ReplaceIcon({ size = 16, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -131,7 +131,7 @@ export function ReplaceIcon({ size = 16, color = '#000000' }: IconProps) {
   );
 }
 
-export function MinusIcon({ size = 16, color = '#000000' }: IconProps) {
+export function MinusIcon({ size = 16, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Line x1="5" y1="12" x2="19" y2="12" stroke={color} strokeWidth={2.2} strokeLinecap="round" />
@@ -139,7 +139,7 @@ export function MinusIcon({ size = 16, color = '#000000' }: IconProps) {
   );
 }
 
-export function PlayIcon({ size = 18, color = '#000000' }: IconProps) {
+export function PlayIcon({ size = 18, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M5 3l14 9-14 9V3z" fill={color} />
@@ -147,7 +147,7 @@ export function PlayIcon({ size = 18, color = '#000000' }: IconProps) {
   );
 }
 
-export function ClockIcon({ size = 18, color = '#000000' }: IconProps) {
+export function ClockIcon({ size = 18, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2} />
@@ -156,7 +156,7 @@ export function ClockIcon({ size = 18, color = '#000000' }: IconProps) {
   );
 }
 
-export function EditIcon({ size = 18, color = '#000000' }: IconProps) {
+export function EditIcon({ size = 18, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -170,7 +170,7 @@ export function EditIcon({ size = 18, color = '#000000' }: IconProps) {
   );
 }
 
-export function CheckCircleIcon({ size = 20, color = '#000000' }: IconProps) {
+export function CheckCircleIcon({ size = 20, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2} />
@@ -179,7 +179,7 @@ export function CheckCircleIcon({ size = 20, color = '#000000' }: IconProps) {
   );
 }
 
-export function DumbbellIcon({ size = 24, color = '#000000' }: IconProps) {
+export function DumbbellIcon({ size = 24, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Line x1="9" y1="12" x2="15" y2="12" stroke={color} strokeWidth={2} strokeLinecap="round" />
@@ -191,7 +191,7 @@ export function DumbbellIcon({ size = 24, color = '#000000' }: IconProps) {
   );
 }
 
-export function ListCheckIcon({ size = 24, color = '#000000' }: IconProps) {
+export function ListCheckIcon({ size = 24, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Polyline
@@ -222,7 +222,7 @@ export function ListCheckIcon({ size = 24, color = '#000000' }: IconProps) {
   );
 }
 
-export function NoteIcon({ size = 16, color = '#000000' }: IconProps) {
+export function NoteIcon({ size = 16, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path

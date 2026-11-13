@@ -20,7 +20,7 @@ export function Header({onBackPress, title, rightAction}: Props) {
           styles.headerContainer,
           {
             paddingTop: Math.max(insets.top, Spacing.two),
-            borderBottomColor: theme.separator,
+            borderBottomColor: theme.border,
           },
         ]}>
         <TouchableOpacity

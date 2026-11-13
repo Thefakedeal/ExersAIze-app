@@ -32,19 +32,13 @@ export function ExerciseItemComponent({ exercise }: Props) {
                             style={[
                                 styles.typeBadge,
                                 {
-                                    backgroundColor:
-                                        exercise.type === 'Bodyweight'
-                                            ? theme.secondaryLight
-                                            : theme.primaryLight,
+                                    backgroundColor: theme.primaryLight,
                                 },
                             ]}>
                             <ThemedText
                                 type="code"
                                 style={{
-                                    color:
-                                        exercise.type === 'Bodyweight'
-                                            ? theme.secondary
-                                            : theme.primary,
+                                    color: theme.primary,
                                     fontWeight: '700',
                                 }}>
                                 {exercise.type}

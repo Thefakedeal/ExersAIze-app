@@ -128,7 +128,6 @@ export function WeeklyStepsBarChart({
             styles.goalBadge,
             {
               backgroundColor: theme.primary,
-              borderColor: theme.primaryHover,
             },
           ]}
         >
@@ -194,9 +193,7 @@ export function WeeklyStepsBarChart({
             barWidth={barWidth}
             maxValue={chartMaxSteps}
             noOfSections={7}
-            yAxisLabelTexts={[]}
             hideYAxisText
-            hideRules={false}
             rulesColor={theme.border}
             xAxisColor={theme.border}
             yAxisColor="transparent"
@@ -270,7 +267,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    borderWidth: 1,
   },
   statsRow: {
     flexDirection: 'row',

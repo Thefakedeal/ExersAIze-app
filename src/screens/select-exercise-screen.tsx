@@ -155,19 +155,13 @@ export function SelectExerciseScreen({
                           style={[
                             styles.typeBadge,
                             {
-                              backgroundColor:
-                                item.type === 'Bodyweight'
-                                  ? theme.secondaryLight
-                                  : theme.primaryLight,
+                              backgroundColor: theme.primaryLight,
                             },
                           ]}>
                           <ThemedText
                             type="code"
                             style={{
-                              color:
-                                item.type === 'Bodyweight'
-                                  ? theme.secondary
-                                  : theme.primary,
+                              color: theme.primary,
                               fontWeight: '700',
                             }}>
                             {item.type}

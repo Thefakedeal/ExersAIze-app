@@ -67,13 +67,10 @@ export function DaySelectorRow({
                         borderColor: theme.primary,
                       },
                     ]
-                  : [
-                      styles.tabButtonInactive,
-                      {
-                        backgroundColor: theme.backgroundSecondary,
-                        borderColor: 'transparent',
-                      },
-                    ],
+                  : {
+                      backgroundColor: theme.backgroundSecondary,
+                      borderColor: 'transparent',
+                    },
                 isDisabled && styles.tabButtonDisabled,
               ]}>
               <ThemedText
@@ -84,7 +81,7 @@ export function DaySelectorRow({
                     color: isSelected
                       ? theme.textOnPrimary
                       : isDisabled
-                        ? theme.textDisabled
+                        ? theme.textTertiary
                         : theme.textSecondary,
                   },
                 ]}>
@@ -99,7 +96,7 @@ export function DaySelectorRow({
                     color: isSelected
                       ? theme.textOnPrimary
                       : isDisabled
-                        ? theme.textDisabled
+                        ? theme.textTertiary
                         : theme.text,
                   },
                 ]}>
@@ -141,21 +138,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.one,
   },
-  headerTitleGroup: {
-    gap: Spacing.half,
-  },
-  activeDayTitle: {
-    fontSize: 15,
-  },
-  todayBadge: {
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.half,
-    borderRadius: Spacing.two,
-  },
-  todayBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
   tabRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -172,13 +154,11 @@ const styles = StyleSheet.create({
     minHeight: 58,
   },
   tabButtonActive: {
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.12,
     shadowRadius: 2,
     elevation: 2,
   },
-  tabButtonInactive: {},
   tabButtonDisabled: {
     opacity: 0.35,
   },

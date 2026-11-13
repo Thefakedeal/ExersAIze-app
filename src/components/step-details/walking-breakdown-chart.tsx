@@ -121,7 +121,7 @@ export function WalkingBreakdownChart({ day = new Date() }: WalkingBreakdownChar
           ? theme.accent
           : hasSteps
             ? theme.primary
-            : theme.borderStrong,
+            : theme.border,
         dataPointRadius: isPeak ? 5 : hasSteps ? 3.5 : 2,
         hour: record.hour,
       };
@@ -143,8 +143,6 @@ export function WalkingBreakdownChart({ day = new Date() }: WalkingBreakdownChar
             {formattedDate}
           </ThemedText>
         </View>
-
-       
       </View>
 
       {/* Stats Row */}
@@ -300,12 +298,6 @@ const styles = StyleSheet.create({
   headerText: {
     gap: 2,
   },
-  peakBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -330,7 +322,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 3,
@@ -342,11 +333,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: Spacing.three,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
 });
 

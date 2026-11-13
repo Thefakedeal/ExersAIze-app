@@ -1,23 +1,23 @@
 import { useMemo } from 'react';
-import { StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import quotes from '@/assets/quotes.json';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
 import { ThemedText } from './themed-text';
 
 export function QuoteCard() {
-  const scheme = useColorScheme();
-  const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
+  const theme = useTheme();
 
   const quote = useMemo(() => quotes[Math.floor(Math.random() * quotes.length)], []);
 
   return (
-    <View  style={[styles.container, { borderColor: 'transparent' }]}>
+    <View style={styles.container}>
       <ThemedText style={[styles.quoteText, { fontFamily: 'serif' }]}>
         “{quote.quote}”
       </ThemedText>
-      <ThemedText type="small" style={[styles.authorText, { color: actualColors.textSecondary }]}>
+      <ThemedText type="small" style={[styles.authorText, { color: theme.textSecondary }]}>
         — {quote.author}
       </ThemedText>
     </View>
@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     borderRadius: 12,
     borderWidth: 1,
+    borderColor: 'transparent',
     gap: Spacing.two,
   },
   quoteText: {

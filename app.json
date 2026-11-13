@@ -47,9 +47,13 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#718B75",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 76,
+          "dark": {
+            "backgroundColor": "#1C211D",
+            "image": "./assets/images/splash-icon.png"
+          }
         }
       ],
       "react-native-health-connect",

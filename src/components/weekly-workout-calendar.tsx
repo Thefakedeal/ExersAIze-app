@@ -1,7 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Colors, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { ThemedText } from './themed-text';
@@ -36,26 +35,24 @@ export function WeeklyWorkoutCalendar({
   workedOutCount = weekDays.filter((d) => d.status === 'worked').length,
   totalWorkoutDays = weekDays.filter((d) => d.status === 'worked' || d.status === 'missed' || d.status === 'upcoming').length,
 }: WeeklyWorkoutCalendarProps) {
-  const scheme = useColorScheme();
-  const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
   const theme = useTheme();
   const todaysdate = 4; // for now
   const getDayStyle = (status: DayStatus) => {
     switch (status) {
       case 'worked':
         return {
-          backgroundColor: actualColors.primaryLight,
-          borderColor: actualColors.primaryLight,
+          backgroundColor: theme.primaryLight,
+          borderColor: theme.primaryLight,
         };
       case 'upcoming':
         return {
           backgroundColor: 'transparent',
-          borderColor: actualColors.primaryLight,
+          borderColor: theme.primaryLight,
         };
       case 'missed':
         return {
           backgroundColor: 'transparent',
-          borderColor: actualColors.error,
+          borderColor: theme.error,
         };
       case 'rest':
         return {
@@ -73,23 +70,23 @@ export function WeeklyWorkoutCalendar({
   const getDayTextColor = (status: DayStatus) => {
     switch (status) {
       case 'worked':
-        return actualColors.primary;
+        return theme.primary;
       case 'upcoming':
-        return actualColors.primary;
+        return theme.primary;
       case 'missed':
-        return actualColors.error;
+        return theme.error;
       case 'rest':
-        return actualColors.textSecondary;
+        return theme.textSecondary;
       default:
-        return actualColors.text;
+        return theme.text;
     }
   };
 
   return (
-    <ThemedView type="backgroundElement" style={[styles.container, { borderColor: actualColors.border }]}>
+    <ThemedView type="backgroundElement" style={[styles.container, { borderColor: theme.border }]}>
       <View style={styles.header}>
         <ThemedText type="subtitle">This Week</ThemedText>
-        <ThemedText type="small" style={{ color: actualColors.textSecondary }}>
+        <ThemedText type="small" style={{ color: theme.textSecondary }}>
           {workedOutCount} / {totalWorkoutDays} days worked out
         </ThemedText>
       </View>
@@ -101,7 +98,7 @@ export function WeeklyWorkoutCalendar({
           return (
             <View key={index} style={styles.dayColumn}>
               
-              <ThemedText type="small" style={[styles.dayLabel, {color: (day.date === todaysdate) ? actualColors.primary : actualColors.textSecondary,fontWeight: (day.date === todaysdate)? 'bold' : 'normal',}]}>
+              <ThemedText type="small" style={[styles.dayLabel, {color: (day.date === todaysdate) ? theme.primary : theme.textSecondary,fontWeight: (day.date === todaysdate)? 'bold' : 'normal',}]}>
                 {day.day}
               </ThemedText>
               <View style={[styles.dayCircle, dayStyle]}>

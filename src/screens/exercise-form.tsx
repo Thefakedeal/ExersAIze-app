@@ -217,8 +217,7 @@ export function ExerciseForm({
                     style={[
                       styles.typeIndicator,
                       {
-                        backgroundColor:
-                          type === 'Bodyweight' ? theme.secondary : theme.primary,
+                        backgroundColor: theme.primary,
                       },
                     ]}
                   />
@@ -247,6 +246,7 @@ export function ExerciseForm({
                         }}
                         style={[
                           styles.dropdownItem,
+                          { borderBottomColor: theme.border },
                           isSelected && { backgroundColor: theme.backgroundSelected },
                         ]}>
                         <View style={styles.dropdownValueRow}>
@@ -254,8 +254,7 @@ export function ExerciseForm({
                             style={[
                               styles.typeIndicator,
                               {
-                                backgroundColor:
-                                  t === 'Bodyweight' ? theme.secondary : theme.primary,
+                                backgroundColor: theme.primary,
                               },
                             ]}
                           />
@@ -516,7 +515,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(150,150,150,0.15)',
   },
   searchField: {
     marginBottom: Spacing.two,

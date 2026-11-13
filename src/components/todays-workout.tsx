@@ -5,8 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
-import { Colors, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type WorkoutType = 'strength' | 'cardio';
@@ -26,8 +25,6 @@ export function TodaysWorkout({
   bodyPart = 'Full Body',
   onPress,
 }: TodaysWorkoutProps) {
-  const scheme = useColorScheme();
-  const actualColors = scheme === 'dark' ? Colors.dark : Colors.light;
   const theme = useTheme();
 
   const handlePress = () => {
@@ -42,7 +39,7 @@ export function TodaysWorkout({
     if (type === 'cardio') {
       return (
         <SymbolView
-          tintColor={actualColors.primary}
+          tintColor={theme.primary}
           name={{ ios: 'figure.run', android: 'directions_run', web: 'directions_run' }}
           size={24}
         />
@@ -51,7 +48,7 @@ export function TodaysWorkout({
     // strength/weight training
     return (
       <SymbolView
-        tintColor={actualColors.primary}
+        tintColor={theme.primary}
         name={{ ios: 'dumbbell', android: 'fitness_center', web: 'fitness_center' }}
         size={24}
       />
@@ -60,9 +57,9 @@ export function TodaysWorkout({
 
   return (
     <Pressable onPress={handlePress} style={({ pressed }) => [pressed && styles.pressed]}>
-      <ThemedView type="backgroundElement" style={[styles.container, { borderColor: actualColors.border }]}>
+      <ThemedView type="backgroundElement" style={[styles.container, { borderColor: theme.border }]}>
         <View style={styles.leftSection}>
-          <View style={[styles.iconContainer, { backgroundColor: actualColors.primaryLight }]}>
+          <View style={[styles.iconContainer, { backgroundColor: theme.primaryLight }]}>
             {getIcon()}
           </View>
           <View style={styles.infoContainer}>
@@ -71,13 +68,13 @@ export function TodaysWorkout({
             </ThemedText>
             <View style={styles.detailsRow}>
               {type === 'cardio' && duration && (
-                <ThemedText type="small" style={{ color: actualColors.textSecondary }}>
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>
                   {duration}
                 </ThemedText>
               )}
               {type === 'strength' && bodyPart && (
-                <View style={[styles.badge, { backgroundColor: actualColors.primaryLight, borderColor: actualColors.primaryLight }]}>
-                  <ThemedText type="smallBold" style={{ color: actualColors.primary, fontSize: 12 }}>
+                <View style={[styles.badge, { backgroundColor: theme.primaryLight, borderColor: theme.primaryLight }]}>
+                  <ThemedText type="smallBold" style={{ color: theme.primary, fontSize: 12 }}>
                     {bodyPart}
                   </ThemedText>
                 </View>
@@ -86,7 +83,7 @@ export function TodaysWorkout({
           </View>
         </View>
         <SymbolView
-          tintColor={actualColors.textSecondary}
+          tintColor={theme.textSecondary}
           name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
           size={20}
         />

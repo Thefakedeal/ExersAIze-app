@@ -21,7 +21,6 @@ export function StepTracker({
   goalSteps = 10000,
 }: StepTrackerProps = {}) {
   const theme = useTheme();
-  const actualColors = theme;
   const { steps, loading} = useTodaySteps();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { number: randomSteps } = useRandomNumber({
@@ -53,7 +52,7 @@ export function StepTracker({
     <>
       <ThemedView
         type="backgroundElement"
-        style={[styles.container, { borderColor: actualColors.border }]}>
+        style={[styles.container, { borderColor: theme.border }]}>
         <View style={styles.header}>
           <ThemedText type="subtitle">Steps</ThemedText>
 
@@ -62,17 +61,17 @@ export function StepTracker({
             onPress={() => setIsDetailsOpen(true)}
             style={[
               styles.historyLink,
-              { backgroundColor: actualColors.backgroundSelected },
+              { backgroundColor: theme.backgroundSelected },
             ]}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="View weekly steps and breakdown">
             <ThemedText
               type="smallBold"
-              style={{ color: actualColors.primary, fontSize: 13 }}>
+              style={{ color: theme.primary, fontSize: 13 }}>
               Weekly
             </ThemedText>
-            <ChevronRightIcon size={14} color={actualColors.primary} />
+            <ChevronRightIcon size={14} color={theme.primary} />
           </TouchableOpacity>
         </View>
 
@@ -85,13 +84,13 @@ export function StepTracker({
             </ThemedText>
             <ThemedText
               type="small"
-              style={{ color: actualColors.textSecondary, marginTop: Spacing.one }}>
+              style={{ color: theme.textSecondary, marginTop: Spacing.one }}>
               / {formatNumber(goalSteps)} steps
             </ThemedText>
           </View>
         </View>
 
-        <ThemedText type="small" style={{ color: actualColors.textSecondary }}>
+        <ThemedText type="small" style={{ color: theme.textSecondary }}>
             {/* Show Progress */}
             {loading? randomProgress.toFixed(2): progress.toFixed(2)} % of goal
         </ThemedText>
@@ -150,7 +149,6 @@ function describeArc(x: number, y: number, radius: number, startAngle: number, e
 
 export default function Arch({progress=0}: ArchProps) {
   const theme = useTheme();
-  const actualColors = theme;
   const size = 220;
   const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;
@@ -167,14 +165,14 @@ export default function Arch({progress=0}: ArchProps) {
    <Svg width={size} height={size}>
             <Path
               d={trackPath}
-              stroke={actualColors.separator}
+              stroke={theme.border}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               fill="none"
             />
             <Path
               d={progressPath}
-              stroke={actualColors.primary}
+              stroke={theme.primary}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               fill="none"

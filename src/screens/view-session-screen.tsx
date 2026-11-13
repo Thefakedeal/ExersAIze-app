@@ -297,7 +297,9 @@ export function ViewSessionScreen({ id }: ViewSessionScreenProps) {
                   {/* Sets Table */}
                   <View style={styles.setsTable}>
                     {ex.sets?.map((set, sIdx) => (
-                      <View key={set.id} style={styles.setRow}>
+                      <View
+                        key={set.id}
+                        style={[styles.setRow, { borderBottomColor: theme.border }]}>
                         <View style={styles.setMainInfo}>
                           <View
                             style={[
@@ -501,7 +503,6 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingVertical: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(150, 150, 150, 0.15)',
   },
   setMainInfo: {
     flexDirection: 'row',

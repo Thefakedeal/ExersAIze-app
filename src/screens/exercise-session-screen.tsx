@@ -474,7 +474,7 @@ export function ExerciseSessionScreen({
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <ThemedText
               type="smallBold"
-              themeColor={endTime || !isInitialized ? 'textDisabled' : 'primary'}>
+              themeColor={endTime || !isInitialized ? 'textTertiary' : 'primary'}>
               Finish Workout
             </ThemedText>
           </TouchableOpacity>
@@ -507,7 +507,7 @@ export function ExerciseSessionScreen({
                     value={title}
                     onChangeText={setTitle}
                     placeholder="e.g. Upper Body Strength, Leg Day"
-                    placeholderTextColor={theme.textDisabled}
+                    placeholderTextColor={theme.textTertiary}
                     style={[styles.titleInput, { color: theme.text }]}
                   />
                 </ThemedView>
@@ -522,7 +522,7 @@ export function ExerciseSessionScreen({
                     value={description}
                     onChangeText={setDescription}
                     placeholder="e.g. Focus on chest hypertrophy, good energy today"
-                    placeholderTextColor={theme.textDisabled}
+                    placeholderTextColor={theme.textTertiary}
                     multiline
                     style={[styles.descriptionInput, { color: theme.text }]}
                   />
@@ -741,7 +741,9 @@ export function ExerciseSessionScreen({
         transparent
         animationType="fade"
         onRequestClose={handleCloseTimePicker}>
-        <Pressable style={styles.pickerBackdrop} onPress={handleCloseTimePicker}>
+        <Pressable
+          style={[styles.pickerBackdrop, { backgroundColor: theme.backgroundOverlay }]}
+          onPress={handleCloseTimePicker}>
           <Pressable
             style={[styles.pickerSheet, { backgroundColor: theme.backgroundElement }]}
             onPress={() => {}}>
@@ -901,7 +903,6 @@ const styles = StyleSheet.create({
   pickerBackdrop: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   pickerSheet: {
     padding: Spacing.four,

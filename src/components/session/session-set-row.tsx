@@ -52,12 +52,12 @@ function MetricInput({
         onChangeText={handleChange}
         keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
         placeholder={referenceValue != null ? String(referenceValue) : '-'}
-        placeholderTextColor={theme.textDisabled}
+        placeholderTextColor={theme.textTertiary}
         style={[
           styles.metricInput,
           {
-            backgroundColor: theme.inputBackground,
-            borderColor: theme.inputBorder,
+            backgroundColor: theme.backgroundElement,
+            borderColor: theme.border,
             color: theme.text,
           },
         ]}
@@ -81,6 +81,7 @@ export function SessionSetRow({
 }: SessionSetRowProps) {
   const theme = useTheme();
   const [showNoteInput, setShowNoteInput] = useState(Boolean(set.note && set.note.length > 0));
+  const hasNote = Boolean(set.note?.trim());
 
   const { hasTime, hasDistance, hasReps, showWeight } = getMetricVisibility(
     trackMetrics,
@@ -98,7 +99,7 @@ export function SessionSetRow({
             {
               backgroundColor: set.completed
                 ? theme.backgroundSelected
-                : theme.backgroundTertiary,
+                : theme.backgroundSecondary,
             },
           ]}>
           <ThemedText
@@ -156,20 +157,10 @@ export function SessionSetRow({
           style={[
             styles.iconButton,
             {
-              backgroundColor:
-                set.note && set.note.trim().length > 0
-                  ? theme.primaryLight
-                  : theme.backgroundSecondary,
+              backgroundColor: hasNote ? theme.primaryLight : theme.backgroundSecondary,
             },
           ]}>
-          <NoteIcon
-            size={15}
-            color={
-              set.note && set.note.trim().length > 0
-                ? theme.primary
-                : theme.textSecondary
-            }
-          />
+          <NoteIcon size={15} color={hasNote ? theme.primary : theme.textSecondary} />
         </TouchableOpacity>
 
         {/* Completion indicator — set automatically from the tracked values */}
@@ -199,7 +190,7 @@ export function SessionSetRow({
             value={set.note ?? ''}
             onChangeText={(text) => onUpdateSet({ note: text })}
             placeholder="How did this set feel? (e.g. easy, RPE 8, sore)"
-            placeholderTextColor={theme.textDisabled}
+            placeholderTextColor={theme.textTertiary}
             style={[styles.noteInput, { color: theme.text }]}
             multiline={false}
           />

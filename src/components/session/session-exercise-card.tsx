@@ -199,7 +199,7 @@ export function SessionExerciseCard({
       </View>
 
       {/* Sets Column Header */}
-      <View style={styles.tableHeaderRow}>
+      <View style={[styles.tableHeaderRow, { borderBottomColor: theme.border }]}>
         <ThemedText type="code" themeColor="textSecondary" style={styles.colSet}>
           SET
         </ThemedText>
@@ -319,7 +319,6 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.one,
     paddingBottom: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(150, 150, 150, 0.2)',
   },
   colSet: {
     width: 26,
