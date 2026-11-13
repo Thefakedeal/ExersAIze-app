@@ -48,7 +48,6 @@ export const useHourlyStepRecord = ({ day }: UseDailyStepRecordOptions) => {
                     // startof-day and end-of-day for the current date
                     const startTime = startOfHour(hour);
                     const endTime = endOfHour(hour);
-                    console.log(startTime, endTime);
                     const stepsResult = await androidHealthService.getSteps(startTime, endTime);
                     return {
                         hour: hour.getHours(),

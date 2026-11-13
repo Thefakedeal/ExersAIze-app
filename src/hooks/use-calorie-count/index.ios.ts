@@ -37,7 +37,6 @@ export function useCalorieCount(
       setCalories(caloriesResult.value);
       setError(null);
     } catch (err) {
-      console.log(err);
       setError("Failed to fetch calories");
     } finally {
       setLoading(false);
