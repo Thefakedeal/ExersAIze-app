@@ -1,23 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import {
-  FlatList,
-  Modal,
-  Platform,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, Modal, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CheckIcon, CloseIcon, SearchIcon } from '@/components/ui/icons';
+import { CheckIcon } from '@/components/ui/icons';
+import { SearchField } from '@/components/ui/search-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useExercises } from '@/hooks/use-exercises';
 import { useTheme } from '@/hooks/use-theme';
 import { ExerciseItem, ExerciseType } from '@/types/exercise';
+import { matchesExerciseQuery } from '@/utils/exercise-filter';
 
 type Props = {
   visible?: boolean;
@@ -46,53 +40,27 @@ export function SelectExerciseScreen({
     return [...customExercises, ...defaultExercises];
   }, [customExercises, defaultExercises]);
 
-  const filteredExercises = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return allExercises.filter((ex) => {
-      if (selectedType !== 'All' && ex.type !== selectedType) {
-        return false;
-      }
-      if (!q) return true;
-      return (
-        ex.name.toLowerCase().includes(q) ||
-        ex.type.toLowerCase().includes(q) ||
-        ex.categories.some((c) => c.toLowerCase().includes(q))
-      );
-    });
-  }, [allExercises, searchQuery, selectedType]);
+  const filteredExercises = useMemo(
+    () =>
+      allExercises.filter(
+        (ex) =>
+          (selectedType === 'All' || ex.type === selectedType) &&
+          matchesExerciseQuery(ex, searchQuery)
+      ),
+    [allExercises, searchQuery, selectedType]
+  );
 
   const content = (
     <ThemedView style={styles.container}>
       <Header onBackPress={onClose} title={title} />
 
       <View style={styles.innerContainer}>
-        {/* Search Input */}
-        <View
-          style={[
-            styles.searchContainer,
-            {
-              backgroundColor: theme.backgroundElement,
-              borderColor: theme.border,
-            },
-          ]}>
-          <SearchIcon size={18} color={theme.textSecondary} />
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search exercises or muscles..."
-            placeholderTextColor={theme.textSecondary}
-            style={[styles.searchInput, { color: theme.text }]}
-            autoCorrect={false}
-            returnKeyType="search"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setSearchQuery('')}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <CloseIcon size={16} color={theme.textSecondary} />
-            </TouchableOpacity>
-          )}
-        </View>
+        <SearchField
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search exercises or muscles..."
+          style={styles.searchField}
+        />
 
         {/* Filter Pills */}
         <View style={styles.typeFilterRow}>
@@ -277,20 +245,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.three,
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Platform.select({ ios: 10, default: 8 }),
-    gap: Spacing.two,
+  searchField: {
     marginBottom: Spacing.three,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    padding: 0,
   },
   typeFilterRow: {
     flexDirection: 'row',

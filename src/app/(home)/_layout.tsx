@@ -8,6 +8,7 @@ export default function HomeLayout() {
       }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="routine" />
+      <Stack.Screen name="exercise" />
     </Stack>
   );
 }

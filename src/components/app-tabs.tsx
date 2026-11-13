@@ -24,11 +24,6 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Sessions</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="target" md="track_changes" />
       </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="exercise">
-        <NativeTabs.Trigger.Label>Exercise</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="dumbbell" md="fitness_center" />
-      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

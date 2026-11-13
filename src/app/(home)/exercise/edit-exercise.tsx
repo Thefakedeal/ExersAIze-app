@@ -4,7 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { EditExerciseScreen } from '@/screens/edit-exercise-screen';
 import { useExercises } from '@/hooks/use-exercises';
 
-export default function ViewExercisePage() {
+export default function EditExercisePage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { customExercises, loading } = useExercises();
 

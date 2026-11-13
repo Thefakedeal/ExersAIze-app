@@ -108,7 +108,7 @@ export function ExerciseItemComponent({ exercise }: Props) {
         return (
             <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => router.push(`/exercise/view-exercise?id=${exercise.id}`)}>
+                onPress={() => router.push(`/exercise/edit-exercise?id=${exercise.id}`)}>
                 {content}
             </TouchableOpacity>
         )

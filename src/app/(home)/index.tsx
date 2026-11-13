@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import { Platform, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { QuoteCard } from '@/components/quote-card';
@@ -11,14 +11,15 @@ import { TodaysWorkout } from '@/components/todays-workout';
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { WebBadge } from '@/components/web-badge';
 import { WeeklyWorkoutCalendar } from '@/components/weekly-workout-calendar';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
+const NAV_ROWS: { label: string; href: Href }[] = [
+  { label: 'View Routines', href: '/routine' },
+  { label: 'View Exercises', href: '/exercise' },
+];
+
 export default function HomeScreen() {
-  const router = useRouter();
-  const theme = useTheme();
-
-
   return (
     <ThemedView style={styles.container}>
       <SafeArea>
@@ -33,13 +34,9 @@ export default function HomeScreen() {
 
           <StartWorkoutCard />
 
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push('/routine')}
-            style={[styles.sessionsRow, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
-            <ThemedText type="default" style={styles.sessionsRowTitle}>View Routines</ThemedText>
-            <ChevronRightIcon size={18} color={theme.textSecondary} />
-          </TouchableOpacity>
+          {NAV_ROWS.map((row) => (
+            <NavRow key={row.label} label={row.label} href={row.href} />
+          ))}
 
           <ThemedView style={styles.sectionHeader}>
             <ThemedText type="subtitle">{"Today's Workout"}</ThemedText>
@@ -69,15 +66,24 @@ export default function HomeScreen() {
   );
 }
 
+function NavRow({ label, href }: { label: string; href: Href }) {
+  const router = useRouter();
+  const theme = useTheme();
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => router.push(href)}
+      style={[styles.sessionsRow, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
+      <ThemedText type="default" style={styles.sessionsRowTitle}>{label}</ThemedText>
+      <ChevronRightIcon size={18} color={theme.textSecondary} />
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-    maxWidth: MaxContentWidth,
-    alignSelf: 'center',
-    width: '100%',
   },
   scrollContent: {
     gap: Spacing.four,

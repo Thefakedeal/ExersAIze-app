@@ -13,10 +13,7 @@ export function EditExerciseScreen({ exercise }: Props) {
 
   const handleSubmit = async (values: ExerciseFormValues) => {
     await updateCustomExercise(exercise.id, {
-      name: values.name,
-      type: values.type,
-      categories: values.categories,
-      trackMetrics: values.trackMetrics,
+      ...values,
       note: values.note || undefined,
     });
   };

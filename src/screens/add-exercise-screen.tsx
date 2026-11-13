@@ -3,13 +3,7 @@ import { ExerciseForm, ExerciseFormValues } from './exercise-form';
 
 export function AddExerciseScreen() {
   const handleSubmit = async (values: ExerciseFormValues) => {
-    await saveCustomExercise({
-      name: values.name,
-      type: values.type,
-      categories: values.categories,
-      trackMetrics: values.trackMetrics,
-      note: values.note || undefined,
-    });
+    await saveCustomExercise({ ...values, note: values.note || undefined });
   };
 
   return (
