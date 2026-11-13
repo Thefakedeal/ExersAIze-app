@@ -1,56 +1,200 @@
-# Welcome to your Expo app 👋
+# ExersAIze 💪
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Your workouts. Your progress. Your consistency.**
 
-## Get started
+ExersAIze is a mobile fitness and workout tracking application designed to make managing workouts, building routines, and monitoring fitness progress simpler.
 
-1. Install dependencies
+Whether you're following a structured training program or creating your own workouts, ExersAIze helps you organize your training and keep track of your activity in one place.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## ✨ Features
 
-   ```bash
-   npx expo start
-   ```
+### 🏋️ Workout Tracking
 
-In the output, you'll find options to open the app in a
+- Create and track workout sessions.
+- Log exercises, sets, reps, weight, time, and distance.
+- Keep a history of completed workouts.
+- Track individual exercise performance.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 📋 Custom Workout Routines
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Create personalized workout routines.
+- Organize exercises into structured training plans.
+- Reuse saved routines when starting new sessions.
+- Support different training styles, including strength and bodyweight exercises.
 
-## Get a fresh project
+### 📊 Progress & Analytics
 
-When you're ready, run:
+- Visualize workout activity and training history.
+- Monitor weekly workout consistency.
+- Track exercise performance over time.
+- View fitness activity through interactive charts.
+
+### 👟 Daily Activity Tracking
+
+- Track daily steps.
+- View weekly step activity.
+- Monitor activity trends over time.
+- Integrate with native health platforms.
+
+### ❤️ Health Platform Integration
+
+- Android Health Connect integration.
+- Apple HealthKit integration.
+- Access supported health and activity data with user permission.
+
+### 🎨 Customizable Experience
+
+- Clean, minimal interface.
+- Theme customization.
+- Consistent design across the application.
+
+---
+
+## 🛠️ Tech Stack
+
+ExersAIze is built using modern mobile development technologies.
+
+| Technology                 | Purpose                                    |
+| -------------------------- | ------------------------------------------ |
+| React Native               | Cross-platform mobile development          |
+| Expo                       | Development and native application tooling |
+| TypeScript                 | Type safety and maintainable code          |
+| Expo Router                | File-based navigation                      |
+| React Native Gifted Charts | Data visualization                         |
+| AsyncStorage               | Local data persistence                     |
+| React Native Reanimated    | Animations                                 |
+| Health Connect             | Android health integration                 |
+| Apple HealthKit            | iOS health integration                     |
+| date-fns                   | Date and time utilities                    |
+
+---
+
+## 📱 Platforms
+
+| Platform | Support             |
+| -------- | ------------------- |
+| Android  | Supported           |
+| iOS      | Supported           |
+| Web      | Development support |
+
+_Native health integrations require the corresponding platform and permissions._
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- Node.js
+- npm
+- Git
+- Android Studio (for Android development)
+- Xcode (for iOS development on macOS)
+
+### 1. Clone the Repository
 
 ```bash
-npm run reset-project
+git clone https://github.com/Thefakedeal/ExersAIze-app.git
+
+cd ExersAIze-app
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+### 2. Install Dependencies
 
-### Other setup steps
+```bash
+npm install
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### 3. Start the Development Server
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 4. Run on Android
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run android
+```
 
-## Join the community
+### 5. Run on iOS
 
-Join our community of developers creating universal apps.
+```bash
+npm run ios
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+_Note: Native development builds are required for features that depend on native modules, including Health Connect and HealthKit._
+
+---
+
+## 📂 Project Structure
+
+The application follows a feature-oriented structure.
+
+```text
+ExersAIze-app/
+│
+├── assets/                 # Images, icons and fonts
+│
+├── src/
+│   ├── app/                # Expo Router screens and navigation
+│   ├── components/         # Reusable UI components
+│   ├── constants/          # Application constants and theme
+│   ├── hooks/              # Custom React hooks
+│   └── ...                 # Feature modules and supporting code
+│
+├── scripts/                # Development scripts
+├── .agents/                # Agent skills
+├── .opencode/              # AI coding agent configuration
+│
+├── app.json                # Expo configuration
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+---
+
+## 🗺️ Roadmap
+
+ExersAIze is an evolving project. Some areas being explored for future development include:
+
+- AI-assisted workout recommendations.
+- More detailed exercise progression analytics.
+- Enhanced fitness insights and reporting.
+- Additional health data integrations.
+- Improved workout planning and personalization.
+
+---
+
+## 🤝 Contributing
+
+Suggestions, bug reports, and contributions are welcome.
+
+If you have an idea for improving ExersAIze, feel free to open an issue or submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 👨‍💻 Developer
+
+**Samir Shrestha**
+
+- GitHub: [@Thefakedeal](https://github.com/Thefakedeal)
+- LinkedIn: [Samir Shrestha](https://linkedin.com/in/samir-shrestha-16050a210)
+- Website: [samirshrestha.info.np](https://samirshrestha.info.np)
+
+---
+
+<p align="center">
+  Built with ❤️ and a passion for fitness and technology.
+</p>
