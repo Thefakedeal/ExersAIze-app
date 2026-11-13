@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path, Polyline, Line, Circle } from 'react-native-svg';
 
-interface IconProps {
+export interface IconProps {
   size?: number;
   color?: string;
 }
@@ -175,6 +175,49 @@ export function CheckCircleIcon({ size = 20, color = '#000000' }: IconProps) {
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2} />
       <Polyline points="8 12 11 15 16 9" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function DumbbellIcon({ size = 24, color = '#000000' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Line x1="9" y1="12" x2="15" y2="12" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Line x1="7" y1="9" x2="7" y2="15" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+      <Line x1="17" y1="9" x2="17" y2="15" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+      <Line x1="4" y1="7" x2="4" y2="17" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+      <Line x1="20" y1="7" x2="20" y2="17" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function ListCheckIcon({ size = 24, color = '#000000' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Polyline
+        points="3 7 4.5 8.5 7 6.5"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Line x1="10" y1="7" x2="21" y2="7" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Polyline
+        points="3 12 4.5 13.5 7 11.5"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Line x1="10" y1="12" x2="21" y2="12" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Polyline
+        points="3 17 4.5 18.5 7 16.5"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Line x1="10" y1="17" x2="21" y2="17" stroke={color} strokeWidth={2} strokeLinecap="round" />
     </Svg>
   );
 }
