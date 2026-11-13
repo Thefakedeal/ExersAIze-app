@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -13,9 +14,30 @@ import {
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { TrackMetric } from '@/types/exercise';
-import { SessionExercise, SessionSet } from '@/types/session';
+import { ReferenceMode, SessionExercise, SessionSet } from '@/types/session';
+import {
+  ExerciseReference,
+  describeReferenceSet,
+  getReferenceSetForRow,
+} from '@/utils/exercise-history';
 import { getMetricVisibility } from '@/utils/session-metrics';
 import { SessionSetRow } from './session-set-row';
+
+function formatReferenceLabel(reference: ExerciseReference | null, mode: ReferenceMode) {
+  if (!reference) {
+    return mode === 'pr' ? 'No PR recorded' : 'No previous data';
+  }
+
+  const date = format(new Date(reference.date), 'MMM d');
+
+  if (reference.mode === 'pr') {
+    return `PR · ${describeReferenceSet(reference.sets[0])} · ${date}`;
+  }
+
+  return `Last · ${reference.sets.length} ${
+    reference.sets.length === 1 ? 'set' : 'sets'
+  } · ${date}`;
+}
 
 function isSetComplete(set: SessionSet, metrics: TrackMetric[]) {
   return metrics.every((metric) => {
@@ -36,6 +58,8 @@ interface SessionExerciseCardProps {
   index: number;
   isFirst: boolean;
   isLast: boolean;
+  reference: ExerciseReference | null;
+  referenceMode: ReferenceMode;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onReplace: () => void;
@@ -48,6 +72,8 @@ export function SessionExerciseCard({
   index,
   isFirst,
   isLast,
+  reference,
+  referenceMode,
   onMoveUp,
   onMoveDown,
   onReplace,
@@ -161,6 +187,17 @@ export function SessionExerciseCard({
         </View>
       </View>
 
+      {/* Reference Hint */}
+      <View style={styles.referenceRow}>
+        <ThemedText
+          type="code"
+          themeColor="textSecondary"
+          numberOfLines={1}
+          style={styles.referenceText}>
+          {formatReferenceLabel(reference, referenceMode)}
+        </ThemedText>
+      </View>
+
       {/* Sets Column Header */}
       <View style={styles.tableHeaderRow}>
         <ThemedText type="code" themeColor="textSecondary" style={styles.colSet}>
@@ -203,6 +240,7 @@ export function SessionExerciseCard({
             index={sIdx}
             exerciseType={exercise.type}
             trackMetrics={exercise.trackMetrics}
+            referenceSet={getReferenceSetForRow(reference, sIdx)}
             onUpdateSet={(updated) => handleUpdateSet(sIdx, updated)}
             onRemoveSet={() => handleRemoveSet(sIdx)}
             canRemove={exercise.sets.length > 1}
@@ -228,7 +266,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 14,
     padding: Spacing.three,
-    gap: Spacing.two,
+    gap: Spacing.one,
   },
   headerRow: {
     flexDirection: 'row',
@@ -268,10 +306,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  referenceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  referenceText: {
+    flexShrink: 1,
+  },
   tableHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: Spacing.two,
+    paddingTop: Spacing.one,
     paddingBottom: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(150, 150, 150, 0.2)',
@@ -313,7 +358,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 8,
     borderRadius: 8,
-    marginTop: 4,
     gap: 6,
   },
   addSetText: {

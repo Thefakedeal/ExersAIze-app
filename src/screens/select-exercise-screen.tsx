@@ -1,5 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Modal, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Modal,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
@@ -30,7 +38,7 @@ export function SelectExerciseScreen({
 }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { customExercises, defaultExercises } = useExercises();
+  const { customExercises, defaultExercises, loading } = useExercises();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<ExerciseType | 'All'>('All');
@@ -109,9 +117,13 @@ export function SelectExerciseScreen({
           ]}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <ThemedText type="default" themeColor="textSecondary">
-                No exercises found matching your search.
-              </ThemedText>
+              {loading ? (
+                <ActivityIndicator color={theme.primary} />
+              ) : (
+                <ThemedText type="default" themeColor="textSecondary">
+                  No exercises found matching your search.
+                </ThemedText>
+              )}
             </View>
           }
           renderItem={({ item }) => {

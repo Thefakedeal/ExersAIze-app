@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { WorkoutSession } from '@/types/session';
+import { ReferenceMode, WorkoutSession } from '@/types/session';
 
 const STORAGE_KEY = '@exersaize:workout_sessions_v1';
 
@@ -53,6 +53,7 @@ export async function saveWorkoutSession(data: {
   startTime: number;
   endTime?: number | null;
   exercises: WorkoutSession['exercises'];
+  referenceMode?: ReferenceMode;
 }): Promise<WorkoutSession> {
   try {
     const currentList = await getWorkoutSessions();
@@ -64,6 +65,7 @@ export async function saveWorkoutSession(data: {
       startTime: data.startTime || Date.now(),
       endTime: data.endTime,
       exercises: data.exercises,
+      referenceMode: data.referenceMode,
       createdAt: Date.now(),
     };
 

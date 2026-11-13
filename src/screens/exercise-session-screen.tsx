@@ -1,8 +1,9 @@
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Modal,
@@ -27,17 +28,34 @@ import { useRoutines } from '@/hooks/use-routines';
 import { useTheme } from '@/hooks/use-theme';
 import { SelectExerciseScreen } from '@/screens/select-exercise-screen';
 import {
-  getWorkoutSessionById,
+  getWorkoutSessions,
   saveWorkoutSession,
   updateWorkoutSession,
 } from '@/services/session-storage';
 import { ExerciseItem } from '@/types/exercise';
-import { SessionExercise, SessionSet } from '@/types/session';
+import {
+  ReferenceMode,
+  SessionExercise,
+  SessionSet,
+  WorkoutSession,
+} from '@/types/session';
+import { ExerciseReference, findExerciseReference } from '@/utils/exercise-history';
 
 interface ExerciseSessionScreenProps {
   routineId?: string;
   sessionId?: string;
 }
+
+const DEFAULT_REFERENCE_MODE: ReferenceMode = 'last';
+
+const REFERENCE_MODE_OPTIONS: {
+  value: ReferenceMode;
+  label: string;
+  accessibilityLabel: string;
+}[] = [
+  { value: 'last', label: 'Last', accessibilityLabel: 'Last Performance' },
+  { value: 'pr', label: 'PR', accessibilityLabel: 'Personal Record' },
+];
 
 function hasExerciseDetails(exercise: SessionExercise) {
   return exercise.sets.some(
@@ -66,10 +84,12 @@ export function ExerciseSessionScreen({
   const [endTime, setEndTime] = useState<number | null>(null);
   const [now, setNow] = useState<number>(startTime);
   const [exercises, setExercises] = useState<SessionExercise[]>([]);
+  const [referenceMode, setReferenceMode] = useState<ReferenceMode>(DEFAULT_REFERENCE_MODE);
+  const [history, setHistory] = useState<WorkoutSession[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // The persisted session ID — set once on first save, then used for all updates
-  const activeSessionId = useRef<string | null>(sessionId ?? null);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(sessionId ?? null);
 
   // Exercise Selector modal
   const [selectorVisible, setSelectorVisible] = useState(false);
@@ -84,18 +104,28 @@ export function ExerciseSessionScreen({
     let isMounted = true;
 
     async function init() {
+      const sessionsPromise = getWorkoutSessions();
+
       if (sessionId) {
-        const existing = await getWorkoutSessionById(sessionId);
-        if (existing && isMounted) {
+        const sessions = await sessionsPromise;
+        const existing = sessions.find((item) => item.id === sessionId);
+        if (!isMounted) return;
+
+        setHistory(sessions);
+
+        if (existing) {
           setTitle(existing.title);
           setDescription(existing.description ?? '');
           setStartTime(existing.startTime ?? existing.createdAt);
           setEndTime(existing.endTime ?? null);
           setExercises(existing.exercises ?? []);
-          activeSessionId.current = sessionId;
+          setReferenceMode(existing.referenceMode ?? DEFAULT_REFERENCE_MODE);
+          setActiveSessionId(sessionId);
           setIsInitialized(true);
           return;
         }
+
+        setActiveSessionId(null);
       }
 
       if (routineId && routinesLoading) return;
@@ -153,7 +183,17 @@ export function ExerciseSessionScreen({
         resolvedTitle = `${format(new Date(resolvedStartTime), 'MMMM d, yyyy')} Workout`;
       }
 
-      // Auto-create the session immediately on start
+      // Render the workout immediately; persistence happens in the background.
+      setTitle(resolvedTitle);
+      setDescription(resolvedDescription);
+      setStartTime(resolvedStartTime);
+      setExercises(resolvedExercises);
+      setIsInitialized(true);
+
+      const sessions = await sessionsPromise;
+      if (!isMounted) return;
+      setHistory(sessions);
+
       try {
         const created = await saveWorkoutSession({
           title: resolvedTitle,
@@ -162,23 +202,13 @@ export function ExerciseSessionScreen({
           startTime: resolvedStartTime,
           endTime: null,
           exercises: resolvedExercises,
+          referenceMode: DEFAULT_REFERENCE_MODE,
         });
-        if (isMounted) {
-          activeSessionId.current = created.id;
-          setTitle(resolvedTitle);
-          setDescription(resolvedDescription);
-          setStartTime(resolvedStartTime);
-          setExercises(resolvedExercises);
-          setIsInitialized(true);
-        }
+
+        if (!isMounted) return;
+        setActiveSessionId(created.id);
       } catch {
-        if (isMounted) {
-          setTitle(resolvedTitle);
-          setDescription(resolvedDescription);
-          setStartTime(resolvedStartTime);
-          setExercises(resolvedExercises);
-          setIsInitialized(true);
-        }
+        // The form is already usable; persistence is best effort.
       }
     }
 
@@ -199,15 +229,16 @@ export function ExerciseSessionScreen({
 
   // Auto-persist changes: immediately once finished, debounced while ongoing
   useEffect(() => {
-    if (!isInitialized || !activeSessionId.current) return;
+    if (!isInitialized || !activeSessionId) return;
 
     const persist = () =>
-      void updateWorkoutSession(activeSessionId.current!, {
+      void updateWorkoutSession(activeSessionId, {
         title: title.trim() || 'Workout Session',
         description: description.trim() || undefined,
         startTime,
         endTime,
         exercises,
+        referenceMode,
       }).catch(() => {/* silent */});
 
     if (endTime) {
@@ -217,7 +248,16 @@ export function ExerciseSessionScreen({
 
     const timer = setTimeout(persist, 800);
     return () => clearTimeout(timer);
-  }, [exercises, title, description, startTime, endTime, isInitialized]);
+  }, [
+    exercises,
+    title,
+    description,
+    startTime,
+    endTime,
+    referenceMode,
+    isInitialized,
+    activeSessionId,
+  ]);
 
   // Exercise operations
   const handleOpenAddExercise = () => {
@@ -315,21 +355,21 @@ export function ExerciseSessionScreen({
   // Persist current state to storage
   const persistUpdate = useCallback(
     async (overrides?: { endTime?: number | null; exercises?: SessionExercise[] }) => {
-      const id = activeSessionId.current;
-      if (!id) return;
+      if (!activeSessionId) return;
       try {
-        await updateWorkoutSession(id, {
+        await updateWorkoutSession(activeSessionId, {
           title: title.trim() || 'Workout Session',
           description: description.trim() || undefined,
           startTime,
           endTime: overrides?.endTime !== undefined ? overrides.endTime : endTime,
           exercises: overrides?.exercises ?? exercises,
+          referenceMode,
         });
       } catch {
         // silent — best effort
       }
     },
-    [title, description, startTime, endTime, exercises]
+    [title, description, startTime, endTime, exercises, referenceMode, activeSessionId]
   );
 
   // Time handling
@@ -399,6 +439,23 @@ export function ExerciseSessionScreen({
     }
   };
 
+  // Memo key on the exercise ids only; the exercises array changes identity on every set edit.
+  const exerciseIdsKey = exercises.map((item) => item.exerciseId).join('|');
+
+  const references = useMemo(() => {
+    const map = new Map<string, ExerciseReference | null>();
+
+    for (const exerciseId of exerciseIdsKey.split('|')) {
+      if (map.has(exerciseId)) continue;
+      map.set(
+        exerciseId,
+        findExerciseReference(history, exerciseId, referenceMode, sessionId)
+      );
+    }
+
+    return map;
+  }, [exerciseIdsKey, history, referenceMode, sessionId]);
+
   const elapsedMs = Math.max(0, (endTime ?? now) - startTime);
   const elapsedSeconds = Math.floor(elapsedMs / 1000);
   const durationText = endTime
@@ -413,215 +470,261 @@ export function ExerciseSessionScreen({
         rightAction={
           <TouchableOpacity
             onPress={handleFinishWorkout}
-            disabled={!!endTime}
+            disabled={!!endTime || !isInitialized}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <ThemedText
               type="smallBold"
-              themeColor={endTime ? 'textDisabled' : 'primary'}>
+              themeColor={endTime || !isInitialized ? 'textDisabled' : 'primary'}>
               Finish Workout
             </ThemedText>
           </TouchableOpacity>
         }
       />
 
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: insets.bottom + Spacing.six },
-          ]}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.innerContainer}>
-            {/* Title & Description Section */}
-            <View style={styles.section}>
-              <ThemedText type="smallBold">Workout Title</ThemedText>
-              <ThemedView
-                type="backgroundElement"
-                style={[styles.inputCard, { borderColor: theme.border }]}>
-                <TextInput
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder="e.g. Upper Body Strength, Leg Day"
-                  placeholderTextColor={theme.textDisabled}
-                  style={[styles.titleInput, { color: theme.text }]}
-                />
-              </ThemedView>
-            </View>
-
-            <View style={styles.section}>
-              <ThemedText type="smallBold">Description (Optional)</ThemedText>
-              <ThemedView
-                type="backgroundElement"
-                style={[styles.inputCard, { borderColor: theme.border }]}>
-                <TextInput
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder="e.g. Focus on chest hypertrophy, good energy today"
-                  placeholderTextColor={theme.textDisabled}
-                  multiline
-                  style={[styles.descriptionInput, { color: theme.text }]}
-                />
-              </ThemedView>
-            </View>
-
-            {/* Time Tracking Section */}
-            <View style={styles.section}>
-              <ThemedText type="smallBold">Workout Time & Duration</ThemedText>
-              <ThemedView
-                type="backgroundElement"
-                style={[styles.timeCard, { borderColor: theme.border }]}>
-                <View style={styles.timeFieldsRow}>
-                  <View style={styles.timeField}>
-                    <Pressable
-                      onPress={() => handleOpenTimePicker('start')}
-                      disabled={Platform.OS === 'web'}
-                      style={styles.timeFieldPressable}>
-                      <View style={styles.timeFieldHeader}>
-                        <ClockIcon size={16} color={theme.primary} />
-                        <ThemedText type="code" themeColor="textSecondary">
-                          Start Time
-                        </ThemedText>
-                      </View>
-                      <ThemedText type="smallBold">
-                        {format(new Date(startTime), 'h:mm a')}
-                      </ThemedText>
-                      <ThemedText type="code" themeColor="textSecondary">
-                        {format(new Date(startTime), 'MMM d')}
-                      </ThemedText>
-                    </Pressable>
-                    <TouchableOpacity onPress={handleResetStartTime}>
-                      <ThemedText type="code" themeColor="primary">
-                        Reset Now
-                      </ThemedText>
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.timeField}>
-                    <Pressable
-                      onPress={() => handleOpenTimePicker('end')}
-                      disabled={Platform.OS === 'web'}
-                      style={styles.timeFieldPressable}>
-                      <View style={styles.timeFieldHeader}>
-                        <ClockIcon size={16} color={theme.primary} />
-                        <ThemedText type="code" themeColor="textSecondary">
-                          End Time
-                        </ThemedText>
-                      </View>
-                      <ThemedText type="smallBold">
-                        {endTime ? format(new Date(endTime), 'h:mm a') : 'Ongoing'}
-                      </ThemedText>
-                      <ThemedText type="code" themeColor="textSecondary">
-                        {endTime ? format(new Date(endTime), 'MMM d') : 'Not set'}
-                      </ThemedText>
-                    </Pressable>
-                  </View>
-                </View>
-
-                <View style={styles.durationRow}>
-                  <View
-                    style={[
-                      styles.durationPill,
-                      { backgroundColor: theme.backgroundSecondary },
-                    ]}>
-                    <ThemedText type="code" themeColor="primary">
-                      Duration: {durationText}
-                    </ThemedText>
-                  </View>
-                </View>
-              </ThemedView>
-            </View>
-
-            {/* Exercises Section */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeaderRow}>
-                <View style={styles.sectionTitleCol}>
-                  <ThemedText type="smallBold">Exercises</ThemedText>
-                  <ThemedText type="code" themeColor="textSecondary">
-                    {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
-                  </ThemedText>
-                </View>
-
-                <TouchableOpacity
-                  onPress={handleOpenAddExercise}
-                  style={[styles.addExerciseHeaderBtn, { backgroundColor: theme.primary }]}>
-                  <PlusIcon size={14} color={theme.textOnPrimary} />
-                  <ThemedText
-                    type="smallBold"
-                    style={{ color: theme.textOnPrimary, fontSize: 13, marginLeft: 4 }}>
-                    Add Exercise
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
-
-              {exercises.length === 0 ? (
+      {!isInitialized ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator color={theme.primary} />
+        </View>
+      ) : (
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingBottom: insets.bottom + Spacing.six },
+            ]}
+            showsVerticalScrollIndicator={false}>
+            <View style={styles.innerContainer}>
+              {/* Title & Description Section */}
+              <View style={styles.section}>
+                <ThemedText type="smallBold">Workout Title</ThemedText>
                 <ThemedView
                   type="backgroundElement"
-                  style={[styles.emptyCard, { borderColor: theme.border }]}>
-                  <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
-                    No exercises added yet.
-                  </ThemedText>
+                  style={[styles.inputCard, { borderColor: theme.border }]}>
+                  <TextInput
+                    value={title}
+                    onChangeText={setTitle}
+                    placeholder="e.g. Upper Body Strength, Leg Day"
+                    placeholderTextColor={theme.textDisabled}
+                    style={[styles.titleInput, { color: theme.text }]}
+                  />
+                </ThemedView>
+              </View>
+
+              <View style={styles.section}>
+                <ThemedText type="smallBold">Description (Optional)</ThemedText>
+                <ThemedView
+                  type="backgroundElement"
+                  style={[styles.inputCard, { borderColor: theme.border }]}>
+                  <TextInput
+                    value={description}
+                    onChangeText={setDescription}
+                    placeholder="e.g. Focus on chest hypertrophy, good energy today"
+                    placeholderTextColor={theme.textDisabled}
+                    multiline
+                    style={[styles.descriptionInput, { color: theme.text }]}
+                  />
+                </ThemedView>
+              </View>
+
+              {/* Time Tracking Section */}
+              <View style={styles.section}>
+                <ThemedText type="smallBold">Workout Time & Duration</ThemedText>
+                <ThemedView
+                  type="backgroundElement"
+                  style={[styles.timeCard, { borderColor: theme.border }]}>
+                  <View style={styles.timeFieldsRow}>
+                    <View style={styles.timeField}>
+                      <Pressable
+                        onPress={() => handleOpenTimePicker('start')}
+                        disabled={Platform.OS === 'web'}
+                        style={styles.timeFieldPressable}>
+                        <View style={styles.timeFieldHeader}>
+                          <ClockIcon size={16} color={theme.primary} />
+                          <ThemedText type="code" themeColor="textSecondary">
+                            Start Time
+                          </ThemedText>
+                        </View>
+                        <ThemedText type="smallBold">
+                          {format(new Date(startTime), 'h:mm a')}
+                        </ThemedText>
+                        <ThemedText type="code" themeColor="textSecondary">
+                          {format(new Date(startTime), 'MMM d')}
+                        </ThemedText>
+                      </Pressable>
+                      <TouchableOpacity onPress={handleResetStartTime}>
+                        <ThemedText type="code" themeColor="primary">
+                          Reset Now
+                        </ThemedText>
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.timeField}>
+                      <Pressable
+                        onPress={() => handleOpenTimePicker('end')}
+                        disabled={Platform.OS === 'web'}
+                        style={styles.timeFieldPressable}>
+                        <View style={styles.timeFieldHeader}>
+                          <ClockIcon size={16} color={theme.primary} />
+                          <ThemedText type="code" themeColor="textSecondary">
+                            End Time
+                          </ThemedText>
+                        </View>
+                        <ThemedText type="smallBold">
+                          {endTime ? format(new Date(endTime), 'h:mm a') : 'Ongoing'}
+                        </ThemedText>
+                        <ThemedText type="code" themeColor="textSecondary">
+                          {endTime ? format(new Date(endTime), 'MMM d') : 'Not set'}
+                        </ThemedText>
+                      </Pressable>
+                    </View>
+                  </View>
+
+                  <View style={styles.durationRow}>
+                    <View
+                      style={[
+                        styles.durationPill,
+                        { backgroundColor: theme.backgroundSecondary },
+                      ]}>
+                      <ThemedText type="code" themeColor="primary">
+                        Duration: {durationText}
+                      </ThemedText>
+                    </View>
+                  </View>
+                </ThemedView>
+              </View>
+
+              {/* Exercises Section */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeaderRow}>
+                  <View style={styles.sectionTitleCol}>
+                    <ThemedText type="smallBold">Exercises</ThemedText>
+                    <ThemedText type="code" themeColor="textSecondary">
+                      {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
+                    </ThemedText>
+                  </View>
+
                   <TouchableOpacity
                     onPress={handleOpenAddExercise}
-                    style={[styles.addFirstBtn, { backgroundColor: theme.primary }]}>
-                    <PlusIcon size={16} color={theme.textOnPrimary} />
+                    style={[styles.addExerciseHeaderBtn, { backgroundColor: theme.primary }]}>
+                    <PlusIcon size={14} color={theme.textOnPrimary} />
                     <ThemedText
                       type="smallBold"
-                      style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
+                      style={{ color: theme.textOnPrimary, fontSize: 13, marginLeft: 4 }}>
                       Add Exercise
                     </ThemedText>
                   </TouchableOpacity>
-                </ThemedView>
-              ) : (
-                <View style={styles.exerciseList}>
-                  {exercises.map((item, index) => (
-                    <SessionExerciseCard
-                      key={item.id}
-                      exercise={item}
-                      index={index}
-                      isFirst={index === 0}
-                      isLast={index === exercises.length - 1}
-                      onMoveUp={() => handleMoveUp(index)}
-                      onMoveDown={() => handleMoveDown(index)}
-                      onReplace={() => handleOpenReplaceExercise(index)}
-                      onRemove={() => handleRemoveExercise(index)}
-                      onUpdateExercise={(updated) => handleUpdateExercise(index, updated)}
-                    />
-                  ))}
-
-                  <TouchableOpacity
-                    onPress={handleOpenAddExercise}
-                    style={[
-                      styles.bottomAddExerciseBtn,
-                      { borderColor: theme.primary, backgroundColor: theme.primaryLight },
-                    ]}>
-                    <PlusIcon size={16} color={theme.primary} />
-                    <ThemedText
-                      type="smallBold"
-                      themeColor="primary"
-                      style={{ marginLeft: 6 }}>
-                      Add Another Exercise
-                    </ThemedText>
-                  </TouchableOpacity>
                 </View>
-              )}
+
+                <View style={styles.referenceModeRow}>
+                  <ThemedText type="code" themeColor="textSecondary">
+                    Reference
+                  </ThemedText>
+                  {REFERENCE_MODE_OPTIONS.map((option) => {
+                    const isSelected = referenceMode === option.value;
+                    return (
+                      <TouchableOpacity
+                        key={option.value}
+                        onPress={() => setReferenceMode(option.value)}
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={option.accessibilityLabel}
+                        accessibilityState={{ selected: isSelected }}
+                        style={[
+                          styles.referenceModePill,
+                          {
+                            backgroundColor: isSelected
+                              ? theme.backgroundSelected
+                              : theme.backgroundElement,
+                            borderColor: isSelected ? theme.primary : theme.border,
+                          },
+                        ]}>
+                        <ThemedText
+                          type="code"
+                          style={{
+                            color: isSelected ? theme.primary : theme.textSecondary,
+                            fontWeight: isSelected ? '700' : '500',
+                          }}>
+                          {option.label}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {exercises.length === 0 ? (
+                  <ThemedView
+                    type="backgroundElement"
+                    style={[styles.emptyCard, { borderColor: theme.border }]}>
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
+                      No exercises added yet.
+                    </ThemedText>
+                    <TouchableOpacity
+                      onPress={handleOpenAddExercise}
+                      style={[styles.addFirstBtn, { backgroundColor: theme.primary }]}>
+                      <PlusIcon size={16} color={theme.textOnPrimary} />
+                      <ThemedText
+                        type="smallBold"
+                        style={{ color: theme.textOnPrimary, marginLeft: 6 }}>
+                        Add Exercise
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </ThemedView>
+                ) : (
+                  <View style={styles.exerciseList}>
+                    {exercises.map((item, index) => (
+                      <SessionExerciseCard
+                        key={item.id}
+                        exercise={item}
+                        index={index}
+                        isFirst={index === 0}
+                        isLast={index === exercises.length - 1}
+                        reference={references.get(item.exerciseId) ?? null}
+                        referenceMode={referenceMode}
+                        onMoveUp={() => handleMoveUp(index)}
+                        onMoveDown={() => handleMoveDown(index)}
+                        onReplace={() => handleOpenReplaceExercise(index)}
+                        onRemove={() => handleRemoveExercise(index)}
+                        onUpdateExercise={(updated) => handleUpdateExercise(index, updated)}
+                      />
+                    ))}
+
+                    <TouchableOpacity
+                      onPress={handleOpenAddExercise}
+                      style={[
+                        styles.bottomAddExerciseBtn,
+                        { borderColor: theme.primary, backgroundColor: theme.primaryLight },
+                      ]}>
+                      <PlusIcon size={16} color={theme.primary} />
+                      <ThemedText
+                        type="smallBold"
+                        themeColor="primary"
+                        style={{ marginLeft: 6 }}>
+                        Add Another Exercise
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      )}
 
       {/* Select Exercise Modal */}
-      <SelectExerciseScreen
-        visible={selectorVisible}
-        onClose={() => {
-          setSelectorVisible(false);
-          setReplacingIndex(null);
-        }}
-        onSelect={handleExerciseSelected}
-        title={replacingIndex !== null ? 'Replace Exercise' : 'Add Exercise'}
-      />
+      {selectorVisible && (
+        <SelectExerciseScreen
+          visible
+          onClose={() => {
+            setSelectorVisible(false);
+            setReplacingIndex(null);
+          }}
+          onSelect={handleExerciseSelected}
+          title={replacingIndex !== null ? 'Replace Exercise' : 'Add Exercise'}
+        />
+      )}
 
       {pickerTarget !== null && Platform.OS === 'android' && (
         <DateTimePicker
@@ -669,6 +772,11 @@ const styles = StyleSheet.create({
   },
   keyboardView: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollView: {
     flex: 1,
@@ -741,6 +849,17 @@ const styles = StyleSheet.create({
   },
   sectionTitleCol: {
     gap: 2,
+  },
+  referenceModeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  referenceModePill: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
   },
   addExerciseHeaderBtn: {
     flexDirection: 'row',

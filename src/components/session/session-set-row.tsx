@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CheckIcon, CloseIcon, NoteIcon } from '@/components/ui/icons';
+import { CheckIcon, CloseIcon, DumbbellIcon, NoteIcon } from '@/components/ui/icons';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { ExerciseType, TrackMetric } from '@/types/exercise';
 import { SessionSet } from '@/types/session';
+import { ReferenceSet } from '@/utils/exercise-history';
 import { getMetricVisibility } from '@/utils/session-metrics';
 
 interface SessionSetRowProps {
@@ -15,6 +16,7 @@ interface SessionSetRowProps {
   index: number;
   exerciseType?: ExerciseType;
   trackMetrics?: TrackMetric[];
+  referenceSet?: ReferenceSet | null;
   onUpdateSet: (updated: Partial<SessionSet>) => void;
   onRemoveSet: () => void;
   canRemove: boolean;
@@ -24,10 +26,17 @@ interface MetricInputProps {
   value?: number;
   unit: string;
   decimal?: boolean;
+  referenceValue?: number;
   onChange: (value?: number) => void;
 }
 
-function MetricInput({ value, unit, decimal = false, onChange }: MetricInputProps) {
+function MetricInput({
+  value,
+  unit,
+  decimal = false,
+  referenceValue,
+  onChange,
+}: MetricInputProps) {
   const theme = useTheme();
 
   const handleChange = (text: string) => {
@@ -42,7 +51,7 @@ function MetricInput({ value, unit, decimal = false, onChange }: MetricInputProp
         value={String(value ?? '')}
         onChangeText={handleChange}
         keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
-        placeholder="-"
+        placeholder={referenceValue != null ? String(referenceValue) : '-'}
         placeholderTextColor={theme.textDisabled}
         style={[
           styles.metricInput,
@@ -65,6 +74,7 @@ export function SessionSetRow({
   index,
   exerciseType = 'Strength',
   trackMetrics,
+  referenceSet,
   onUpdateSet,
   onRemoveSet,
   canRemove,
@@ -105,6 +115,7 @@ export function SessionSetRow({
               value={set.weight}
               unit="kg"
               decimal
+              referenceValue={referenceSet?.weight}
               onChange={(weight) => onUpdateSet({ weight })}
             />
           )}
@@ -113,6 +124,7 @@ export function SessionSetRow({
             <MetricInput
               value={set.reps}
               unit="reps"
+              referenceValue={referenceSet?.reps}
               onChange={(reps) => onUpdateSet({ reps })}
             />
           )}
@@ -121,6 +133,7 @@ export function SessionSetRow({
             <MetricInput
               value={set.timeInSeconds}
               unit="sec"
+              referenceValue={referenceSet?.timeInSeconds}
               onChange={(timeInSeconds) => onUpdateSet({ timeInSeconds })}
             />
           )}
@@ -130,6 +143,7 @@ export function SessionSetRow({
               value={set.distance}
               unit="km"
               decimal
+              referenceValue={referenceSet?.distance}
               onChange={(distance) => onUpdateSet({ distance })}
             />
           )}
@@ -161,6 +175,7 @@ export function SessionSetRow({
         {/* Completion indicator — set automatically from the tracked values */}
         <View style={styles.checkIndicator}>
           {set.completed && <CheckIcon size={16} color={theme.primary} />}
+          {!set.completed && <DumbbellIcon size={16} color={theme.textSecondary} />}
         </View>
 
         {/* Remove Set Button */}
