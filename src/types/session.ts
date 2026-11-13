@@ -1,5 +1,7 @@
 import { ExerciseType, TrackMetric } from './exercise';
 
+export type ReferenceMode = 'last' | 'pr';
+
 export interface SessionSet {
   id: string;
   setNumber: number;
@@ -30,5 +32,6 @@ export interface WorkoutSession {
   startTime: number; // ms timestamp
   endTime?: number | null; // ms timestamp or null if in progress
   exercises: SessionExercise[];
+  referenceMode?: ReferenceMode;
   createdAt: number;
 }
