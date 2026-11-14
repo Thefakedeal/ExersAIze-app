@@ -1,10 +1,13 @@
 import AppTabs from '@/components/app-tabs';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { WeightUnitProvider } from '@/providers/weight-unit-provider';
 
 export default function TabsLayout() {
   return (
     <ThemeProvider>
-      <AppTabs />
+      <WeightUnitProvider>
+        <AppTabs />
+      </WeightUnitProvider>
     </ThemeProvider>
   );
 }

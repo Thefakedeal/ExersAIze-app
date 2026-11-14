@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/icons';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useWeightUnit } from '@/providers/weight-unit-provider';
 import { TrackMetric } from '@/types/exercise';
 import { ReferenceMode, SessionExercise, SessionSet } from '@/types/session';
 import {
@@ -21,9 +22,14 @@ import {
   getReferenceSetForRow,
 } from '@/utils/exercise-history';
 import { getMetricVisibility } from '@/utils/session-metrics';
+import { type WeightUnit } from '@/utils/weight';
 import { SessionSetRow } from './session-set-row';
 
-function formatReferenceLabel(reference: ExerciseReference | null, mode: ReferenceMode) {
+function formatReferenceLabel(
+  reference: ExerciseReference | null,
+  mode: ReferenceMode,
+  weightUnit: WeightUnit
+) {
   if (!reference) {
     return mode === 'pr' ? 'No PR recorded' : 'No previous data';
   }
@@ -31,7 +37,7 @@ function formatReferenceLabel(reference: ExerciseReference | null, mode: Referen
   const date = format(new Date(reference.date), 'MMM d');
 
   if (reference.mode === 'pr') {
-    return `PR · ${describeReferenceSet(reference.sets[0])} · ${date}`;
+    return `PR · ${describeReferenceSet(reference.sets[0], weightUnit)} · ${date}`;
   }
 
   return `Last · ${reference.sets.length} ${
@@ -81,6 +87,7 @@ export function SessionExerciseCard({
   onUpdateExercise,
 }: SessionExerciseCardProps) {
   const theme = useTheme();
+  const { unit: weightUnit } = useWeightUnit();
   const { metrics, hasTime, hasDistance, hasReps, showWeight } = getMetricVisibility(
     exercise.trackMetrics,
     exercise.type
@@ -194,7 +201,7 @@ export function SessionExerciseCard({
           themeColor="textSecondary"
           numberOfLines={1}
           style={styles.referenceText}>
-          {formatReferenceLabel(reference, referenceMode)}
+          {formatReferenceLabel(reference, referenceMode, weightUnit)}
         </ThemedText>
       </View>
 
@@ -206,7 +213,7 @@ export function SessionExerciseCard({
         <View style={styles.colInputs}>
           {showWeight && (
             <ThemedText type="code" themeColor="textSecondary" style={styles.colMetric}>
-              LBS / KG
+              {weightUnit === 'kg' ? 'KG' : 'LBS'}
             </ThemedText>
           )}
           {hasReps && (

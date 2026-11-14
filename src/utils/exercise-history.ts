@@ -4,6 +4,7 @@ import {
   SessionSet,
   WorkoutSession,
 } from '@/types/session';
+import { toDisplayWeight, type WeightUnit } from '@/utils/weight';
 
 export type ReferenceSet = Pick<
   SessionSet,
@@ -103,9 +104,12 @@ export function getReferenceSetForRow(
   return reference.sets[rowIndex] ?? null;
 }
 
-export function describeReferenceSet(set: ReferenceSet): string {
+export function describeReferenceSet(
+  set: ReferenceSet,
+  weightUnit: WeightUnit
+): string {
   const parts: string[] = [];
-  if (set.weight != null) parts.push(`${set.weight} kg`);
+  if (set.weight != null) parts.push(`${toDisplayWeight(set.weight, weightUnit)} ${weightUnit}`);
   if (set.reps != null) parts.push(`${set.reps} reps`);
   if (set.timeInSeconds != null) parts.push(`${set.timeInSeconds}s`);
   if (set.distance != null) parts.push(`${set.distance} km`);

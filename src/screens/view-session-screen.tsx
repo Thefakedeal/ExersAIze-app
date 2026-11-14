@@ -18,8 +18,10 @@ import { CheckIcon, ClockIcon, EditIcon, NoteIcon, TrashIcon } from '@/component
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { deleteWorkoutSession, getWorkoutSessionById, subscribeToSessionUpdates } from '@/services/session-storage';
+import { useWeightUnit } from '@/providers/weight-unit-provider';
 import { WorkoutSession } from '@/types/session';
 import { getMetricVisibility } from '@/utils/session-metrics';
+import { toDisplayWeight } from '@/utils/weight';
 
 interface ViewSessionScreenProps {
   id: string;
@@ -29,6 +31,7 @@ export function ViewSessionScreen({ id }: ViewSessionScreenProps) {
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { unit: weightUnit } = useWeightUnit();
 
   const [session, setSession] = useState<WorkoutSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -320,7 +323,10 @@ export function ViewSessionScreen({ id }: ViewSessionScreenProps) {
                           <View style={styles.metricsSummary}>
                             {showWeight && set.weight !== undefined ? (
                               <ThemedText type="smallBold">
-                                {set.weight} <ThemedText type="code" themeColor="textSecondary">kg</ThemedText>
+                                {toDisplayWeight(set.weight, weightUnit)}{' '}
+                                <ThemedText type="code" themeColor="textSecondary">
+                                  {weightUnit}
+                                </ThemedText>
                               </ThemedText>
                             ) : null}
 

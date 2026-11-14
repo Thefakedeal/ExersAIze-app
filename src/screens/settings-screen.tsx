@@ -11,6 +11,7 @@ import { ChevronRightIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useThemePreference } from '@/providers/theme-provider';
+import { useWeightUnit } from '@/providers/weight-unit-provider';
 
 type SegmentedOption<T extends string | number> = {
   label: string;
@@ -145,7 +146,7 @@ export function SettingsScreen() {
     setPreference(value === 'system' ? null : value);
   };
 
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('kg');
+  const { unit: weightUnit, setUnit: setWeightUnit } = useWeightUnit();
   const [distanceUnit, setDistanceUnit] = useState<'km' | 'mi'>('km');
   const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
   const [bodyMeasurementsUnit, setBodyMeasurementsUnit] = useState<'cm' | 'in'>('cm');

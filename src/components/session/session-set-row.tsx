@@ -6,10 +6,12 @@ import { ThemedView } from '@/components/themed-view';
 import { CheckIcon, CloseIcon, DumbbellIcon, NoteIcon } from '@/components/ui/icons';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useWeightUnit } from '@/providers/weight-unit-provider';
 import { ExerciseType, TrackMetric } from '@/types/exercise';
 import { SessionSet } from '@/types/session';
 import { ReferenceSet } from '@/utils/exercise-history';
 import { getMetricVisibility } from '@/utils/session-metrics';
+import { toDisplayWeight, toStoredWeight } from '@/utils/weight';
 
 interface SessionSetRowProps {
   set: SessionSet;
@@ -30,6 +32,12 @@ interface MetricInputProps {
   onChange: (value?: number) => void;
 }
 
+function parseMetricValue(text: string, decimal: boolean): number | undefined {
+  if (text === '') return undefined;
+  const parsed = decimal ? Number(text) : parseInt(text, 10);
+  return Number.isNaN(parsed) ? undefined : parsed;
+}
+
 function MetricInput({
   value,
   unit,
@@ -38,18 +46,45 @@ function MetricInput({
   onChange,
 }: MetricInputProps) {
   const theme = useTheme();
+  const [text, setText] = useState(() => (value != null ? String(value) : ''));
+  const [trackedValue, setTrackedValue] = useState(value);
 
-  const handleChange = (text: string) => {
-    const cleaned = text.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, '');
-    if (cleaned === '') return onChange(undefined);
-    onChange(decimal ? Number(cleaned) : parseInt(cleaned, 10));
+  // Resync when the value changes externally (e.g. a unit switch) without
+  // clobbering in-progress text such as "72.".
+  if (value !== trackedValue) {
+    setTrackedValue(value);
+    if (value == null) {
+      setText('');
+    } else if (parseMetricValue(text, decimal) !== value) {
+      setText(String(value));
+    }
+  }
+
+  const handleChange = (next: string) => {
+    const cleaned = next.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, '');
+    setText(cleaned);
+
+    if (cleaned === '') {
+      onChange(undefined);
+      return;
+    }
+
+    const parsed = parseMetricValue(cleaned, decimal);
+    if (parsed !== undefined) {
+      onChange(parsed);
+    }
+  };
+
+  const handleBlur = () => {
+    setText(value != null ? String(value) : '');
   };
 
   return (
     <View style={styles.inputGroup}>
       <TextInput
-        value={String(value ?? '')}
+        value={text}
         onChangeText={handleChange}
+        onBlur={handleBlur}
         keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
         placeholder={referenceValue != null ? String(referenceValue) : '-'}
         placeholderTextColor={theme.textTertiary}
@@ -80,6 +115,7 @@ export function SessionSetRow({
   canRemove,
 }: SessionSetRowProps) {
   const theme = useTheme();
+  const { unit: weightUnit } = useWeightUnit();
   const [showNoteInput, setShowNoteInput] = useState(Boolean(set.note && set.note.length > 0));
   const hasNote = Boolean(set.note?.trim());
 
@@ -87,6 +123,13 @@ export function SessionSetRow({
     trackMetrics,
     exerciseType
   );
+
+  const displayWeight =
+    set.weight != null ? toDisplayWeight(set.weight, weightUnit) : undefined;
+  const displayReference =
+    referenceSet?.weight != null
+      ? toDisplayWeight(referenceSet.weight, weightUnit)
+      : undefined;
 
   return (
     <View style={[styles.container, set.completed && { opacity: 0.9 }]}>
@@ -113,11 +156,15 @@ export function SessionSetRow({
         <View style={styles.inputsRow}>
           {showWeight && (
             <MetricInput
-              value={set.weight}
-              unit="kg"
+              value={displayWeight}
+              unit={weightUnit}
               decimal
-              referenceValue={referenceSet?.weight}
-              onChange={(weight) => onUpdateSet({ weight })}
+              referenceValue={displayReference}
+              onChange={(weight) =>
+                onUpdateSet({
+                  weight: weight != null ? toStoredWeight(weight, weightUnit) : undefined,
+                })
+              }
             />
           )}
 
