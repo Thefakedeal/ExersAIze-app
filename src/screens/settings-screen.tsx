@@ -20,12 +20,19 @@ function SegmentedControl<T extends string | number>({
   options,
   value,
   onChange,
+  equalWidth = false,
 }: {
   options: SegmentedOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  equalWidth?: boolean;
 }) {
   const theme = useTheme();
+
+  const widestLabel = options.reduce(
+    (label, option) => (option.label.length > label.length ? option.label : label),
+    '',
+  );
 
   return (
     <View style={[styles.segmentedTrack, { backgroundColor: theme.backgroundSecondary }]}>
@@ -39,9 +46,24 @@ function SegmentedControl<T extends string | number>({
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             style={[styles.segment, active && { backgroundColor: theme.backgroundElement }]}>
-            <ThemedText type="small" themeColor={active ? 'text' : 'textSecondary'}>
-              {option.label}
-            </ThemedText>
+            {equalWidth ? (
+              <>
+                <ThemedText type="small" aria-hidden style={styles.segmentSizer}>
+                  {widestLabel}
+                </ThemedText>
+                <View
+                  pointerEvents="none"
+                  style={[StyleSheet.absoluteFill, styles.segmentLabelOverlay]}>
+                  <ThemedText type="small" themeColor={active ? 'text' : 'textSecondary'}>
+                    {option.label}
+                  </ThemedText>
+                </View>
+              </>
+            ) : (
+              <ThemedText type="small" themeColor={active ? 'text' : 'textSecondary'}>
+                {option.label}
+              </ThemedText>
+            )}
           </TouchableOpacity>
         );
       })}
@@ -152,6 +174,7 @@ export function SettingsScreen() {
                   options={THEME_OPTIONS}
                   value={appearance}
                   onChange={setAppearance}
+                  equalWidth
                 />
               </Row>
             </Section>
@@ -303,5 +326,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two,
     paddingVertical: 6,
     borderRadius: 6,
+  },
+  segmentSizer: {
+    opacity: 0,
+  },
+  segmentLabelOverlay: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
