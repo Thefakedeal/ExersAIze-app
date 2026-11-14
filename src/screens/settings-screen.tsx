@@ -10,6 +10,7 @@ import { ThemedView } from '@/components/themed-view';
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useThemePreference } from '@/providers/theme-provider';
 
 type SegmentedOption<T extends string | number> = {
   label: string;
@@ -137,7 +138,13 @@ export function SettingsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [appearance, setAppearance] = useState<'light' | 'dark' | 'system'>('system');
+  const { preference, setPreference } = useThemePreference();
+  const appearance = preference ?? 'system';
+
+  const handleAppearanceChange = (value: 'light' | 'dark' | 'system') => {
+    setPreference(value === 'system' ? null : value);
+  };
+
   const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('kg');
   const [distanceUnit, setDistanceUnit] = useState<'km' | 'mi'>('km');
   const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
@@ -173,7 +180,7 @@ export function SettingsScreen() {
                 <SegmentedControl
                   options={THEME_OPTIONS}
                   value={appearance}
-                  onChange={setAppearance}
+                  onChange={handleAppearanceChange}
                   equalWidth
                 />
               </Row>
