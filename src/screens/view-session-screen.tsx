@@ -18,9 +18,11 @@ import { CheckIcon, ClockIcon, EditIcon, NoteIcon, TrashIcon } from '@/component
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { deleteWorkoutSession, getWorkoutSessionById, subscribeToSessionUpdates } from '@/services/session-storage';
+import { useDistanceUnit } from '@/providers/distance-unit-provider';
 import { useWeightUnit } from '@/providers/weight-unit-provider';
 import { WorkoutSession } from '@/types/session';
 import { getMetricVisibility } from '@/utils/session-metrics';
+import { toDisplayDistance } from '@/utils/distance';
 import { toDisplayWeight } from '@/utils/weight';
 
 interface ViewSessionScreenProps {
@@ -32,6 +34,7 @@ export function ViewSessionScreen({ id }: ViewSessionScreenProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { unit: weightUnit } = useWeightUnit();
+  const { unit: distanceUnit } = useDistanceUnit();
 
   const [session, setSession] = useState<WorkoutSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -344,7 +347,8 @@ export function ViewSessionScreen({ id }: ViewSessionScreenProps) {
 
                             {hasDistance && set.distance !== undefined ? (
                               <ThemedText type="smallBold">
-                                {set.distance} <ThemedText type="code" themeColor="textSecondary">km</ThemedText>
+                                {toDisplayDistance(set.distance, distanceUnit)}{' '}
+                                <ThemedText type="code" themeColor="textSecondary">{distanceUnit}</ThemedText>
                               </ThemedText>
                             ) : null}
                           </View>

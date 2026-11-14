@@ -6,11 +6,13 @@ import { ThemedView } from '@/components/themed-view';
 import { CheckIcon, CloseIcon, DumbbellIcon, NoteIcon } from '@/components/ui/icons';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useDistanceUnit } from '@/providers/distance-unit-provider';
 import { useWeightUnit } from '@/providers/weight-unit-provider';
 import { ExerciseType, TrackMetric } from '@/types/exercise';
 import { SessionSet } from '@/types/session';
 import { ReferenceSet } from '@/utils/exercise-history';
 import { getMetricVisibility } from '@/utils/session-metrics';
+import { toDisplayDistance, toStoredDistance } from '@/utils/distance';
 import { toDisplayWeight, toStoredWeight } from '@/utils/weight';
 
 interface SessionSetRowProps {
@@ -116,6 +118,7 @@ export function SessionSetRow({
 }: SessionSetRowProps) {
   const theme = useTheme();
   const { unit: weightUnit } = useWeightUnit();
+  const { unit: distanceUnit } = useDistanceUnit();
   const [showNoteInput, setShowNoteInput] = useState(Boolean(set.note && set.note.length > 0));
   const hasNote = Boolean(set.note?.trim());
 
@@ -129,6 +132,12 @@ export function SessionSetRow({
   const displayReference =
     referenceSet?.weight != null
       ? toDisplayWeight(referenceSet.weight, weightUnit)
+      : undefined;
+  const displayDistance =
+    set.distance != null ? toDisplayDistance(set.distance, distanceUnit) : undefined;
+  const displayReferenceDistance =
+    referenceSet?.distance != null
+      ? toDisplayDistance(referenceSet.distance, distanceUnit)
       : undefined;
 
   return (
@@ -188,11 +197,15 @@ export function SessionSetRow({
 
           {hasDistance && (
             <MetricInput
-              value={set.distance}
-              unit="km"
+              value={displayDistance}
+              unit={distanceUnit}
               decimal
-              referenceValue={referenceSet?.distance}
-              onChange={(distance) => onUpdateSet({ distance })}
+              referenceValue={displayReferenceDistance}
+              onChange={(distance) =>
+                onUpdateSet({
+                  distance: distance != null ? toStoredDistance(distance, distanceUnit) : undefined,
+                })
+              }
             />
           )}
         </View>

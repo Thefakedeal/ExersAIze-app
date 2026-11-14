@@ -4,6 +4,7 @@ import {
   SessionSet,
   WorkoutSession,
 } from '@/types/session';
+import { toDisplayDistance, type DistanceUnit } from '@/utils/distance';
 import { toDisplayWeight, type WeightUnit } from '@/utils/weight';
 
 export type ReferenceSet = Pick<
@@ -104,14 +105,19 @@ export function getReferenceSetForRow(
   return reference.sets[rowIndex] ?? null;
 }
 
+export interface ReferenceUnits {
+  weightUnit: WeightUnit;
+  distanceUnit: DistanceUnit;
+}
+
 export function describeReferenceSet(
   set: ReferenceSet,
-  weightUnit: WeightUnit
+  units: ReferenceUnits
 ): string {
   const parts: string[] = [];
-  if (set.weight != null) parts.push(`${toDisplayWeight(set.weight, weightUnit)} ${weightUnit}`);
+  if (set.weight != null) parts.push(`${toDisplayWeight(set.weight, units.weightUnit)} ${units.weightUnit}`);
   if (set.reps != null) parts.push(`${set.reps} reps`);
   if (set.timeInSeconds != null) parts.push(`${set.timeInSeconds}s`);
-  if (set.distance != null) parts.push(`${set.distance} km`);
+  if (set.distance != null) parts.push(`${toDisplayDistance(set.distance, units.distanceUnit)} ${units.distanceUnit}`);
   return parts.join(' × ');
 }
