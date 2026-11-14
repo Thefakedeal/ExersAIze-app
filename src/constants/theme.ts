@@ -7,66 +7,66 @@ import { Platform } from "react-native";
 export const Colors = {
   light: {
     // Text
-    text: "#292D28",
-    textSecondary: "#6F756B",
-    textTertiary: "#92978D",
+    text: "#29333D",
+    textSecondary: "#687783",
+    textTertiary: "#96A2AC",
     textOnPrimary: "#FFFFFF",
 
-    // Backgrounds
-    background: "#F7F5EF",
-    backgroundElement: "#FFFDF9",
-    backgroundSecondary: "#EFECE3",
+    // Backgrounds — Soft Steel
+    background: "#F2F5F7",
+    backgroundElement: "#FFFFFF",
+    backgroundSecondary: "#E8EDF1",
     /** Shares its value with primaryLight by design. */
-    backgroundSelected: "#E8EFE6",
-    backgroundOverlay: "rgba(41, 45, 40, 0.5)",
+    backgroundSelected: "#DCE6EE",
+    backgroundOverlay: "rgba(31, 43, 54, 0.5)",
 
-    // Primary
-    primary: "#718B75",
-    primaryLight: "#E8EFE6",
-    primaryDisabled: "#B9C8B8",
+    // Primary — Steel Blue
+    primary: "#527D9E",
+    primaryLight: "#DCE6EE",
+    primaryDisabled: "#A9BECE",
 
     // Borders
-    border: "#DEDCD1",
+    border: "#D7E0E6",
 
-    // Accent (graphics only)
-    accent: "#C98262",
+    // Accent — Brushed Silver
+    accent: "#B18D55",
 
     // Status
-    error: "#B94D45",
-    errorLight: "#F8EAE7",
-    errorBorder: "#E8B5AD",
+    error: "#C95757",
+    errorLight: "#F9EAEA",
+    errorBorder: "#E7B5B5",
   },
 
   dark: {
     // Text
-    text: "#F2F0E9",
-    textSecondary: "#B8BBAF",
-    textTertiary: "#92978D",
-    textOnPrimary: "#202A21",
+    text: "#E8EDF2",
+    textSecondary: "#A5B1BC",
+    textTertiary: "#788693",
+    textOnPrimary: "#FFFFFF",
 
-    // Backgrounds
-    background: "#1C211D",
-    backgroundElement: "#252C26",
-    backgroundSecondary: "#2C342D",
+    // Backgrounds — Carbon
+    background: "#171B20",
+    backgroundElement: "#212830",
+    backgroundSecondary: "#2A333D",
     /** Shares its value with primaryLight by design. */
-    backgroundSelected: "#334638",
-    backgroundOverlay: "rgba(0, 0, 0, 0.65)",
+    backgroundSelected: "#344B60",
+    backgroundOverlay: "rgba(0, 0, 0, 0.72)",
 
-    // Primary
-    primary: "#A8C4A9",
-    primaryLight: "#334638",
-    primaryDisabled: "#526B56",
+    // Primary — Metallic Steel Blue
+    primary: "#6D9FC5",
+    primaryLight: "#344B60",
+    primaryDisabled: "#4D6B82",
 
     // Borders
-    border: "#465047",
+    border: "#3A4652",
 
-    // Accent (graphics only)
-    accent: "#D99A79",
+    // Accent — Warm Titanium
+    accent: "#C5A66E",
 
     // Status
-    error: "#E99A91",
-    errorLight: "#402725",
-    errorBorder: "#78443D",
+    error: "#F08080",
+    errorLight: "#422B30",
+    errorBorder: "#78444B",
   },
 } as const;
 
