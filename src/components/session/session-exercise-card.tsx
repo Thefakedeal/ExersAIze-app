@@ -13,17 +13,24 @@ import {
 } from '@/components/ui/icons';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useDistanceUnit } from '@/providers/distance-unit-provider';
+import { useWeightUnit } from '@/providers/weight-unit-provider';
 import { TrackMetric } from '@/types/exercise';
 import { ReferenceMode, SessionExercise, SessionSet } from '@/types/session';
 import {
   ExerciseReference,
   describeReferenceSet,
   getReferenceSetForRow,
+  type ReferenceUnits,
 } from '@/utils/exercise-history';
 import { getMetricVisibility } from '@/utils/session-metrics';
 import { SessionSetRow } from './session-set-row';
 
-function formatReferenceLabel(reference: ExerciseReference | null, mode: ReferenceMode) {
+function formatReferenceLabel(
+  reference: ExerciseReference | null,
+  mode: ReferenceMode,
+  units: ReferenceUnits
+) {
   if (!reference) {
     return mode === 'pr' ? 'No PR recorded' : 'No previous data';
   }
@@ -31,7 +38,7 @@ function formatReferenceLabel(reference: ExerciseReference | null, mode: Referen
   const date = format(new Date(reference.date), 'MMM d');
 
   if (reference.mode === 'pr') {
-    return `PR · ${describeReferenceSet(reference.sets[0])} · ${date}`;
+    return `PR · ${describeReferenceSet(reference.sets[0], units)} · ${date}`;
   }
 
   return `Last · ${reference.sets.length} ${
@@ -81,6 +88,8 @@ export function SessionExerciseCard({
   onUpdateExercise,
 }: SessionExerciseCardProps) {
   const theme = useTheme();
+  const { unit: weightUnit } = useWeightUnit();
+  const { unit: distanceUnit } = useDistanceUnit();
   const { metrics, hasTime, hasDistance, hasReps, showWeight } = getMetricVisibility(
     exercise.trackMetrics,
     exercise.type
@@ -194,7 +203,7 @@ export function SessionExerciseCard({
           themeColor="textSecondary"
           numberOfLines={1}
           style={styles.referenceText}>
-          {formatReferenceLabel(reference, referenceMode)}
+          {formatReferenceLabel(reference, referenceMode, { weightUnit, distanceUnit })}
         </ThemedText>
       </View>
 
@@ -206,7 +215,7 @@ export function SessionExerciseCard({
         <View style={styles.colInputs}>
           {showWeight && (
             <ThemedText type="code" themeColor="textSecondary" style={styles.colMetric}>
-              LBS / KG
+              {weightUnit === 'kg' ? 'KG' : 'LBS'}
             </ThemedText>
           )}
           {hasReps && (
@@ -221,7 +230,7 @@ export function SessionExerciseCard({
           )}
           {hasDistance && (
             <ThemedText type="code" themeColor="textSecondary" style={styles.colMetric}>
-              DIST
+              {distanceUnit === 'km' ? 'KM' : 'MI'}
             </ThemedText>
           )}
         </View>
