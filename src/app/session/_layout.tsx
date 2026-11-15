@@ -9,6 +9,7 @@ export default function SessionLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="exercise-session" />
       <Stack.Screen name="view-session" />
+      <Stack.Screen name="add-exercise" />
     </Stack>
   );
 }

@@ -1,7 +1,7 @@
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { format } from 'date-fns';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -94,6 +94,18 @@ export function ExerciseSessionScreen({
   // Exercise Selector modal
   const [selectorVisible, setSelectorVisible] = useState(false);
   const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
+
+  // Set when navigating away to create an exercise; reopens the selector on return
+  const pendingSelectorReopen = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (pendingSelectorReopen.current) {
+        pendingSelectorReopen.current = false;
+        setSelectorVisible(true);
+      }
+    }, [])
+  );
 
   // Time picker
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);
@@ -268,6 +280,14 @@ export function ExerciseSessionScreen({
   const handleOpenReplaceExercise = (index: number) => {
     setReplacingIndex(index);
     setSelectorVisible(true);
+  };
+
+  const handleCreateExercise = () => {
+    // Hide the modal before navigating so it doesn't cover the form,
+    // then reopen it (with fresh data) when we come back.
+    pendingSelectorReopen.current = true;
+    setSelectorVisible(false);
+    router.push('/session/add-exercise');
   };
 
   const handleExerciseSelected = (selectedEx: ExerciseItem) => {
@@ -723,6 +743,7 @@ export function ExerciseSessionScreen({
           }}
           onSelect={handleExerciseSelected}
           title={replacingIndex !== null ? 'Replace Exercise' : 'Add Exercise'}
+          onCreateExercise={handleCreateExercise}
         />
       )}
 
