@@ -1,5 +1,11 @@
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
@@ -15,6 +21,16 @@ export function RoutineSkeleton({ title }: RoutineSkeletonProps) {
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const reduceMotion = useReducedMotion();
+
+  const pulseStyle = useAnimatedStyle(
+    () => ({
+      opacity: reduceMotion
+        ? 1
+        : withRepeat(withTiming(0.45, { duration: 800 }), -1, true),
+    }),
+    [reduceMotion]
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -26,45 +42,33 @@ export function RoutineSkeleton({ title }: RoutineSkeletonProps) {
           styles.scrollContent,
           { paddingBottom: insets.bottom + Spacing.six },
         ]}
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.innerContainer}>
+        showsVerticalScrollIndicator={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants">
+        <Animated.View style={[styles.innerContainer, pulseStyle]}>
           {/* Name field */}
           <View style={styles.fieldSection}>
-            <View style={[styles.labelSkeleton, { backgroundColor: theme.backgroundSecondary }]} />
-            <View
-              style={[
-                styles.inputSkeleton,
-                { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-              ]}
+            <Bone style={styles.label} />
+            <ThemedView
+              type="backgroundElement"
+              style={[styles.nameInput, { borderColor: theme.border }]}
             />
           </View>
 
           {/* Description field */}
           <View style={styles.fieldSection}>
-            <View style={[styles.labelSkeleton, { backgroundColor: theme.backgroundSecondary }]} />
-            <View
-              style={[
-                styles.descriptionSkeleton,
-                { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-              ]}
+            <Bone style={styles.label} />
+            <ThemedView
+              type="backgroundElement"
+              style={[styles.descriptionInput, { borderColor: theme.border }]}
             />
           </View>
 
           {/* Exercises section */}
           <View style={styles.fieldSection}>
             <View style={styles.sectionHeaderRow}>
-              <View
-                style={[
-                  styles.sectionTitleSkeleton,
-                  { backgroundColor: theme.backgroundSecondary },
-                ]}
-              />
-              <View
-                style={[
-                  styles.addButtonSkeleton,
-                  { backgroundColor: theme.backgroundSecondary },
-                ]}
-              />
+              <Bone style={styles.sectionTitle} />
+              <Bone style={styles.addButton} />
             </View>
 
             <View style={styles.exerciseList}>
@@ -75,9 +79,9 @@ export function RoutineSkeleton({ title }: RoutineSkeletonProps) {
           </View>
 
           {/* Action buttons */}
-          <View style={[styles.buttonSkeleton, { backgroundColor: theme.backgroundSecondary }]} />
-          <View style={[styles.buttonSkeleton, { backgroundColor: theme.backgroundSecondary }]} />
-        </View>
+          <Bone style={styles.button} />
+          <Bone style={styles.button} />
+        </Animated.View>
       </ScrollView>
     </ThemedView>
   );
@@ -92,69 +96,39 @@ function ExerciseCardSkeleton() {
       style={[styles.exerciseCard, { borderColor: theme.border }]}>
       <View style={styles.cardHeaderRow}>
         <View style={styles.cardHeaderLeft}>
-          <View
-            style={[
-              styles.indexBadgeSkeleton,
-              { backgroundColor: theme.backgroundSecondary },
-            ]}
-          />
+          <Bone style={styles.indexBadge} />
           <View style={styles.titleCol}>
-            <View
-              style={[
-                styles.textLineSkeleton,
-                { backgroundColor: theme.backgroundSecondary, width: '60%' },
-              ]}
-            />
-            <View
-              style={[
-                styles.textLineSkeleton,
-                { backgroundColor: theme.backgroundSecondary, width: '40%' },
-              ]}
-            />
+            <Bone style={[styles.textLine, { width: '60%' }]} />
+            <Bone style={[styles.textLine, { width: '40%' }]} />
           </View>
         </View>
-        <View
-          style={[
-            styles.reorderSkeleton,
-            { backgroundColor: theme.backgroundSecondary },
-          ]}
-        />
+        <Bone style={styles.reorder} />
       </View>
 
       <View
         style={[
-          styles.inputsRowSkeleton,
+          styles.inputsRow,
           { backgroundColor: theme.background, borderColor: theme.border },
         ]}>
-        <View
-          style={[
-            styles.inputBoxSkeleton,
-            { backgroundColor: theme.backgroundSecondary },
-          ]}
-        />
-        <View
-          style={[
-            styles.inputBoxSkeleton,
-            { backgroundColor: theme.backgroundSecondary },
-          ]}
-        />
+        <Bone style={styles.inputBox} />
+        <Bone style={styles.inputBox} />
       </View>
 
       <View style={styles.cardActionsRow}>
-        <View
-          style={[
-            styles.actionButtonSkeleton,
-            { backgroundColor: theme.backgroundSecondary },
-          ]}
-        />
-        <View
-          style={[
-            styles.actionButtonSkeleton,
-            { backgroundColor: theme.backgroundSecondary },
-          ]}
-        />
+        <Bone style={styles.actionButton} />
+        <Bone style={styles.actionButton} />
       </View>
     </ThemedView>
+  );
+}
+
+function Bone({ style }: { style?: StyleProp<ViewStyle> }) {
+  const theme = useTheme();
+
+  return (
+    <View
+      style={[styles.bone, { backgroundColor: theme.backgroundSecondary }, style]}
+    />
   );
 }
 
@@ -178,17 +152,19 @@ const styles = StyleSheet.create({
   fieldSection: {
     gap: Spacing.two,
   },
-  labelSkeleton: {
-    width: 110,
-    height: 14,
+  bone: {
     borderRadius: 6,
   },
-  inputSkeleton: {
+  label: {
+    width: 110,
+    height: 14,
+  },
+  nameInput: {
     height: 48,
     borderWidth: 1,
     borderRadius: 12,
   },
-  descriptionSkeleton: {
+  descriptionInput: {
     height: 90,
     borderWidth: 1,
     borderRadius: 12,
@@ -198,12 +174,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  sectionTitleSkeleton: {
+  sectionTitle: {
     width: 80,
     height: 16,
-    borderRadius: 6,
   },
-  addButtonSkeleton: {
+  addButton: {
     width: 110,
     height: 32,
     borderRadius: 8,
@@ -228,7 +203,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: Spacing.two,
   },
-  indexBadgeSkeleton: {
+  indexBadge: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -237,38 +212,36 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 6,
   },
-  textLineSkeleton: {
+  textLine: {
     height: 12,
-    borderRadius: 6,
   },
-  reorderSkeleton: {
+  reorder: {
     width: 66,
     height: 30,
     borderRadius: 8,
   },
-  inputsRowSkeleton: {
+  inputsRow: {
     flexDirection: 'row',
     gap: Spacing.three,
     padding: Spacing.two,
     borderRadius: 10,
     borderWidth: 1,
   },
-  inputBoxSkeleton: {
+  inputBox: {
     flex: 1,
     height: 40,
-    borderRadius: 6,
   },
   cardActionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: Spacing.two,
   },
-  actionButtonSkeleton: {
+  actionButton: {
     width: 90,
     height: 28,
     borderRadius: 8,
   },
-  buttonSkeleton: {
+  button: {
     height: 48,
     borderRadius: 12,
   },
