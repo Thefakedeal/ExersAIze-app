@@ -1,6 +1,6 @@
 ---
 description: Applies small, targeted bug fixes and approved changes while preserving existing behaviour
-mode: subagent
+mode: all
 model: opencode-go/glm-5.3-flash
 permissions:
   - action: read

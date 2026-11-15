@@ -1,6 +1,6 @@
 ---
 description: Plans small to medium features, implementation tasks, dependencies, and technical approaches using cost-efficient reasoning
-mode: subagent
+mode: all
 model: opencode-go/glm-5.3-flash
 ---
 

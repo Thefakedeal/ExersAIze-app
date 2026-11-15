@@ -1,6 +1,6 @@
 ---
 description: Main implementation agent for substantial features, multi-file changes, integrations, and approved development tasks
-mode: subagent
+mode: all
 model: opencode-go/kimi-k2.7-code
 permissions:
   - action: read

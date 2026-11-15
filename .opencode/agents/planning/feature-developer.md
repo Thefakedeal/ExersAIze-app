@@ -1,6 +1,6 @@
 ---
 description: Breaks feature requests into small, ordered, implementation-ready tasks without editing code
-mode: subagent
+mode: all
 model: opencode-go/deepseek-v4-pro
 permission:
   edit:

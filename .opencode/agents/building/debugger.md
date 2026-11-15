@@ -1,6 +1,6 @@
 ---
 description: Investigates and resolves complex bugs that require deeper debugging or multi-file changes
-mode: subagent
+mode: all
 model: opencode-go/deepseek-v4-pro
 permissions:
   - action: read

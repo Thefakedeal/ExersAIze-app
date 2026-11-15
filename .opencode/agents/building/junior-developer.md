@@ -1,6 +1,6 @@
 ---
 description: Implements approved features and multi-file development tasks using a cost-efficient coding model
-mode: subagent
+mode: all
 model: opencode-go/deepseek-v4.1-flash
 ---
 
