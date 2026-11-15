@@ -21,18 +21,20 @@ import { Header } from '@/components/header';
 import { SessionExerciseCard } from '@/components/session/session-exercise-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ClockIcon, PlusIcon } from '@/components/ui/icons';
+import { ClockIcon, ListCheckIcon, PlusIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useExercises } from '@/hooks/use-exercises';
 import { useRoutines } from '@/hooks/use-routines';
 import { useTheme } from '@/hooks/use-theme';
 import { SelectExerciseScreen } from '@/screens/select-exercise-screen';
+import { saveCustomRoutine } from '@/services/routine-storage';
 import {
   getWorkoutSessions,
   saveWorkoutSession,
   updateWorkoutSession,
 } from '@/services/session-storage';
 import { ExerciseItem } from '@/types/exercise';
+import { RoutineExercise } from '@/types/routine';
 import {
   ReferenceMode,
   SessionExercise,
@@ -56,6 +58,31 @@ const REFERENCE_MODE_OPTIONS: {
   { value: 'last', label: 'Last', accessibilityLabel: 'Last Performance' },
   { value: 'pr', label: 'PR', accessibilityLabel: 'Personal Record' },
 ];
+
+function toRoutineExercises(exercises: SessionExercise[]): RoutineExercise[] {
+  return exercises.map((exercise) => {
+    const reps = exercise.sets
+      .map((set) => set.reps)
+      .filter((value): value is number => typeof value === 'number' && value > 0);
+
+    let repRange = '8-12';
+    if (reps.length > 0) {
+      const min = Math.min(...reps);
+      const max = Math.max(...reps);
+      repRange = min === max ? `${min}` : `${min}-${max}`;
+    }
+
+    return {
+      id: `rex_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      exerciseId: exercise.exerciseId,
+      name: exercise.name,
+      type: exercise.type,
+      categories: exercise.categories,
+      sets: Math.max(1, exercise.sets.length),
+      repRange,
+    };
+  });
+}
 
 function hasExerciseDetails(exercise: SessionExercise) {
   return exercise.sets.some(
@@ -111,6 +138,14 @@ export function ExerciseSessionScreen({
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);
   const [pickerValue, setPickerValue] = useState<number>(startTime);
 
+  // Routine origin and "Save as Routine" modal state
+  const [originRoutineId, setOriginRoutineId] = useState<string | undefined>(routineId);
+  const [routineModalVisible, setRoutineModalVisible] = useState(false);
+  const [routineName, setRoutineName] = useState('');
+  const [routineNameError, setRoutineNameError] = useState('');
+  const [isSavingRoutine, setIsSavingRoutine] = useState(false);
+  const [savedRoutineId, setSavedRoutineId] = useState<string | null>(null);
+
   // Initialize from existing session or routine, then auto-save
   useEffect(() => {
     let isMounted = true;
@@ -133,6 +168,7 @@ export function ExerciseSessionScreen({
           setExercises(existing.exercises ?? []);
           setReferenceMode(existing.referenceMode ?? DEFAULT_REFERENCE_MODE);
           setActiveSessionId(sessionId);
+          setOriginRoutineId(existing.routineId);
           setIsInitialized(true);
           return;
         }
@@ -430,6 +466,57 @@ export function ExerciseSessionScreen({
     void finishWorkout();
   };
 
+  const handleOpenSaveAsRoutine = () => {
+    setRoutineName(title.trim());
+    setRoutineNameError('');
+    setRoutineModalVisible(true);
+  };
+
+  const handleCloseSaveAsRoutine = () => {
+    setRoutineModalVisible(false);
+    setRoutineNameError('');
+  };
+
+  const handleSaveAsRoutine = async () => {
+    if (isSavingRoutine || savedRoutineId) return;
+
+    const name = routineName.trim();
+    if (!name) {
+      setRoutineNameError('Please enter a routine name');
+      return;
+    }
+
+    if (exercises.length === 0) {
+      Alert.alert(
+        'Add Exercises',
+        'Add at least one exercise before saving this workout as a routine.'
+      );
+      return;
+    }
+
+    if (
+      customRoutines.some((routine) => routine.name.toLowerCase() === name.toLowerCase())
+    ) {
+      setRoutineNameError('A routine with this name already exists');
+      return;
+    }
+
+    try {
+      setIsSavingRoutine(true);
+      const routine = await saveCustomRoutine({
+        name,
+        exercises: toRoutineExercises(exercises),
+      });
+      setSavedRoutineId(routine.id);
+      setRoutineModalVisible(false);
+      Alert.alert('Routine Saved', `"${routine.name}" is now available in your routines.`);
+    } catch {
+      Alert.alert('Error', 'Failed to save routine. Please try again.');
+    } finally {
+      setIsSavingRoutine(false);
+    }
+  };
+
   const handleResetStartTime = () => {
     setStartTime(Date.now());
   };
@@ -616,6 +703,28 @@ export function ExerciseSessionScreen({
                 </ThemedView>
               </View>
 
+              {endTime && !originRoutineId && exercises.length > 0 && (
+                <View style={styles.section}>
+                  <TouchableOpacity
+                    onPress={handleOpenSaveAsRoutine}
+                    disabled={!!savedRoutineId}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.saveRoutineBtn,
+                      {
+                        borderColor: theme.primary,
+                        backgroundColor: theme.primaryLight,
+                        opacity: savedRoutineId ? 0.6 : 1,
+                      },
+                    ]}>
+                    <ListCheckIcon size={18} color={theme.primary} />
+                    <ThemedText type="smallBold" themeColor="primary" style={{ marginLeft: 6 }}>
+                      {savedRoutineId ? 'Saved as Routine' : 'Save as Routine'}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
+
               {/* Exercises Section */}
               <View style={styles.section}>
                 <View style={styles.sectionHeaderRow}>
@@ -785,6 +894,82 @@ export function ExerciseSessionScreen({
           </Pressable>
         </Pressable>
       </Modal>
+
+      <Modal
+        visible={routineModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseSaveAsRoutine}>
+        <KeyboardAvoidingView
+          style={styles.routineModalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={[styles.pickerBackdrop, { backgroundColor: theme.backgroundOverlay }]}
+            onPress={handleCloseSaveAsRoutine}>
+            <Pressable
+              style={[styles.pickerSheet, { backgroundColor: theme.backgroundElement }]}
+              onPress={() => {}}>
+              <View style={styles.routineModalHeader}>
+                <ThemedText type="smallBold" style={styles.routineModalTitle}>
+                  Save as Routine
+                </ThemedText>
+                <ThemedText type="code" themeColor="textSecondary">
+                  {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'} will be
+                  copied into a new routine.
+                </ThemedText>
+              </View>
+
+              <TextInput
+                value={routineName}
+                onChangeText={(text) => {
+                  setRoutineName(text);
+                  if (routineNameError) setRoutineNameError('');
+                }}
+                placeholder="e.g. Upper Body Strength"
+                placeholderTextColor={theme.textSecondary}
+                autoFocus
+                style={[
+                  styles.routineNameInput,
+                  {
+                    backgroundColor: theme.background,
+                    color: theme.text,
+                    borderColor: routineNameError ? theme.error : theme.border,
+                  },
+                ]}
+              />
+              {routineNameError ? (
+                <ThemedText type="code" style={{ color: theme.error }}>
+                  {routineNameError}
+                </ThemedText>
+              ) : null}
+
+              <View style={styles.routineModalActions}>
+                <TouchableOpacity
+                  onPress={handleCloseSaveAsRoutine}
+                  disabled={isSavingRoutine}
+                  activeOpacity={0.7}
+                  style={[styles.routineModalCancel, { borderColor: theme.border }]}>
+                  <ThemedText type="smallBold" themeColor="textSecondary">
+                    Cancel
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSaveAsRoutine}
+                  disabled={isSavingRoutine}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.routineModalSave,
+                    { backgroundColor: theme.primary, opacity: isSavingRoutine ? 0.7 : 1 },
+                  ]}>
+                  <ThemedText type="smallBold" style={{ color: theme.textOnPrimary }}>
+                    {isSavingRoutine ? 'Saving...' : 'Save Routine'}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
     </ThemedView>
   );
 }
@@ -937,5 +1122,48 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  saveRoutineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  routineModalContainer: {
+    flex: 1,
+  },
+  routineModalHeader: {
+    gap: 2,
+  },
+  routineModalTitle: {
+    fontSize: 17,
+  },
+  routineNameInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  routineModalActions: {
+    flexDirection: 'row',
+    gap: Spacing.three,
+  },
+  routineModalCancel: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  routineModalSave: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
   },
 });
