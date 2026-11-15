@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -467,6 +468,8 @@ export function ExerciseSessionScreen({
   };
 
   const handleOpenSaveAsRoutine = () => {
+    // Make sure a keyboard from the workout form is not left open behind the modal.
+    Keyboard.dismiss();
     setRoutineName(title.trim());
     setRoutineNameError('');
     setRoutineModalVisible(true);
@@ -902,7 +905,7 @@ export function ExerciseSessionScreen({
         onRequestClose={handleCloseSaveAsRoutine}>
         <KeyboardAvoidingView
           style={styles.routineModalContainer}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          behavior="padding">
           <Pressable
             style={[styles.pickerBackdrop, { backgroundColor: theme.backgroundOverlay }]}
             onPress={handleCloseSaveAsRoutine}>
