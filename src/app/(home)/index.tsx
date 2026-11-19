@@ -9,7 +9,7 @@ import { StepTracker } from '@/components/step-tracker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { TodaysWorkout } from '@/components/todays-workout';
-import { CalendarIcon, DumbbellIcon, IconProps, ListCheckIcon } from '@/components/ui/icons';
+import { DumbbellIcon, IconProps, ListCheckIcon } from '@/components/ui/icons';
 import { WebBadge } from '@/components/web-badge';
 import { WeeklyWorkoutCalendar } from '@/components/weekly-workout-calendar';
 import { Spacing } from '@/constants/theme';
@@ -18,7 +18,6 @@ import { useTheme } from '@/hooks/use-theme';
 const NAV_TILES: { label: string; href: Href; icon: ComponentType<IconProps> }[] = [
   { label: 'Routines', href: '/routine', icon: ListCheckIcon },
   { label: 'Exercises', href: '/exercise', icon: DumbbellIcon },
-  { label: 'Schedule', href: '/schedule', icon: CalendarIcon },
 ];
 
 export default function HomeScreen() {
