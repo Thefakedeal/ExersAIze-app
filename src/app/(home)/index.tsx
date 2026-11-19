@@ -46,20 +46,10 @@ export default function HomeScreen() {
             <ThemedText type="subtitle">{"Today's Workout"}</ThemedText>
           </ThemedView>
 
+          <WeeklyWorkoutCalendar />
+
           <TodaysWorkout type="strength" name="Full Body Strength" bodyPart="Full Body" />
           <TodaysWorkout type="cardio" name="Morning Run" duration="30 min" />
-
-          <WeeklyWorkoutCalendar
-            weekDays={[
-              { day: 'Mon', status: 'worked', date: 2 },
-              { day: 'Tue', status: 'worked', date: 3 },
-              { day: 'Wed', status: 'missed', date: 4 },
-              { day: 'Thu', status: 'worked', date: 5 },
-              { day: 'Fri', status: 'rest', date: 6 },
-              { day: 'Sat', status: 'upcoming', date: 7 },
-              { day: 'Sun', status: 'rest', date: 8 },
-            ]}
-          />
 
           <QuoteCard />
 
