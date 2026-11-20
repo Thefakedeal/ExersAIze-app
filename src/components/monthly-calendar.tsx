@@ -175,8 +175,8 @@ function CalendarDay({
           {format(day, 'd')}
         </ThemedText>
       </View>
-
       <View style={[styles.dot, dotStyle]} />
+
     </TouchableOpacity>
   );
 }
@@ -188,7 +188,7 @@ function getDotStyle(status: DayWorkoutStatus, theme: ReturnType<typeof useTheme
     case 'scheduled':
       return { backgroundColor: theme.accent };
     case 'skipped':
-      return { borderColor: theme.error, borderWidth: 1 };
+      return { borderColor: theme.error};
     default:
       return {};
   }
@@ -253,9 +253,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 5,
-    marginTop: 2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 2
   },
 });
