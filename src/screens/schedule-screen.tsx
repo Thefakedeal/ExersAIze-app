@@ -1,8 +1,11 @@
 import { useRouter } from 'expo-router';
+import { startOfDay, startOfMonth } from 'date-fns';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
+import { MonthlyCalendar } from '@/components/monthly-calendar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CalendarIcon } from '@/components/ui/icons';
@@ -13,6 +16,8 @@ export function ScheduleScreen() {
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(selectedDate));
 
   return (
     <ThemedView style={styles.container}>
@@ -46,6 +51,14 @@ export function ScheduleScreen() {
               Plan and manage your upcoming workouts in one place.
             </ThemedText>
           </ThemedView>
+
+          {/* Calendar */}
+          <MonthlyCalendar
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
+          />
 
           {/* Upcoming Section */}
           <View style={styles.sectionHeader}>
