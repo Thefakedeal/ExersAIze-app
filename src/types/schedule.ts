@@ -23,6 +23,12 @@ export interface ScheduledOccurrence {
   /** Display title. Independent of whether a routine is linked. */
   title?: string;
 
+  /**
+   * Optional local start time in `HH:mm`. Combined with `scheduledDate` it
+   * describes when the occurrence is planned to start.
+   */
+  startTime?: string;
+
   /** Link to the actual workout session that fulfilled this occurrence. */
   workoutSessionId?: string;
 }

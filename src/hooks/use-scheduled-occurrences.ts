@@ -1,3 +1,10 @@
+import { endOfDay, format, startOfDay } from 'date-fns';
+import { useEffect, useState } from 'react';
+
+import {
+  getScheduledOccurrences,
+  subscribeToScheduleUpdates,
+} from '@/services/schedule-storage';
 import { ScheduledOccurrence } from '@/types/schedule';
 
 interface UseScheduledOccurrencesOptions {
@@ -13,12 +20,58 @@ interface UseScheduledOccurrencesResult {
 /**
  * Returns scheduled occurrences within the requested date range.
  *
- * TODO: Replace the empty stub with the real schedule data layer once the
- * separate persistence task is complete. The signature must remain stable so
- * callers do not need to change.
+ * Occurrences are stored as date-only strings (`yyyy-MM-dd`) in local time.
+ * The range comparison is performed against the start and end of each day so
+ * that time-of-day differences do not shift the result to a neighbouring day.
  */
 export function useScheduledOccurrences(
-  _options?: UseScheduledOccurrencesOptions
+  options?: UseScheduledOccurrencesOptions
 ): UseScheduledOccurrencesResult {
-  return { occurrences: [], loading: false };
+  const [occurrences, setOccurrences] = useState<ScheduledOccurrence[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const startDate = options?.startDate;
+  const endDate = options?.endDate;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const rangeStart = startDate ? startOfDay(startDate) : undefined;
+    const rangeEnd = endDate ? endOfDay(endDate) : undefined;
+
+    const applyOccurrences = (all: ScheduledOccurrence[]) => {
+      if (!isMounted) {
+        return;
+      }
+
+      if (!rangeStart || !rangeEnd) {
+        setOccurrences(all);
+      } else {
+        const startKey = format(rangeStart, 'yyyy-MM-dd');
+        const endKey = format(rangeEnd, 'yyyy-MM-dd');
+
+        setOccurrences(
+          all.filter((occurrence) => {
+            const scheduledKey = occurrence.scheduledDate;
+            return scheduledKey >= startKey && scheduledKey <= endKey;
+          })
+        );
+      }
+
+      setLoading(false);
+    };
+
+    void getScheduledOccurrences().then(applyOccurrences);
+
+    const unsubscribe = subscribeToScheduleUpdates(() => {
+      void getScheduledOccurrences().then(applyOccurrences);
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [startDate, endDate]);
+
+  return { occurrences, loading };
 }

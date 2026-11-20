@@ -1,15 +1,16 @@
 import { useRouter } from 'expo-router';
-import { startOfDay, startOfMonth } from 'date-fns';
+import { format, startOfDay, startOfMonth } from 'date-fns';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
 import { MonthlyCalendar } from '@/components/monthly-calendar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CalendarIcon } from '@/components/ui/icons';
+import { CalendarIcon, PlusIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useScheduledOccurrences } from '@/hooks/use-scheduled-occurrences';
 import { useTheme } from '@/hooks/use-theme';
 
 export function ScheduleScreen() {
@@ -18,10 +19,32 @@ export function ScheduleScreen() {
   const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(selectedDate));
+  const { occurrences: dayOccurrences } = useScheduledOccurrences({
+    startDate: selectedDate,
+    endDate: selectedDate,
+  });
+
+  const handleAddActivity = () => {
+    router.push(`/schedule/add-activity?date=${format(selectedDate, 'yyyy-MM-dd')}`);
+  };
 
   return (
     <ThemedView style={styles.container}>
-      <Header onBackPress={router.back} title="Schedule" />
+      <Header
+        onBackPress={router.back}
+        title="Schedule"
+        rightAction={
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleAddActivity}
+            accessibilityRole="button"
+            accessibilityLabel="Add activity"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={styles.headerAction}>
+            <PlusIcon size={22} color={theme.primary} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -60,26 +83,51 @@ export function ScheduleScreen() {
             onMonthChange={setCurrentMonth}
           />
 
-          {/* Upcoming Section */}
+          {/* Selected-day activities */}
           <View style={styles.sectionHeader}>
             <ThemedText type="smallBold" themeColor="textSecondary">
-              Upcoming
+              {format(selectedDate, 'EEEE, MMMM d')}
             </ThemedText>
           </View>
 
-          <ThemedView
-            type="backgroundElement"
-            style={[styles.emptyCard, { borderColor: theme.border }]}>
-            <ThemedText type="default" style={styles.emptyTitle}>
-              No upcoming workouts
-            </ThemedText>
-            <ThemedText
-              type="small"
-              themeColor="textSecondary"
-              style={styles.emptyDescription}>
-              Scheduled workouts will appear here once you add them.
-            </ThemedText>
-          </ThemedView>
+          {dayOccurrences.length === 0 ? (
+            <ThemedView
+              type="backgroundElement"
+              style={[styles.emptyCard, { borderColor: theme.border }]}>
+              <ThemedText type="default" style={styles.emptyTitle}>
+                No activities scheduled
+              </ThemedText>
+              <ThemedText
+                type="small"
+                themeColor="textSecondary"
+                style={styles.emptyDescription}>
+                Tap + to add an activity for this day.
+              </ThemedText>
+            </ThemedView>
+          ) : (
+            <View style={styles.activityList}>
+              {dayOccurrences.map((occurrence) => (
+                <ThemedView
+                  key={occurrence.id}
+                  type="backgroundElement"
+                  style={[styles.activityCard, { borderColor: theme.border }]}>
+                  <ThemedText type="smallBold">
+                    {occurrence.title ?? 'Activity'}
+                  </ThemedText>
+                  {occurrence.startTime && (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {format(
+                        new Date(
+                          `${occurrence.scheduledDate}T${occurrence.startTime}`
+                        ),
+                        'h:mm a'
+                      )}
+                    </ThemedText>
+                  )}
+                </ThemedView>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </ThemedView>
@@ -141,5 +189,20 @@ const styles = StyleSheet.create({
   emptyDescription: {
     textAlign: 'center',
     lineHeight: 20,
+  },
+  headerAction: {
+    padding: Spacing.one,
+    marginRight: -Spacing.one,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activityList: {
+    gap: Spacing.two,
+  },
+  activityCard: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: Spacing.three,
+    gap: 2,
   },
 });
