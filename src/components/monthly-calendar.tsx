@@ -22,6 +22,8 @@ import { useMonthlyWorkoutStatus } from '@/hooks/use-monthly-workout-status';
 import { useTheme } from '@/hooks/use-theme';
 import { DayWorkoutStatus } from '@/types/schedule';
 
+const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
 export interface MonthlyCalendarProps {
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
@@ -36,24 +38,22 @@ export function MonthlyCalendar({
   onMonthChange,
 }: MonthlyCalendarProps) {
   const theme = useTheme();
-  const statuses = useMonthlyWorkoutStatus(currentMonth);
 
-  const monthStart = useMemo(() => startOfMonth(currentMonth), [currentMonth]);
-  const monthEnd = useMemo(() => endOfMonth(currentMonth), [currentMonth]);
-  const gridStart = useMemo(
-    () => startOfWeek(monthStart, { weekStartsOn: 0 }),
-    [monthStart]
-  );
-  const gridEnd = useMemo(
-    () => endOfWeek(monthEnd, { weekStartsOn: 0 }),
-    [monthEnd]
-  );
+  const { weeks, gridStart, gridEnd } = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const gridEnd = endOfWeek(endOfMonth(monthStart), { weekStartsOn: 0 });
+    const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
-  const calendarDays = useMemo(
-    () => eachDayOfInterval({ start: gridStart, end: gridEnd }),
-    [gridStart, gridEnd]
-  );
-  const weeks = useMemo(() => chunk(calendarDays, 7), [calendarDays]);
+    const weeks: Date[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
+    }
+
+    return { weeks, gridStart, gridEnd };
+  }, [currentMonth]);
+
+  const statuses = useMonthlyWorkoutStatus({ startDate: gridStart, endDate: gridEnd });
 
   const handlePreviousMonth = () => {
     onMonthChange(addMonths(currentMonth, -1));
@@ -69,11 +69,6 @@ export function MonthlyCalendar({
       onMonthChange(startOfMonth(date));
     }
   };
-
-  const weekdayLabels = useMemo(
-    () => eachDayOfInterval({ start: gridStart, end: gridEnd }).slice(0, 7),
-    [gridStart, gridEnd]
-  );
 
   return (
     <ThemedView
@@ -104,82 +99,31 @@ export function MonthlyCalendar({
       </View>
 
       <View style={styles.weekdayRow}>
-        {weekdayLabels.map((day) => (
-          <View key={day.toISOString()} style={styles.weekdayCell}>
+        {WEEKDAYS.map((weekday, index) => (
+          <View key={`${weekday}-${index}`} style={styles.weekdayCell}>
             <ThemedText
               type="smallBold"
               themeColor="textSecondary"
               style={styles.weekdayText}>
-              {format(day, 'EEEEE')}
+              {weekday}
             </ThemedText>
           </View>
         ))}
       </View>
 
       <View style={styles.grid}>
-        {weeks.map((week, weekIndex) => (
-          <View key={weekIndex} style={styles.weekRow}>
-            {week.map((day) => {
-              const dayKey = format(day, 'yyyy-MM-dd');
-              const status = statuses[dayKey] ?? 'none';
-              const isSelected = isSameDay(day, selectedDate);
-              const isTodayDate = isToday(day);
-              const isCurrentMonth = isSameMonth(day, currentMonth);
-              const { dot } = getDayStatusColors(status, theme);
-
-              const circleBackground = isSelected ? theme.primary : 'transparent';
-              const circleBorderColor =
-                isSelected && isTodayDate
-                  ? theme.textOnPrimary
-                  : isSelected || isTodayDate
-                    ? theme.primary
-                    : 'transparent';
-              const textColor = isSelected
-                ? theme.textOnPrimary
-                : isTodayDate
-                  ? theme.primary
-                  : isCurrentMonth
-                    ? theme.text
-                    : theme.textTertiary;
-
-              return (
-                <TouchableOpacity
-                  key={day.toISOString()}
-                  activeOpacity={0.7}
-                  onPress={() => handleSelectDate(day)}
-                  accessibilityRole="button"
-                  accessibilityLabel={format(day, 'EEEE, MMMM do, yyyy')}
-                  accessibilityState={{ selected: isSelected }}
-                  style={styles.dayCell}>
-                  <View
-                    style={[
-                      styles.dayCircle,
-                      {
-                        backgroundColor: circleBackground,
-                        borderColor: circleBorderColor,
-                        borderWidth: isSelected || isTodayDate ? 1.5 : 0,
-                      },
-                    ]}>
-                    <ThemedText type="default" style={[styles.dayText, { color: textColor }]}>
-                      {format(day, 'd')}
-                    </ThemedText>
-                  </View>
-
-                  <View
-                    style={[
-                      styles.dot,
-                      {
-                        backgroundColor: isSelected
-                          ? theme.textOnPrimary
-                          : dot.backgroundColor,
-                        borderColor: isSelected ? theme.textOnPrimary : dot.borderColor,
-                        borderWidth: isSelected ? 0 : dot.borderWidth,
-                      },
-                    ]}
-                  />
-                </TouchableOpacity>
-              );
-            })}
+        {weeks.map((week) => (
+          <View key={week[0].toISOString()} style={styles.weekRow}>
+            {week.map((day) => (
+              <CalendarDay
+                key={day.toISOString()}
+                day={day}
+                status={statuses[format(day, 'yyyy-MM-dd')] ?? 'none'}
+                selectedDate={selectedDate}
+                currentMonth={currentMonth}
+                onSelect={handleSelectDate}
+              />
+            ))}
           </View>
         ))}
       </View>
@@ -187,35 +131,77 @@ export function MonthlyCalendar({
   );
 }
 
-function getDayStatusColors(
-  status: DayWorkoutStatus,
-  theme: ReturnType<typeof useTheme>
-) {
-  switch (status) {
-    case 'completed':
-      return { dot: { backgroundColor: theme.primary } };
-    case 'scheduled':
-      return { dot: { backgroundColor: theme.accent } };
-    case 'skipped':
-      return {
-        dot: {
-          backgroundColor: 'transparent',
-          borderColor: theme.error,
-          borderWidth: 1,
-        },
-      };
-    case 'none':
-    default:
-      return { dot: { backgroundColor: 'transparent' } };
-  }
+interface CalendarDayProps {
+  day: Date;
+  status: DayWorkoutStatus;
+  selectedDate: Date;
+  currentMonth: Date;
+  onSelect: (date: Date) => void;
 }
 
-function chunk<T>(array: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < array.length; i += size) {
-    result.push(array.slice(i, i + size));
+function CalendarDay({
+  day,
+  status,
+  selectedDate,
+  currentMonth,
+  onSelect,
+}: CalendarDayProps) {
+  const theme = useTheme();
+
+  const isSelected = isSameDay(day, selectedDate);
+  const isTodayDate = isToday(day);
+  const isCurrentMonth = isSameMonth(day, currentMonth);
+
+  const circleBackground = 'transparent'
+  const circleBorderColor =
+    isSelected 
+      ? theme.primary
+      : 'transparent'
+  const textColor = isTodayDate
+      ? theme.primary
+      : isCurrentMonth
+        ? theme.text
+        : theme.textTertiary;
+  const dotStyle = getDotStyle(status, theme);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => onSelect(day)}
+      accessibilityRole="button"
+      accessibilityLabel={format(day, 'EEEE, MMMM do, yyyy')}
+      accessibilityState={{ selected: isSelected }}
+      style={styles.dayCell}>
+      <View
+        style={[
+          styles.dayCircle,
+          {
+            backgroundColor: circleBackground,
+            borderColor: circleBorderColor,
+            borderWidth: isSelected ? 1.5 : 0,
+          },
+        ]}>
+        <ThemedText type="default" style={[styles.dayText, { color: textColor }]}>
+          {format(day, 'd')}
+        </ThemedText>
+      </View>
+
+      <View style={[styles.dot, dotStyle]} />
+    </TouchableOpacity>
+  );
+}
+
+function getDotStyle(status: DayWorkoutStatus, theme: ReturnType<typeof useTheme>) {
+  switch (status) {
+    case 'completed':
+      return { backgroundColor: theme.primary };
+    case 'scheduled':
+      return { backgroundColor: theme.accent };
+    case 'skipped':
+      return { borderColor: theme.error, borderWidth: 1 };
+    default:
+      return {};
   }
-  return result;
 }
 
 const styles = StyleSheet.create({
@@ -279,7 +265,7 @@ const styles = StyleSheet.create({
   dot: {
     width: 5,
     height: 5,
-    borderRadius: 2.5,
+    borderRadius: 5,
     marginTop: 2,
   },
 });
