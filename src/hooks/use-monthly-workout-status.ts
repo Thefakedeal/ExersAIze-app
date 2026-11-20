@@ -11,11 +11,10 @@ interface UseMonthlyWorkoutStatusOptions {
   endDate: Date;
 }
 
-export type MonthlyStatusMap = Record<string, DayWorkoutStatus>;
+type MonthlyStatusMap = Record<string, DayWorkoutStatus>;
 
 /**
- * Build a map of workout statuses for every day visible in the monthly calendar
- * grid for the given date range.
+ * Build a map of active workout statuses for the given date range.
  *
  * Status precedence per day:
  *   1. completed — any finished workout session
@@ -33,16 +32,16 @@ export function useMonthlyWorkoutStatus({
   return useMemo<MonthlyStatusMap>(() => {
     const map: MonthlyStatusMap = {};
 
-    for (const session of sessions) {
-      if (!session.endTime) continue;
-      map[format(new Date(session.endTime), 'yyyy-MM-dd')] = 'completed';
+    for (const { endTime } of sessions) {
+      if (endTime) {
+        map[format(new Date(endTime), 'yyyy-MM-dd')] = 'completed';
+      }
     }
 
-    for (const occurrence of occurrences) {
-      if (occurrence.status === 'cancelled') continue;
-      if (map[occurrence.scheduledDate] === 'completed') continue;
-      if (occurrence.status === 'skipped' || occurrence.status === 'scheduled') {
-        map[occurrence.scheduledDate] = occurrence.status;
+    for (const { scheduledDate, status } of occurrences) {
+      if (status !== 'skipped' && status !== 'scheduled') continue;
+      if (map[scheduledDate] !== 'completed') {
+        map[scheduledDate] = status;
       }
     }
 

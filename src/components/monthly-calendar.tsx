@@ -100,7 +100,7 @@ export function MonthlyCalendar({
 
       <View style={styles.weekdayRow}>
         {WEEKDAYS.map((weekday, index) => (
-          <View key={`${weekday}-${index}`} style={styles.weekdayCell}>
+          <View key={index} style={styles.weekdayCell}>
             <ThemedText
               type="smallBold"
               themeColor="textSecondary"
@@ -151,17 +151,11 @@ function CalendarDay({
   const isSelected = isSameDay(day, selectedDate);
   const isTodayDate = isToday(day);
   const isCurrentMonth = isSameMonth(day, currentMonth);
-
-  const circleBackground = 'transparent'
-  const circleBorderColor =
-    isSelected 
-      ? theme.primary
-      : 'transparent'
-  const textColor = isTodayDate
-      ? theme.primary
-      : isCurrentMonth
-        ? theme.text
-        : theme.textTertiary;
+  const textTheme = isTodayDate
+    ? 'primary'
+    : isCurrentMonth
+      ? 'text'
+      : 'textTertiary';
   const dotStyle = getDotStyle(status, theme);
 
   return (
@@ -175,13 +169,9 @@ function CalendarDay({
       <View
         style={[
           styles.dayCircle,
-          {
-            backgroundColor: circleBackground,
-            borderColor: circleBorderColor,
-            borderWidth: isSelected ? 1.5 : 0,
-          },
+          isSelected && { borderColor: theme.primary, borderWidth: 1.5 },
         ]}>
-        <ThemedText type="default" style={[styles.dayText, { color: textColor }]}>
+        <ThemedText type="default" themeColor={textTheme} style={styles.dayText}>
           {format(day, 'd')}
         </ThemedText>
       </View>
