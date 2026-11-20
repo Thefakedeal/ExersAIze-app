@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
 import { format, startOfDay, startOfMonth } from 'date-fns';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -101,8 +101,18 @@ export function ScheduleScreen() {
                 type="small"
                 themeColor="textSecondary"
                 style={styles.emptyDescription}>
-                Tap + to add an activity for this day.
+                Schedule your first activity for this day.
               </ThemedText>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleAddActivity}
+                accessibilityRole="button"
+                accessibilityLabel="Add activity"
+                style={[styles.emptyActionButton, { backgroundColor: theme.primary }]}>
+                <PlusIcon size={16} color={theme.textOnPrimary} />
+                <ThemedText>Add Activity </ThemedText>
+              </TouchableOpacity>
             </ThemedView>
           ) : (
             <View style={styles.activityList}>
@@ -189,6 +199,15 @@ const styles = StyleSheet.create({
   emptyDescription: {
     textAlign: 'center',
     lineHeight: 20,
+  },
+  emptyActionButton: {
+    flexDirection: 'row',
+    gap:2,
+    alignItems: 'center',
+    justifyContent:"center",
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.one,
+    borderRadius: 10,
   },
   headerAction: {
     padding: Spacing.one,
