@@ -259,25 +259,27 @@ export function AddScheduleActivityScreen() {
                 ]}
               />
             </View>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleSave}
-              disabled={!canSave || isSaving}
-              style={[
-                styles.saveButton,
-                {
-                  backgroundColor:
-                    canSave && !isSaving ? theme.primary : theme.primaryDisabled,
-                },
-              ]}>
-              <ThemedText type="smallBold" style={{ color: theme.textOnPrimary }}>
-                {isSaving ? 'Scheduling...' : 'Schedule Activity'}
-              </ThemedText>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Floating schedule action */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={handleSave}
+        disabled={!canSave || isSaving}
+        accessibilityRole="button"
+        accessibilityLabel="Schedule activity"
+        style={[
+          styles.fab,
+          {
+            bottom: insets.bottom + Spacing.four,
+            backgroundColor:
+              canSave && !isSaving ? theme.primary : theme.primaryDisabled,
+          },
+        ]}>
+        <CheckIcon size={24} color={theme.textOnPrimary} />
+      </TouchableOpacity>
 
       {/* Android: date dialog followed by a time dialog */}
       {pickerTarget === 'date' && Platform.OS === 'android' && (
@@ -427,13 +429,14 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.select({ ios: 14, default: 12 }),
     fontSize: 16,
   },
-  saveButton: {
-    borderRadius: 14,
-    paddingVertical: 16,
+  fab: {
+    position: 'absolute',
+    right: Spacing.four,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: Spacing.two,
-    marginBottom: Spacing.four,
   },
   pickerBackdrop: {
     flex: 1,
