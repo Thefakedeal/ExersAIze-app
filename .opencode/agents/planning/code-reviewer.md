@@ -3,8 +3,8 @@ description: Reviews code for correctness, regressions, security, and maintainab
 mode: subagent
 model: opencode-go/deepseek-v4-pro
 permission:
-  edit: deny
-  bash: deny
+  edit: ask
+  bash: ask
   read:
     "*": allow
     "*.env*": deny
