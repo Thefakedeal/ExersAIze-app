@@ -5,10 +5,10 @@ model: opencode-go/gemini-4-argon
 permissions:
   - action: edit
     resource: "*"
-    effect: deny
+    effect: ask
   - action: shell
     resource: "*"
-    effect: deny
+    effect: ask
   - action: read
     resource: "*"
     effect: allow

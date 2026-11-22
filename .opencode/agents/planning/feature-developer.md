@@ -4,9 +4,9 @@ mode: all
 model: opencode-go/deepseek-v4-pro
 permission:
   edit:
-    "*": deny
+    "*": ask
   shell:
-    "*": deny
+    "*": ask
   read:
     "*": allow
     "*.env*": deny
