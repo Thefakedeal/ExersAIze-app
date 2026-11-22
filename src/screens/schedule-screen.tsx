@@ -11,6 +11,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PlusIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useDebounce } from '@/hooks/use-debounce';
 import { useScheduledOccurrences } from '@/hooks/use-scheduled-occurrences';
 import { useTheme } from '@/hooks/use-theme';
 import { useWorkoutSessions } from '@/hooks/use-workout-sessions';
@@ -21,7 +22,7 @@ export function ScheduleScreen() {
   const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(selectedDate));
-  const { occurrences: dayOccurrences } = useScheduledOccurrences({
+  const { occurrences: dayOccurrences,  } = useScheduledOccurrences({
     startDate: selectedDate,
     endDate: selectedDate,
   });
@@ -31,7 +32,11 @@ export function ScheduleScreen() {
     return sessions.filter((session) => isSameDay(new Date(session.startTime), selectedDate));
   }, [sessions, selectedDate]);
 
-  const canSchedule = isToday(selectedDate) || isFuture(selectedDate);
+  const canSchedule = useMemo(()=>{
+    return isToday(selectedDate) || isFuture(selectedDate);
+  },[selectedDate])
+
+  const debouncedSchedule = useDebounce(canSchedule,50)
 
   const handleAddActivity = () => {
     router.push(`/schedule/add-activity?date=${format(selectedDate, 'yyyy-MM-dd')}`);
@@ -109,7 +114,7 @@ export function ScheduleScreen() {
                 <ThemedText type="smallBold">Scheduled Activities</ThemedText>
               </View>
 
-              {dayOccurrences.length === 0 ? (
+              {(dayOccurrences.length === 0 && debouncedSchedule) ? (
                 <ThemedView
                   type="backgroundElement"
                   style={[styles.emptyCard, { borderColor: theme.border }]}>
