@@ -48,6 +48,44 @@ export async function getScheduledOccurrences(): Promise<ScheduledOccurrence[]> 
   }
 }
 
+export async function getScheduledOccurrenceById(id: string): Promise<ScheduledOccurrence | null> {
+  try {
+    const occurrences = await getScheduledOccurrences();
+    return occurrences.find((item) => item.id === id) ?? null;
+  } catch (error) {
+    console.error('Failed to get scheduled occurrence by id:', error);
+    return null;
+  }
+}
+
+export async function updateScheduledOccurrence(
+  id: string,
+  data: Partial<Omit<ScheduledOccurrence, 'id'>>
+): Promise<ScheduledOccurrence> {
+  try {
+    const currentList = await getScheduledOccurrences();
+    const existingIndex = currentList.findIndex((item) => item.id === id);
+    if (existingIndex === -1) {
+      throw new Error(`Scheduled occurrence with id ${id} not found`);
+    }
+
+    const updatedOccurrence: ScheduledOccurrence = {
+      ...currentList[existingIndex],
+      ...data,
+      title: data.title !== undefined ? data.title.trim() || 'Activity' : currentList[existingIndex].title,
+      notes: data.notes !== undefined ? data.notes.trim() || undefined : currentList[existingIndex].notes,
+    };
+
+    currentList[existingIndex] = updatedOccurrence;
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentList));
+    notifyListeners();
+    return updatedOccurrence;
+  } catch (error) {
+    console.error('Failed to update scheduled occurrence:', error);
+    throw error;
+  }
+}
+
 export async function saveScheduledOccurrence(data: {
   scheduledDate: string;
   title: string;

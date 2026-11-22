@@ -111,7 +111,7 @@ function getDayStatusColors(status: DayWorkoutStatus, theme: ReturnType<typeof u
     case 'scheduled':
       return { dot: { backgroundColor: theme.accent }, text: theme.textSecondary };
     case 'skipped':
-      return { dot: { borderColor: theme.error }, text: theme.error };
+      return { dot: { borderColor: theme.error, borderWidth: 1.5, backgroundColor: 'transparent' }, text: theme.error };
     case 'none':
     default:
       return { dot: { backgroundColor: 'transparent' }, text: theme.textSecondary };

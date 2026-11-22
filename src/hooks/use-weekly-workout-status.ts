@@ -6,6 +6,7 @@ import { useWorkoutSessions } from './use-workout-sessions';
 
 import { useDatesBetween } from '@/hooks/use-dates-between';
 import { DayWorkoutStatus } from '@/types/schedule';
+import { getScheduledActivityStatus } from '@/utils/schedule-status';
 
 interface WeeklyWorkoutStatus {
   days: Date[];
@@ -17,9 +18,9 @@ interface WeeklyWorkoutStatus {
  * Derive the status for each day of the current (Sunday-first) week.
  *
  * Precedence:
- *   1. completed — any session finished on that day (scheduled or independent)
- *   2. skipped   — any occurrence explicitly skipped that day
- *   3. scheduled — any active occurrence planned for that day
+ *   1. completed — any session finished on that day, or occurrence with a linked session
+ *   2. skipped   — any past occurrence without a linked session
+ *   3. scheduled — any future or today occurrence without a linked session
  *   4. none      — otherwise
  */
 export function useWeeklyWorkoutStatus(): WeeklyWorkoutStatus {
@@ -42,24 +43,30 @@ export function useWeeklyWorkoutStatus(): WeeklyWorkoutStatus {
       )
     );
 
-    const activeOccurrences = occurrences.filter((occurrence) => occurrence.status !== 'cancelled');
-    const skippedDays = new Set(
-      activeOccurrences
-        .filter((occurrence) => occurrence.status === 'skipped')
-        .map((occurrence) => occurrence.scheduledDate)
-    );
-    const scheduledDays = new Set(
-      activeOccurrences
-        .filter((occurrence) => occurrence.status === 'scheduled')
-        .map((occurrence) => occurrence.scheduledDate)
-    );
+    const statusByDay = new Map<string, DayWorkoutStatus>();
+
+    for (const occurrence of occurrences) {
+      if (occurrence.status === 'cancelled') continue;
+      const status = getScheduledActivityStatus(occurrence.scheduledDate, {
+        workoutSessionId: occurrence.workoutSessionId,
+        sessions,
+      });
+      const current = statusByDay.get(occurrence.scheduledDate);
+      const precedence: Record<DayWorkoutStatus, number> = {
+        none: 0,
+        scheduled: 1,
+        skipped: 2,
+        completed: 3,
+      };
+      if (!current || precedence[status] > precedence[current]) {
+        statusByDay.set(occurrence.scheduledDate, status);
+      }
+    }
 
     return days.map((day) => {
       const dayKey = format(day, 'yyyy-MM-dd');
       if (completedDays.has(dayKey)) return 'completed';
-      if (skippedDays.has(dayKey)) return 'skipped';
-      if (scheduledDays.has(dayKey)) return 'scheduled';
-      return 'none';
+      return statusByDay.get(dayKey) ?? 'none';
     });
   }, [days, occurrences, sessions]);
 

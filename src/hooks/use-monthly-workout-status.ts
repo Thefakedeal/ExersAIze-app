@@ -5,6 +5,7 @@ import { useScheduledOccurrences } from './use-scheduled-occurrences';
 import { useWorkoutSessions } from './use-workout-sessions';
 
 import { DayWorkoutStatus } from '@/types/schedule';
+import { getScheduledActivityStatus } from '@/utils/schedule-status';
 
 interface UseMonthlyWorkoutStatusOptions {
   startDate: Date;
@@ -17,9 +18,9 @@ type MonthlyStatusMap = Record<string, DayWorkoutStatus>;
  * Build a map of active workout statuses for the given date range.
  *
  * Status precedence per day:
- *   1. completed — any finished workout session
- *   2. skipped   — any scheduled occurrence explicitly skipped
- *   3. scheduled — any active occurrence planned for that day
+ *   1. completed — any finished workout session or occurrence with a linked session
+ *   2. skipped   — any past occurrence without a linked session
+ *   3. scheduled — any future or today occurrence without a linked session
  *   4. none      — otherwise
  */
 export function useMonthlyWorkoutStatus({
@@ -38,9 +39,18 @@ export function useMonthlyWorkoutStatus({
       }
     }
 
-    for (const { scheduledDate, status } of occurrences) {
-      if (status !== 'skipped' && status !== 'scheduled') continue;
-      if (map[scheduledDate] !== 'completed') {
+    for (const { scheduledDate, workoutSessionId } of occurrences) {
+      const status = getScheduledActivityStatus(scheduledDate, {
+        workoutSessionId,
+        sessions,
+      });
+      const precedence: Record<DayWorkoutStatus, number> = {
+        none: 0,
+        scheduled: 1,
+        skipped: 2,
+        completed: 3,
+      };
+      if (precedence[status] > precedence[map[scheduledDate] ?? 'none']) {
         map[scheduledDate] = status;
       }
     }

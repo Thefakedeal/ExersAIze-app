@@ -188,7 +188,7 @@ function getDotStyle(status: DayWorkoutStatus, theme: ReturnType<typeof useTheme
     case 'scheduled':
       return { backgroundColor: theme.accent };
     case 'skipped':
-      return { borderColor: theme.error};
+      return { borderColor: theme.error, borderWidth: 1.5, backgroundColor: 'transparent' };
     default:
       return {};
   }

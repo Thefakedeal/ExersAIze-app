@@ -1,5 +1,5 @@
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
-import { format } from 'date-fns';
+import { addHours, format, parseISO } from 'date-fns';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -30,12 +30,17 @@ import { useTheme } from '@/hooks/use-theme';
 import { SelectExerciseScreen } from '@/screens/select-exercise-screen';
 import { saveCustomRoutine } from '@/services/routine-storage';
 import {
+  getScheduledOccurrenceById,
+  updateScheduledOccurrence,
+} from '@/services/schedule-storage';
+import {
   getWorkoutSessions,
   saveWorkoutSession,
   updateWorkoutSession,
 } from '@/services/session-storage';
 import { ExerciseItem } from '@/types/exercise';
 import { RoutineExercise } from '@/types/routine';
+import { ScheduledOccurrence } from '@/types/schedule';
 import {
   ReferenceMode,
   SessionExercise,
@@ -47,6 +52,7 @@ import { ExerciseReference, findExerciseReference } from '@/utils/exercise-histo
 interface ExerciseSessionScreenProps {
   routineId?: string;
   sessionId?: string;
+  scheduledOccurrenceId?: string;
 }
 
 const DEFAULT_REFERENCE_MODE: ReferenceMode = 'last';
@@ -95,9 +101,29 @@ function hasExerciseDetails(exercise: SessionExercise) {
   );
 }
 
+function resolveScheduledSessionTimes(occurrence: ScheduledOccurrence): {
+  startTime: number;
+  endTime: number;
+} {
+  const date = occurrence.scheduledDate;
+  const startTimeStr = occurrence.allDay || !occurrence.startTime ? '10:00' : occurrence.startTime;
+
+  const startDate = parseISO(`${date}T${startTimeStr}:00`);
+  const endDate =
+    occurrence.allDay || !occurrence.endTime
+      ? addHours(startDate, 1)
+      : parseISO(`${date}T${occurrence.endTime}:00`);
+
+  return {
+    startTime: startDate.getTime(),
+    endTime: endDate.getTime() <= startDate.getTime() ? addHours(startDate, 1).getTime() : endDate.getTime(),
+  };
+}
+
 export function ExerciseSessionScreen({
   routineId,
   sessionId,
+  scheduledOccurrenceId,
 }: ExerciseSessionScreenProps) {
   const router = useRouter();
   const theme = useTheme();
@@ -182,7 +208,13 @@ export function ExerciseSessionScreen({
       let resolvedTitle = '';
       let resolvedDescription = '';
       let resolvedStartTime = Date.now();
+      let resolvedEndTime: number | null = null;
       let resolvedExercises: SessionExercise[] = [];
+      let scheduledOccurrence: ScheduledOccurrence | null = null;
+
+      if (scheduledOccurrenceId && !sessionId) {
+        scheduledOccurrence = await getScheduledOccurrenceById(scheduledOccurrenceId);
+      }
 
       if (routineId) {
         const routine =
@@ -228,6 +260,12 @@ export function ExerciseSessionScreen({
 
       if (!isMounted) return;
 
+      if (scheduledOccurrence) {
+        const times = resolveScheduledSessionTimes(scheduledOccurrence);
+        resolvedStartTime = times.startTime;
+        resolvedEndTime = times.endTime;
+      }
+
       if (!resolvedTitle) {
         resolvedTitle = `${format(new Date(resolvedStartTime), 'MMMM d, yyyy')} Workout`;
       }
@@ -236,6 +274,7 @@ export function ExerciseSessionScreen({
       setTitle(resolvedTitle);
       setDescription(resolvedDescription);
       setStartTime(resolvedStartTime);
+      setEndTime(resolvedEndTime);
       setExercises(resolvedExercises);
       setIsInitialized(true);
 
@@ -249,13 +288,23 @@ export function ExerciseSessionScreen({
           description: resolvedDescription || undefined,
           routineId,
           startTime: resolvedStartTime,
-          endTime: null,
+          endTime: resolvedEndTime,
           exercises: resolvedExercises,
           referenceMode: DEFAULT_REFERENCE_MODE,
         });
 
         if (!isMounted) return;
         setActiveSessionId(created.id);
+
+        if (scheduledOccurrenceId && isMounted) {
+          try {
+            await updateScheduledOccurrence(scheduledOccurrenceId, {
+              workoutSessionId: created.id,
+            });
+          } catch {
+            // Best effort — the session is usable even if the link fails.
+          }
+        }
       } catch {
         // The form is already usable; persistence is best effort.
       }
@@ -435,6 +484,7 @@ export function ExerciseSessionScreen({
     setEndTime(finishedAt);
     setNow(finishedAt);
     await persistUpdate({ endTime: finishedAt });
+
   };
 
   const handleFinishWorkout = () => {
