@@ -1,17 +1,19 @@
-import { format, startOfDay, startOfMonth } from 'date-fns';
+import { format, isFuture, isSameDay, isToday, startOfDay, startOfMonth } from 'date-fns';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
 import { MonthlyCalendar } from '@/components/monthly-calendar';
+import { SessionCard } from '@/components/session/session-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CalendarIcon, PlusIcon } from '@/components/ui/icons';
+import { PlusIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useScheduledOccurrences } from '@/hooks/use-scheduled-occurrences';
 import { useTheme } from '@/hooks/use-theme';
+import { useWorkoutSessions } from '@/hooks/use-workout-sessions';
 
 export function ScheduleScreen() {
   const router = useRouter();
@@ -23,9 +25,20 @@ export function ScheduleScreen() {
     startDate: selectedDate,
     endDate: selectedDate,
   });
+  const { sessions } = useWorkoutSessions();
+
+  const daySessions = useMemo(() => {
+    return sessions.filter((session) => isSameDay(new Date(session.startTime), selectedDate));
+  }, [sessions, selectedDate]);
+
+  const canSchedule = isToday(selectedDate) || isFuture(selectedDate);
 
   const handleAddActivity = () => {
     router.push(`/schedule/add-activity?date=${format(selectedDate, 'yyyy-MM-dd')}`);
+  };
+
+  const handleSessionPress = (id: string) => {
+    router.push(`/session/view-session?id=${id}`);
   };
 
   return (
@@ -34,15 +47,17 @@ export function ScheduleScreen() {
         onBackPress={router.back}
         title="Schedule"
         rightAction={
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={handleAddActivity}
-            accessibilityRole="button"
-            accessibilityLabel="Add activity"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={styles.headerAction}>
-            <PlusIcon size={22} color={theme.primary} />
-          </TouchableOpacity>
+          canSchedule ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleAddActivity}
+              accessibilityRole="button"
+              accessibilityLabel="Add activity"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={styles.headerAction}>
+              <PlusIcon size={22} color={theme.primary} />
+            </TouchableOpacity>
+          ) : undefined
         }
       />
 
@@ -53,28 +68,6 @@ export function ScheduleScreen() {
           { paddingBottom: insets.bottom + Spacing.six },
         ]}>
         <View style={styles.contentWrapper}>
-          {/* Intro Card */}
-          <ThemedView
-            type="backgroundElement"
-            style={[styles.introCard, { borderColor: theme.border }]}>
-            <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: theme.primaryLight },
-              ]}>
-              <CalendarIcon size={28} color={theme.primary} />
-            </View>
-            <ThemedText type="subtitle" style={styles.introTitle}>
-              Schedule
-            </ThemedText>
-            <ThemedText
-              type="small"
-              themeColor="textSecondary"
-              style={styles.introDescription}>
-              Plan and manage your upcoming workouts in one place.
-            </ThemedText>
-          </ThemedView>
-
           {/* Calendar */}
           <MonthlyCalendar
             selectedDate={selectedDate}
@@ -83,60 +76,88 @@ export function ScheduleScreen() {
             onMonthChange={setCurrentMonth}
           />
 
-          {/* Selected-day activities */}
+          {/* Selected day */}
           <View style={styles.sectionHeader}>
             <ThemedText type="smallBold" themeColor="textSecondary">
               {format(selectedDate, 'EEEE, MMMM d')}
             </ThemedText>
           </View>
 
-          {dayOccurrences.length === 0 ? (
-            <ThemedView
-              type="backgroundElement"
-              style={[styles.emptyCard, { borderColor: theme.border }]}>
-              <ThemedText type="default" style={styles.emptyTitle}>
-                No activities scheduled
-              </ThemedText>
-              <ThemedText
-                type="small"
-                themeColor="textSecondary"
-                style={styles.emptyDescription}>
-                Schedule your first activity for this day.
-              </ThemedText>
+          {/* Workout sessions for the selected date */}
+          {!isFuture(selectedDate) && daySessions.length > 0 && (
+            <>
+              <View style={styles.sectionHeader}>
+                <ThemedText type="smallBold">Workouts</ThemedText>
+              </View>
 
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={handleAddActivity}
-                accessibilityRole="button"
-                accessibilityLabel="Add activity"
-                style={[styles.emptyActionButton, { backgroundColor: theme.primary }]}>
-                <PlusIcon size={16} color={theme.textOnPrimary} />
-                <ThemedText>Add Activity </ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-          ) : (
-            <View style={styles.activityList}>
-              {dayOccurrences.map((occurrence) => (
+              <View style={styles.sessionList}>
+                {daySessions.map((session) => (
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onPress={() => handleSessionPress(session.id)}
+                  />
+                ))}
+              </View>
+            </>
+          )}
+
+          {/* Scheduled activities for the selected date */}
+          {(dayOccurrences.length > 0 || canSchedule) && (
+            <>
+              <View style={styles.sectionHeader}>
+                <ThemedText type="smallBold">Scheduled Activities</ThemedText>
+              </View>
+
+              {dayOccurrences.length === 0 ? (
                 <ThemedView
-                  key={occurrence.id}
                   type="backgroundElement"
-                  style={[styles.activityCard, { borderColor: theme.border }]}>
-                  <ThemedText type="smallBold">
-                    {occurrence.title ?? 'Activity'}
+                  style={[styles.emptyCard, { borderColor: theme.border }]}>
+                  <ThemedText type="default" style={styles.emptyTitle}>
+                    No activities scheduled
                   </ThemedText>
-                  {occurrence.startTime && (
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {format(
-                        new Date(
-                          `${occurrence.scheduledDate}T${occurrence.startTime}`
-                        ),
-                        'h:mm a'
-                      )}
-                    </ThemedText>
-                  )}
+                  <ThemedText
+                    type="small"
+                    themeColor="textSecondary"
+                    style={styles.emptyDescription}>
+                    Schedule your first activity for this day.
+                  </ThemedText>
+
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={handleAddActivity}
+                    accessibilityRole="button"
+                    accessibilityLabel="Add activity"
+                    style={[styles.emptyActionButton, { backgroundColor: theme.primary }]}>
+                    <PlusIcon size={16} color={theme.textOnPrimary} />
+                    <ThemedText>Add Activity </ThemedText>
+                  </TouchableOpacity>
                 </ThemedView>
-              ))}
-            </View>
+              ) : (
+                <View style={styles.activityList}>
+                  {dayOccurrences.map((occurrence) => (
+                    <ThemedView
+                      key={occurrence.id}
+                      type="backgroundElement"
+                      style={[styles.activityCard, { borderColor: theme.border }]}>
+                      <ThemedText type="smallBold">
+                        {occurrence.title ?? 'Activity'}
+                      </ThemedText>
+                      {occurrence.startTime && (
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {format(
+                            new Date(
+                              `${occurrence.scheduledDate}T${occurrence.startTime}`
+                            ),
+                            'h:mm a'
+                          )}
+                        </ThemedText>
+                      )}
+                    </ThemedView>
+                  ))}
+                </View>
+              )}
+            </>
           )}
         </View>
       </ScrollView>
@@ -150,6 +171,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: Spacing.three,
+    flexGrow: 1,
   },
   contentWrapper: {
     maxWidth: MaxContentWidth,
@@ -217,6 +239,9 @@ const styles = StyleSheet.create({
   },
   activityList: {
     gap: Spacing.two,
+  },
+  sessionList: {
+    gap: Spacing.three,
   },
   activityCard: {
     borderWidth: 1,
