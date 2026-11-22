@@ -4,7 +4,7 @@ mode: subagent
 temperature: 0.2
 permission:
   read: allow
-  edit: deny
+  edit: allow
   bash: deny
   websearch: deny
   webfetch: deny
@@ -12,7 +12,7 @@ permission:
 
 # UI Designer
 
-Design and recommend UI changes. Never implement them.
+Design and recommend UI changes. Never implement them. Document in detail.
 
 ## Process
 
