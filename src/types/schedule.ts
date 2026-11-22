@@ -6,6 +6,8 @@
  * that layer to honour.
  */
 
+export type Recurrence = 'none' | 'weekly' | 'monthly';
+
 export interface ScheduledOccurrence {
   id: string;
 
@@ -28,6 +30,30 @@ export interface ScheduledOccurrence {
    * describes when the occurrence is planned to start.
    */
   startTime?: string;
+
+  /**
+   * Optional local end time in `HH:mm`. Only meaningful when `allDay` is false
+   * or undefined.
+   */
+  endTime?: string;
+
+  /** When true the occurrence is treated as an all-day activity. */
+  allDay?: boolean;
+
+  /**
+   * Recurrence pattern for the activity. When omitted the occurrence is a
+   * one-time event.
+   */
+  recurrence?: Recurrence;
+
+  /** Optional notes or instructions for the activity. */
+  notes?: string;
+
+  /**
+   * Shared identifier for occurrences generated from the same recurring
+   * activity. Useful for future series editing.
+   */
+  seriesId?: string;
 
   /** Link to the actual workout session that fulfilled this occurrence. */
   workoutSessionId?: string;

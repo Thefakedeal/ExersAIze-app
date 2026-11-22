@@ -1,8 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addMonths, addWeeks, format, parse } from 'date-fns';
 
-import { ScheduledOccurrence } from '@/types/schedule';
+import { Recurrence, ScheduledOccurrence } from '@/types/schedule';
 
 const STORAGE_KEY = '@exersaize:scheduled_occurrences_v1';
+
+/** Number of future occurrences generated for a weekly or monthly activity. */
+const RECURRENCE_LIMIT = 12;
 
 type StorageListener = () => void;
 
@@ -49,26 +53,79 @@ export async function saveScheduledOccurrence(data: {
   title: string;
   routineId?: string;
   startTime?: string;
-}): Promise<ScheduledOccurrence> {
+  endTime?: string;
+  allDay?: boolean;
+  recurrence?: Recurrence;
+  notes?: string;
+}): Promise<ScheduledOccurrence[]> {
   try {
     const currentList = await getScheduledOccurrences();
 
-    const newOccurrence: ScheduledOccurrence = {
-      id: `occ_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      scheduledDate: data.scheduledDate,
-      status: 'scheduled',
-      title: data.title.trim(),
-      routineId: data.routineId,
-      startTime: data.startTime,
-    };
+    const recurrence = data.recurrence ?? 'none';
+    const seriesId =
+      recurrence !== 'none'
+        ? `series_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+        : undefined;
 
-    const updatedList = [...currentList, newOccurrence];
+    const occurrences = buildOccurrences(data, recurrence, seriesId);
+
+    const updatedList = [...currentList, ...occurrences];
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
     notifyListeners();
 
-    return newOccurrence;
+    return occurrences;
   } catch (error) {
     console.error('Failed to save scheduled occurrence to storage:', error);
     throw error;
   }
+}
+
+function buildOccurrences(
+  data: {
+    scheduledDate: string;
+    title: string;
+    routineId?: string;
+    startTime?: string;
+    endTime?: string;
+    allDay?: boolean;
+    recurrence?: Recurrence;
+    notes?: string;
+  },
+  recurrence: Recurrence,
+  seriesId?: string
+): ScheduledOccurrence[] {
+  const baseDate = parse(data.scheduledDate, 'yyyy-MM-dd', new Date());
+  const count = recurrence === 'none' ? 1 : RECURRENCE_LIMIT;
+  const occurrences: ScheduledOccurrence[] = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const date =
+      recurrence === 'weekly'
+        ? addWeeks(baseDate, i)
+        : recurrence === 'monthly'
+          ? addMonths(baseDate, i)
+          : baseDate;
+
+    const occurrence: ScheduledOccurrence = {
+      id: `occ_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${i}`,
+      scheduledDate: format(date, 'yyyy-MM-dd'),
+      status: 'scheduled',
+      title: data.title.trim(),
+      routineId: data.routineId,
+      notes: data.notes?.trim() || undefined,
+      recurrence,
+      seriesId,
+    };
+
+    if (data.allDay) {
+      occurrence.allDay = true;
+    } else {
+      occurrence.startTime = data.startTime;
+      occurrence.endTime = data.endTime;
+    }
+
+    occurrences.push(occurrence);
+  }
+
+  return occurrences;
 }
