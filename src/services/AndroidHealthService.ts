@@ -9,9 +9,6 @@ import {
   requestPermission,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
-
-type TimeRangeFilter = Parameters<typeof aggregateRecord>[0]['timeRangeFilter'];
-
 import type {
   BiologicalSex,
   HealthFeatureResult,
@@ -26,6 +23,8 @@ import type {
   UserProfileMetric,
   UserProfileMetricSample,
 } from '../types/health-types';
+
+type TimeRangeFilter = Parameters<typeof aggregateRecord>[0]['timeRangeFilter'];
 
 function parseProfileQueryArgs(
   startDateOrOptions?: Date | ProfileQueryOptions,

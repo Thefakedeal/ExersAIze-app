@@ -146,7 +146,7 @@ export function ExerciseForm({
       setIsSubmitting(true);
       await onSubmit({ name: name.trim(), type, categories: selectedCategories, trackMetrics: selectedMetrics, note });
       router.back();
-    } catch (e) {
+    } catch {
       Alert.alert('Error', 'Failed to save exercise. Please try again.');
     } finally {
       setIsSubmitting(false);

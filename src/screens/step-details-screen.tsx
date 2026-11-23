@@ -16,7 +16,6 @@ import {
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useDatesBetween } from '@/hooks/use-dates-between';
-import { useTheme } from '@/hooks/use-theme';
 import { addWeeks, endOfWeek, format, getDate, startOfWeek } from 'date-fns';
 
 interface StepDetailsScreenProps {
@@ -28,7 +27,6 @@ export function StepDetailsScreen({
   onBack,
   goalSteps = 10000,
 }: StepDetailsScreenProps) {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [weekOffset, setWeekOffset] = useState(0);
   
@@ -47,7 +45,7 @@ export function StepDetailsScreen({
 
   const selectedDay = useMemo(() => {
     return days[selectedDayIndex];
-  }, [selectedDayIndex]);
+  }, [days, selectedDayIndex]);
 
   
   return (

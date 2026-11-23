@@ -19,7 +19,6 @@ export interface WalkingBreakdownChartProps {
 }
 
 const formatHour = (hour: number) => {
-  const period = hour >= 12 ? 'PM' : 'AM';
   return `${hour % 12 || 12}`;
 };
 

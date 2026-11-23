@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedView } from "./themed-view";
 
 
-export  function SafeArea({children}: React.PropsWithChildren<{}>) {
+export  function SafeArea({children}: React.PropsWithChildren) {
   const safeInsets = useSafeAreaInsets();
   
   const contentPlatformStyle = Platform.select({

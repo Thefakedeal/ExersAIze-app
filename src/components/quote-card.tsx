@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import quotes from '@/assets/quotes.json';
@@ -10,7 +10,7 @@ import { ThemedText } from './themed-text';
 export function QuoteCard() {
   const theme = useTheme();
 
-  const quote = useMemo(() => quotes[Math.floor(Math.random() * quotes.length)], []);
+  const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
 
   return (
     <View style={styles.container}>
