@@ -31,7 +31,7 @@ export function EditExerciseScreen({ exercise }: Props) {
             try {
               await deleteCustomExercise(exercise.id);
               router.back();
-            } catch (e) {
+            } catch {
               Alert.alert('Error', 'Failed to delete exercise. Please try again.');
             }
           },

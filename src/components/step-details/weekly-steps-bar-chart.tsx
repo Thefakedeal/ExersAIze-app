@@ -53,10 +53,11 @@ export function WeeklyStepsBarChart({
     }
   };
 
-  const records = weeklyReport.records ?? [];
   const isLoading = weeklyReport.loading;
 
   const days = useMemo(() => {
+    const records = weeklyReport.records ?? [];
+
     return Array.from({ length: 7 }, (_, index) => {
       const date = new Date(sunday);
       date.setDate(sunday.getDate() + index);
@@ -70,7 +71,7 @@ export function WeeklyStepsBarChart({
         steps: record?.steps ?? 0,
       };
     });
-  }, [records, sunday]);
+  }, [weeklyReport.records, sunday]);
 
   const totalSteps = days.reduce((sum, day) => sum + day.steps, 0);
   const averageSteps = Math.round(totalSteps / 7);

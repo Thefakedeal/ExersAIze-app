@@ -11,7 +11,6 @@ export const useSteps = ({dateStart, dateEnd}: DayStepsProps) => {
         loading,
         error,
         isAvailable,
-        refresh,
     } = useStepCount(dateStart, dateEnd);
 
 

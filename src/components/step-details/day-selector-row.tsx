@@ -9,7 +9,6 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { format, isAfter, isSameDay } from 'date-fns';
-import { useMemo } from 'react';
 
 export interface DaySelectorRowProps {
   days: Date[];
@@ -27,10 +26,6 @@ export function DaySelectorRow({
   if (!days || days.length === 0) {
     return null;
   }
-
-  const selectedDay = useMemo(() => {
-    return days[selectedIndex];
-  }, [days, selectedIndex]);
 
   return (
     <ThemedView

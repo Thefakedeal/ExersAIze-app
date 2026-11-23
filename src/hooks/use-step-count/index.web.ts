@@ -7,7 +7,6 @@ export function useStepCount(
   _endDate: Date,
   _options: StepCountOptions = {},
 ): StepCountResult {
-  const requestPermissions = useCallback(async () => false, []);
   const refresh = useCallback(async () => {}, []);
 
   return {

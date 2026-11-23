@@ -14,7 +14,7 @@ export function useExercises() {
     try {
       const stored = await getCustomExercises();
       setCustomExercises(stored);
-    } catch (e) {
+    } catch {
       Alert.alert('Error', 'Failed to load exercises. Please try again.');
     } finally {
       setLoading(false);
@@ -26,7 +26,7 @@ export function useExercises() {
       await syncDefaultExercises();
       const stored = await getDefaultExercises();
       setDefaultExercises(stored.data);
-    } catch (e) {
+    } catch {
       Alert.alert('Error', 'Failed to load exercises. Please try again.');
     } finally {
       setLoadingDefault(false);

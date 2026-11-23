@@ -30,7 +30,7 @@ export function WeekSummaryCard({
 
   
 
-  const {loading,steps,isAvailable,error,granted} = useSteps({
+  const { loading, steps } = useSteps({
     dateStart: sunday,
     dateEnd: saturday,
   });

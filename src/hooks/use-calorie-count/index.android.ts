@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 
 import { AndroidHealthService } from "@/services";
@@ -11,50 +11,60 @@ export function useCalorieCount(
   options: DistanceCountOptions = {},
 ): HealthResult {
   const [calories, setCalories] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const getCalories = async () => {
-    setLoading(true);
-    try {
-      const androidHealthService = new AndroidHealthService();
-      const isAvailable = await androidHealthService.isAvailable();
-      setIsAvailable(isAvailable);
-      if (!isAvailable) {
-        setError("Health service is not available");
-        console.log("Health service is not available");
-        return;
-      }
-      await androidHealthService.initialize();
-      const hasPermission = await androidHealthService.requestPermissions(["activeCalories"]);
-      setHasPermission(hasPermission);
-      if (!hasPermission) {
-        setError("No permission to access health data");
-        console.log("No permission to access health data");
-        return;
-      }
-      const caloriesResult = await androidHealthService.getActiveCalories(startDate, endDate);
-      setCalories(caloriesResult.value);
-      setError(null);
-    } catch (err) {
-      console.log(err);
-      setError("Failed to fetch calories");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const refresh = useCallback(async () => setRefreshKey((key) => key + 1), []);
 
   useEffect(() => {
-    getCalories();
-  }, [startDate, endDate]);
+    let cancelled = false;
+
+    async function fetchCalories() {
+      try {
+        const androidHealthService = new AndroidHealthService();
+        const isAvailable = await androidHealthService.isAvailable();
+        if (cancelled) return;
+        setIsAvailable(isAvailable);
+        if (!isAvailable) {
+          setError("Health service is not available");
+          console.log("Health service is not available");
+          return;
+        }
+        await androidHealthService.initialize();
+        const hasPermission = await androidHealthService.requestPermissions(["activeCalories"]);
+        if (cancelled) return;
+        if (!hasPermission) {
+          setError("No permission to access health data");
+          console.log("No permission to access health data");
+          return;
+        }
+        const caloriesResult = await androidHealthService.getActiveCalories(startDate, endDate);
+        if (cancelled) return;
+        setCalories(caloriesResult.value);
+        setError(null);
+      } catch (err) {
+        if (cancelled) return;
+        console.log(err);
+        setError("Failed to fetch calories");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchCalories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [startDate, endDate, refreshKey]);
 
   return {
     calories,
     loading,
     error,
     isAvailable,
-    refresh: getCalories,
+    refresh,
   };
 }

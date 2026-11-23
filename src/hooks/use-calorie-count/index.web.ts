@@ -8,7 +8,6 @@ export function useCalorieCount(
   _options: DistanceCountOptions = {
   },
 ): HealthResult {
-  const requestPermissions = useCallback(async () => false, []);
   const refresh = useCallback(async () => {}, []);
 
   return {

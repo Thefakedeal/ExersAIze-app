@@ -1,5 +1,5 @@
 import { endOfDay, startOfDay } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useStepCount } from "./use-step-count";
 export const useTodaySteps = () => {
     const [todayStart, todayEnd] = useMemo(() => {
@@ -9,21 +9,18 @@ export const useTodaySteps = () => {
         return [todayStart, todayEnd];
     }, []);
 
-    
-    const [loading, setLoading] = useState(true);
     const {
         steps,
         error,
         isAvailable,
         refresh,
-        loading: stepCountLoading
+        loading,
     } = useStepCount(todayStart, todayEnd);
 
     useEffect(() => {
         const interval = setInterval(() => {
             void refresh();
         }, 1000);
-        setLoading(false);
         return () => clearInterval(interval);
     }, [refresh]);
 
