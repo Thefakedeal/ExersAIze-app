@@ -6,18 +6,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
 import { MonthlyCalendar } from '@/components/monthly-calendar';
+import { ActivityCard } from '@/components/schedule/activity-card';
 import { SessionCard } from '@/components/session/session-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ChevronRightIcon, PlusIcon } from '@/components/ui/icons';
+import { PlusIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useScheduledOccurrences } from '@/hooks/use-scheduled-occurrences';
 import { useTheme } from '@/hooks/use-theme';
 import { useWorkoutSessions } from '@/hooks/use-workout-sessions';
-import { ScheduledOccurrence } from '@/types/schedule';
-import { WorkoutSession } from '@/types/session';
-import { DisplayActivityStatus, getScheduledActivityStatus } from '@/utils/schedule-status';
+
 
 export function ScheduleScreen() {
   const router = useRouter();
@@ -165,70 +164,6 @@ export function ScheduleScreen() {
   );
 }
 
-function ActivityCard({
-  occurrence,
-  sessions,
-  onPress,
-}: {
-  occurrence: ScheduledOccurrence;
-  sessions: WorkoutSession[];
-  onPress: () => void;
-}) {
-  const theme = useTheme();
-
-  const statusConfig: Record<DisplayActivityStatus, { backgroundColor: string; color: string; label: string }> = {
-    scheduled: { backgroundColor: theme.backgroundSelected, color: theme.textSecondary, label: 'Scheduled' },
-    completed: { backgroundColor: theme.backgroundSelected, color: theme.primary, label: 'Completed' },
-    skipped: { backgroundColor: theme.errorLight, color: theme.error, label: 'Skipped' },
-  };
-
-  const dynamicStatus = getScheduledActivityStatus(occurrence.scheduledDate, {
-    workoutSessionId: occurrence.workoutSessionId,
-    sessions,
-  });
-  const status = statusConfig[dynamicStatus];
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${occurrence.title ?? 'Activity'}, ${status.label}`}>
-      <ThemedView
-        type="backgroundElement"
-        style={[styles.activityCard, { borderColor: theme.border }]}>
-        <View style={styles.activityCardMain}>
-          <View style={styles.activityInfo}>
-            <ThemedText type="smallBold">
-              {occurrence.title ?? 'Activity'}
-            </ThemedText>
-            {occurrence.startTime && (
-              <ThemedText type="small" themeColor="textSecondary">
-                {format(
-                  new Date(`${occurrence.scheduledDate}T${occurrence.startTime}`),
-                  'h:mm a'
-                )}
-              </ThemedText>
-            )}
-          </View>
-          <View style={styles.activityMeta}>
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: status.backgroundColor },
-              ]}>
-              <ThemedText type="code" style={{ color: status.color }}>
-                {status.label}
-              </ThemedText>
-            </View>
-            <ChevronRightIcon size={18} color={theme.textSecondary} />
-          </View>
-        </View>
-      </ThemedView>
-    </TouchableOpacity>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -306,31 +241,5 @@ const styles = StyleSheet.create({
   },
   sessionList: {
     gap: Spacing.three,
-  },
-  activityCard: {
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: Spacing.three,
-    gap: 2,
-  },
-  activityCardMain: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
-  },
-  activityInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  activityMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
   },
 });

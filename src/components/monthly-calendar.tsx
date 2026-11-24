@@ -172,7 +172,7 @@ function CalendarDay({
       <View
         style={[
           styles.dayIndicator,
-          isTodayDate && { borderColor:"transparent",borderBottomColor: theme.primary, borderWidth: 2 },
+          isTodayDate && { borderColor:theme.primary, borderWidth: 1},
         ]}>
       </View>
       {!isTodayDate && (<View style={[styles.dot, dotStyle]} />)}

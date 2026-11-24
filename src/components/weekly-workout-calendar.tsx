@@ -1,6 +1,6 @@
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { ThemedText } from './themed-text';
@@ -13,22 +13,27 @@ import { useWeeklyWorkoutStatus } from '@/hooks/use-weekly-workout-status';
 import { DayWorkoutStatus } from '@/types/schedule';
 
 export interface WeeklyWorkoutCalendarProps {
+  /** The currently selected day. Must be within the displayed week. */
+  selectedDate: Date;
   /** Called with the selected date whenever the user taps a day. */
-  onDateSelect?: (date: Date) => void;
+  onDateSelect: (date: Date) => void;
 }
 
-export function WeeklyWorkoutCalendar({ onDateSelect }: WeeklyWorkoutCalendarProps) {
+export function WeeklyWorkoutCalendar({ selectedDate, onDateSelect }: WeeklyWorkoutCalendarProps) {
   const theme = useTheme();
   const { days, statuses, todayIndex } = useWeeklyWorkoutStatus();
-  const [selectedIndex, setSelectedIndex] = useState(() => Math.max(0, todayIndex));
+
+  const selectedIndex = useMemo(() => {
+    const index = days.findIndex((day) => isSameDay(day, selectedDate));
+    return index >= 0 ? index : Math.max(0, todayIndex);
+  }, [days, selectedDate, todayIndex]);
 
   if (days.length === 0) {
     return null;
   }
 
   const handleSelectDay = (index: number) => {
-    setSelectedIndex(index);
-    onDateSelect?.(days[index]);
+    onDateSelect(days[index]);
   };
 
   return (
@@ -55,12 +60,11 @@ export function WeeklyWorkoutCalendar({ onDateSelect }: WeeklyWorkoutCalendarPro
 
       <View style={styles.row}>
         {days.map((day, index) => {
-          const { dot, text: dayStatusText } = getDayStatusColors(statuses[index] ?? 'none', theme);
+          const { text: dayStatusText } = getDayStatusColors(statuses[index] ?? 'none', theme);
           const isSelected = index === selectedIndex;
-          const isToday = index === todayIndex;
           const isFuture = index > todayIndex;
-          const text = isSelected?theme.primary:isFuture?theme.textSecondary:dayStatusText;
-          
+          const isTodayDate = index === todayIndex
+          const text = isSelected?theme.primary:dayStatusText;
           return (
             <TouchableOpacity
               key={day.toISOString()}
@@ -85,7 +89,7 @@ export function WeeklyWorkoutCalendar({ onDateSelect }: WeeklyWorkoutCalendarPro
 
               <View style={[styles.dayCircle,  { backgroundColor: 'transparent', borderColor: 'transparent' }
                   ]}>
-                <ThemedText type="smallBold" style={[{ color: text}]}>
+                <ThemedText type="smallBold" style={[{ color: text, opacity:isFuture?0.5:1}]}>
                   {format(day, 'd')}
                 </ThemedText>
               </View>
@@ -102,10 +106,10 @@ function getDayStatusColors(status: DayWorkoutStatus, theme: ReturnType<typeof u
     case 'completed':
       return {
         dot: { backgroundColor: theme.primary },
-        text: theme.textSecondary,
+        text: theme.primary,
       };
     case 'scheduled':
-      return { dot: { backgroundColor: theme.accent }, text: theme.textSecondary };
+      return { dot: { backgroundColor: theme.accent }, text: theme.accent };
     case 'skipped':
       return { dot: { borderColor: theme.error, borderWidth: 1.5, backgroundColor: 'transparent' }, text: theme.error };
     case 'none':
