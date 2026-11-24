@@ -151,7 +151,7 @@ function CalendarDay({
   const isSelected = isSameDay(day, selectedDate);
   const isTodayDate = isToday(day);
   const isCurrentMonth = isSameMonth(day, currentMonth);
-  const textTheme = isTodayDate
+  const textTheme = isSelected
     ? 'primary'
     : isCurrentMonth
       ? 'text'
@@ -166,16 +166,16 @@ function CalendarDay({
       accessibilityLabel={format(day, 'EEEE, MMMM do, yyyy')}
       accessibilityState={{ selected: isSelected }}
       style={styles.dayCell}>
-      <View
-        style={[
-          styles.dayCircle,
-          isSelected && { borderColor: theme.primary, borderWidth: 1.5 },
-        ]}>
         <ThemedText type="default" themeColor={textTheme} style={styles.dayText}>
           {format(day, 'd')}
         </ThemedText>
+      <View
+        style={[
+          styles.dayIndicator,
+          isTodayDate && { borderColor:"transparent",borderBottomColor: theme.primary, borderWidth: 2 },
+        ]}>
       </View>
-      <View style={[styles.dot, dotStyle]} />
+      {!isTodayDate && (<View style={[styles.dot, dotStyle]} />)}
 
     </TouchableOpacity>
   );
@@ -188,9 +188,9 @@ function getDotStyle(status: DayWorkoutStatus, theme: ReturnType<typeof useTheme
     case 'scheduled':
       return { backgroundColor: theme.accent };
     case 'skipped':
-      return { borderColor: theme.error, borderWidth: 1.5, backgroundColor: 'transparent' };
+      return { backgroundColor: theme.error};
     default:
-      return {};
+      return {backgroundColor:"transparent"};
   }
 }
 
@@ -241,9 +241,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayCircle: {
-    width: 36,
-    height: 36,
+  dayIndicator: {
+    width: 15,
+    height: 2,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
@@ -256,6 +256,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    marginTop: 2
+    marginTop: 2,
+    borderColor: "transparent" 
   },
 });

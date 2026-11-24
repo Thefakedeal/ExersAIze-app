@@ -55,10 +55,12 @@ export function WeeklyWorkoutCalendar({ onDateSelect }: WeeklyWorkoutCalendarPro
 
       <View style={styles.row}>
         {days.map((day, index) => {
-          const { dot, text } = getDayStatusColors(statuses[index] ?? 'none', theme);
+          const { dot, text: dayStatusText } = getDayStatusColors(statuses[index] ?? 'none', theme);
           const isSelected = index === selectedIndex;
           const isToday = index === todayIndex;
-
+          const isFuture = index > todayIndex;
+          const text = isSelected?theme.primary:isFuture?theme.textSecondary:dayStatusText;
+          
           return (
             <TouchableOpacity
               key={day.toISOString()}
@@ -81,17 +83,11 @@ export function WeeklyWorkoutCalendar({ onDateSelect }: WeeklyWorkoutCalendarPro
                 {format(day, 'EEE')}
               </ThemedText>
 
-              <View style={[styles.dayCircle, isSelected
-                  ? { backgroundColor: theme.backgroundSecondary, borderColor: theme.primary }
-                  : { backgroundColor: 'transparent', borderColor: 'transparent' },]}>
+              <View style={[styles.dayCircle,  { backgroundColor: 'transparent', borderColor: 'transparent' }
+                  ]}>
                 <ThemedText type="smallBold" style={[{ color: text}]}>
                   {format(day, 'd')}
                 </ThemedText>
-              </View>
-
-              <View style={styles.dotContainer}>
-                {isToday && <View style={[styles.todayDot, { backgroundColor: theme.textOnPrimary }]} />}
-                {!isToday && <View style={[styles.todayDot, dot]} />}
               </View>
             </TouchableOpacity>
           );
@@ -114,7 +110,7 @@ function getDayStatusColors(status: DayWorkoutStatus, theme: ReturnType<typeof u
       return { dot: { borderColor: theme.error, borderWidth: 1.5, backgroundColor: 'transparent' }, text: theme.error };
     case 'none':
     default:
-      return { dot: { backgroundColor: 'transparent' }, text: theme.textSecondary };
+      return { dot: { backgroundColor: 'transparent' }, text: theme.text };
   }
 }
 
