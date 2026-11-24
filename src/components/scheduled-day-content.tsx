@@ -1,7 +1,7 @@
 import { isFuture, isSameDay } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ActivityCard } from '@/components/schedule/activity-card';
 import { SessionCard } from '@/components/session/session-card';
@@ -9,7 +9,6 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useScheduledOccurrences } from '@/hooks/use-scheduled-occurrences';
 import { useWorkoutSessions } from '@/hooks/use-workout-sessions';
-import { DeleteScope, deleteScheduledOccurrence } from '@/services/schedule-storage';
 
 interface ScheduledDayContentProps {
   selectedDate: Date;
@@ -18,8 +17,7 @@ interface ScheduledDayContentProps {
 /**
  * Renders the selected day's scheduled items using the same behavior as the
  * Schedule screen: scheduled activities are listed first, followed by logged
- * workout sessions. Tapping an activity opens its detail screen; the card menu
- * provides Edit and Delete actions.
+ * workout sessions. Tapping an activity opens its detail screen.
  */
 export function ScheduledDayContent({ selectedDate }: ScheduledDayContentProps) {
   const router = useRouter();
@@ -35,18 +33,6 @@ export function ScheduledDayContent({ selectedDate }: ScheduledDayContentProps) 
 
   const handleActivityPress = (id: string) => {
     router.push(`/schedule/activity-detail?id=${id}`);
-  };
-
-  const handleEditActivity = (id: string) => {
-    router.push(`/schedule/edit-activity?id=${id}`);
-  };
-
-  const handleDeleteActivity = async (id: string, scope: DeleteScope) => {
-    try {
-      await deleteScheduledOccurrence(id, scope);
-    } catch {
-      Alert.alert('Error', 'Failed to delete activity. Please try again.');
-    }
   };
 
   const handleSessionPress = (id: string) => {
@@ -72,8 +58,6 @@ export function ScheduledDayContent({ selectedDate }: ScheduledDayContentProps) 
                 occurrence={occurrence}
                 sessions={sessions}
                 onPress={() => handleActivityPress(occurrence.id)}
-                onEdit={handleEditActivity}
-                onDelete={handleDeleteActivity}
               />
             ))}
           </View>

@@ -94,7 +94,7 @@
 
 ### 8. Edit Scheduled Activities
 - Provide an **Edit** action for scheduled activities.
-- Edit can be reached from the activity card options menu on the Home page and Schedule screen.
+- Edit is reached from the activity detail screen via an **Edit** button with an icon.
 - The edit screen reuses the same form fields as adding an activity: routine, date, all-day toggle, start/end time, recurrence, notes.
 - For recurring activities, saving prompts the user to apply changes to:
   - **Only this occurrence** — updates the selected occurrence and detaches it from the series.
@@ -104,7 +104,7 @@
 
 ### 9. Delete Scheduled Activities
 - Provide a **Delete** action for scheduled activities.
-- Delete can be reached from the activity card options menu or from the edit screen.
+- Delete is reached from the activity detail screen via a **Delete** button with an icon.
 - For non-recurring activities, delete removes the single occurrence after confirmation.
 - For recurring activities, delete asks which occurrences to remove:
   - **Only this occurrence** — removes the selected occurrence.
@@ -129,8 +129,9 @@
 - `src/hooks/use-weekly-workout-status.ts` — Derives day status dynamically from occurrences and sessions.
 - `src/components/monthly-calendar.tsx` — Fixed skipped-status dot style.
 - `src/components/weekly-workout-calendar.tsx` — Fixed skipped-status dot style.
-- `src/components/schedule/activity-card.tsx` — Added options menu with Edit/Delete and recurring scope prompts.
-- `src/components/scheduled-day-content.tsx` — Wired edit/delete handlers for the Home page selected-day view.
+- `src/components/schedule/activity-card.tsx` — Activity cards navigate to the detail screen.
+- `src/components/scheduled-day-content.tsx` — Renders activity cards for the Home page selected-day view.
+- `src/screens/scheduled-activity-detail-screen.tsx` — Added Edit and Delete buttons with icons and recurring scope prompts.
 - `src/screens/schedule-screen.tsx` — Activity cards are pressable, display dynamic status badges, and support edit/delete.
 - `src/screens/add-schedule-activity-screen.tsx` — Refactored to use the shared `ScheduleActivityForm`.
 - `src/screens/exercise-session-screen.tsx` — Accepts `scheduledOccurrenceId`, initializes session times from activity, links session ID, no longer persists status.
@@ -139,7 +140,7 @@
 
 ### Behavior
 - Tapping a scheduled activity opens its detail view.
-- Tapping the options menu on a scheduled activity shows **Edit** and **Delete** actions.
+- The detail screen shows **Edit** and **Delete** buttons with icons.
 - **Edit** opens the edit screen pre-filled with the activity's values.
 - **Delete** asks for confirmation and, for recurring activities, asks which occurrences to remove.
 - Recurring edits prompt for scope before applying changes.

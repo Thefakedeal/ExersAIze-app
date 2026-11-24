@@ -28,7 +28,6 @@ import {
   ClockIcon,
   DumbbellIcon,
   RepeatIcon,
-  TrashIcon,
 } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRoutines } from '@/hooks/use-routines';
@@ -177,7 +176,6 @@ export type ScheduleActivityFormProps = {
   submitLabel: string;
   onSave: (data: ScheduleActivityFormData) => Promise<void>;
   onBack: () => void;
-  onDelete?: () => void;
 };
 
 export function ScheduleActivityForm({
@@ -193,7 +191,6 @@ export function ScheduleActivityForm({
   submitLabel,
   onSave,
   onBack,
-  onDelete,
 }: ScheduleActivityFormProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -482,28 +479,6 @@ export function ScheduleActivityForm({
                 accessibilityLabel="Activity notes"
               />
             </ThemedView>
-
-            {onDelete && (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={onDelete}
-                accessibilityRole="button"
-                accessibilityLabel="Delete activity"
-                style={[
-                  styles.deleteButton,
-                  {
-                    backgroundColor: theme.errorLight,
-                    borderColor: theme.errorBorder,
-                  },
-                ]}>
-                <TrashIcon size={18} color={theme.error} />
-                <ThemedText
-                  type="smallBold"
-                  style={{ color: theme.error, marginLeft: 8 }}>
-                  Delete Activity
-                </ThemedText>
-              </TouchableOpacity>
-            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -752,15 +727,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    marginTop: Spacing.two,
-    marginBottom: Spacing.four,
   },
 });

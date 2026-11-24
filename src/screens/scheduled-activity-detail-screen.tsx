@@ -3,6 +3,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -19,9 +20,11 @@ import {
   ChevronRightIcon,
   ClockIcon,
   DumbbellIcon,
+  EditIcon,
   ListCheckIcon,
   NoteIcon,
   PlayIcon,
+  TrashIcon,
   CloseIcon,
 } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -31,6 +34,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { useWorkoutSessions } from '@/hooks/use-workout-sessions';
 import { getCustomRoutineById } from '@/services/routine-storage';
 import {
+  DeleteScope,
+  deleteScheduledOccurrence,
   getScheduledOccurrenceById,
   subscribeToScheduleUpdates,
 } from '@/services/schedule-storage';
@@ -136,6 +141,69 @@ export function ScheduledActivityDetailScreen({ id }: ScheduledActivityDetailScr
   const handleViewSession = () => {
     if (!linkedSession) return;
     router.push(`/session/view-session?id=${linkedSession.id}`);
+  };
+
+  const handleEdit = () => {
+    if (!occurrence) return;
+    router.push(`/schedule/edit-activity?id=${occurrence.id}`);
+  };
+
+  const handleDeleteConfirm = (scope: DeleteScope) => {
+    if (!occurrence) return;
+
+    Alert.alert(
+      'Delete Activity',
+      `Are you sure you want to delete "${occurrence.title ?? 'this activity'}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteScheduledOccurrence(occurrence.id, scope);
+              router.back();
+            } catch {
+              Alert.alert('Error', 'Failed to delete activity. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDelete = () => {
+    if (!occurrence) return;
+
+    const isRecurring = occurrence.recurrence !== 'none' && occurrence.seriesId;
+
+    if (!isRecurring) {
+      handleDeleteConfirm('this');
+      return;
+    }
+
+    Alert.alert(
+      'Delete Recurring Activity',
+      'This is a recurring activity. What would you like to delete?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Only this occurrence',
+          style: 'destructive',
+          onPress: () => handleDeleteConfirm('this'),
+        },
+        {
+          text: 'This and future occurrences',
+          style: 'destructive',
+          onPress: () => handleDeleteConfirm('future'),
+        },
+        {
+          text: 'Entire series',
+          style: 'destructive',
+          onPress: () => handleDeleteConfirm('all'),
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -359,6 +427,51 @@ export function ScheduledActivityDetailScreen({ id }: ScheduledActivityDetailScr
               </ThemedView>
             </View>
           ) : null}
+
+          {/* Edit / Delete actions */}
+          <View style={styles.actionsSection}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleEdit}
+              accessibilityRole="button"
+              accessibilityLabel="Edit activity"
+              style={[
+                styles.actionButton,
+                styles.editButton,
+                {
+                  backgroundColor: theme.backgroundElement,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <EditIcon size={18} color={theme.primary} />
+              <ThemedText
+                type="smallBold"
+                style={{ color: theme.primary, marginLeft: 8 }}>
+                Edit
+              </ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleDelete}
+              accessibilityRole="button"
+              accessibilityLabel="Delete activity"
+              style={[
+                styles.actionButton,
+                styles.deleteButton,
+                {
+                  backgroundColor: theme.errorLight,
+                  borderColor: theme.errorBorder,
+                },
+              ]}>
+              <TrashIcon size={18} color={theme.error} />
+              <ThemedText
+                type="smallBold"
+                style={{ color: theme.error, marginLeft: 8 }}>
+                Delete
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </ThemedView>
@@ -482,4 +595,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: Spacing.two,
   },
+  actionsSection: {
+    flexDirection: 'row',
+    gap: Spacing.three,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  editButton: {},
+  deleteButton: {},
 });

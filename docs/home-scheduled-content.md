@@ -13,7 +13,7 @@ The Home page (`src/app/(home)/index.tsx`) displays the user's scheduled activit
    - **Workouts** (logged workout sessions) for the selected date.
 4. Tapping a day in the calendar updates the content immediately.
 5. Tapping a scheduled activity opens the activity detail screen, where the existing start/resume flows live.
-6. Tapping the options menu on a scheduled activity opens Edit and Delete actions.
+6. The activity detail screen provides **Edit** and **Delete** buttons for the scheduled activity.
 7. Tapping a workout session opens the session view screen.
 8. If the selected day has neither scheduled activities nor logged workouts, the content area is hidden entirely.
 
@@ -57,7 +57,7 @@ This matches the product requirement that activities should be shown first.
 - Render the "Scheduled Activities" section.
 - Render the "Workouts" section (only for non-future dates).
 - Return `null` when there is nothing to show.
-- Provide `onEdit` and `onDelete` handlers to `ActivityCard`.
+- Navigate to the activity detail screen when an activity card is pressed.
 
 **Key behaviors:**
 - Future dates do not show the Workouts section.
@@ -72,8 +72,6 @@ This matches the product requirement that activities should be shown first.
 - Display a single scheduled occurrence.
 - Show title, scheduled time, and dynamic status.
 - Navigate to the activity detail screen on press.
-- Show an options menu with Edit and Delete actions when `onEdit`/`onDelete` are provided.
-- For recurring activities, prompt the user to choose a scope before deleting or editing.
 
 **Shared usage:**
 - Used by `ScheduleScreen`.
@@ -129,11 +127,11 @@ The Home page does not duplicate start logic. Starting an activity or workout fo
 
 ## Editing and Deleting Scheduled Activities
 
-Scheduled activities can be edited or deleted directly from the selected-day view:
+Scheduled activities can be edited or deleted from the activity detail screen:
 
-- Tap the **⋮** menu on an activity card to open **Edit** and **Delete** actions.
-- **Edit** opens the `EditScheduleActivityScreen` pre-filled with the activity's current values.
-- **Delete** asks for confirmation. For recurring activities, it also asks which occurrences to delete:
+- Tap a scheduled activity card to open the detail screen.
+- Tap the **Edit** button to open the `EditScheduleActivityScreen` pre-filled with the activity's current values.
+- Tap the **Delete** button to remove the activity. For recurring activities, it asks which occurrences to delete:
   - Only this occurrence
   - This and future occurrences
   - Entire series

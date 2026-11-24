@@ -21,9 +21,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
-  DeleteScope,
   EditScope,
-  deleteScheduledOccurrence,
   getScheduledOccurrenceById,
   updateScheduledOccurrenceWithScope,
 } from '@/services/schedule-storage';
@@ -127,62 +125,6 @@ export function EditScheduleActivityScreen() {
     savePromiseRef.current = null;
   };
 
-  const handleDelete = () => {
-    if (!id || !occurrence) return;
-
-    const isRecurring = occurrence.recurrence !== 'none' && occurrence.seriesId;
-
-    const confirmDelete = (scope: DeleteScope) => {
-      Alert.alert(
-        'Delete Activity',
-        `Are you sure you want to delete "${occurrence.title ?? 'this activity'}"?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await deleteScheduledOccurrence(id, scope);
-                router.back();
-              } catch {
-                Alert.alert('Error', 'Failed to delete activity. Please try again.');
-              }
-            },
-          },
-        ]
-      );
-    };
-
-    if (!isRecurring) {
-      confirmDelete('this');
-      return;
-    }
-
-    Alert.alert(
-      'Delete Recurring Activity',
-      'This is a recurring activity. What would you like to delete?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Only this occurrence',
-          style: 'destructive',
-          onPress: () => confirmDelete('this'),
-        },
-        {
-          text: 'This and future occurrences',
-          style: 'destructive',
-          onPress: () => confirmDelete('future'),
-        },
-        {
-          text: 'Entire series',
-          style: 'destructive',
-          onPress: () => confirmDelete('all'),
-        },
-      ]
-    );
-  };
-
   if (loading) {
     return (
       <ThemedView style={styles.centerContainer}>
@@ -215,7 +157,6 @@ export function EditScheduleActivityScreen() {
         initialNotes={occurrence.notes ?? ''}
         onSave={handleSave}
         onBack={router.back}
-        onDelete={handleDelete}
       />
 
       <Modal
