@@ -90,6 +90,28 @@
    - Link the created session ID to the occurrence immediately to prevent duplicates.
    - Stop persisting occurrence `status` because it is now derived.
 
+## Edit and Delete Scheduled Activities
+
+### 8. Edit Scheduled Activities
+- Provide an **Edit** action for scheduled activities.
+- Edit can be reached from the activity card options menu on the Home page and Schedule screen.
+- The edit screen reuses the same form fields as adding an activity: routine, date, all-day toggle, start/end time, recurrence, notes.
+- For recurring activities, saving prompts the user to apply changes to:
+  - **Only this occurrence** — updates the selected occurrence and detaches it from the series.
+  - **This and future occurrences** — keeps past occurrences unchanged and updates/regenerates the selected and future occurrences.
+  - **Entire series** — updates all occurrences; past occurrences preserve their dates and session links, future occurrences regenerate when recurrence or start date changes.
+- Editing must never modify or delete historical workout records.
+
+### 9. Delete Scheduled Activities
+- Provide a **Delete** action for scheduled activities.
+- Delete can be reached from the activity card options menu or from the edit screen.
+- For non-recurring activities, delete removes the single occurrence after confirmation.
+- For recurring activities, delete asks which occurrences to remove:
+  - **Only this occurrence** — removes the selected occurrence.
+  - **This and future occurrences** — removes occurrences in the series from the selected date onward.
+  - **Entire series** — removes all occurrences sharing the series ID.
+- Deleting schedule entries must never cascade into deleting completed workout sessions.
+
 ## What Was Done
 
 ### Files Added
@@ -97,25 +119,37 @@
 - `src/hooks/use-scheduled-activity-status.ts` — Hook wrapping the status calculation.
 - `src/screens/scheduled-activity-detail-screen.tsx` — New detail/status/navigation screen.
 - `src/app/(home)/schedule/activity-detail.tsx` — Route wrapper for the detail screen.
+- `src/screens/edit-schedule-activity-screen.tsx` — New edit screen with recurring scope handling.
+- `src/app/(home)/schedule/edit-activity.tsx` — Route wrapper for the edit screen.
+- `src/components/schedule/schedule-activity-form.tsx` — Shared form component used by Add and Edit screens.
 
 ### Files Modified
-- `src/services/schedule-storage.ts` — Added `getScheduledOccurrenceById` and `updateScheduledOccurrence`.
+- `src/services/schedule-storage.ts` — Added `getScheduledOccurrenceById`, `updateScheduledOccurrence`, `deleteScheduledOccurrence`, and `updateScheduledOccurrenceWithScope`.
 - `src/hooks/use-monthly-workout-status.ts` — Derives day status dynamically from occurrences and sessions.
 - `src/hooks/use-weekly-workout-status.ts` — Derives day status dynamically from occurrences and sessions.
 - `src/components/monthly-calendar.tsx` — Fixed skipped-status dot style.
 - `src/components/weekly-workout-calendar.tsx` — Fixed skipped-status dot style.
-- `src/screens/schedule-screen.tsx` — Activity cards are pressable and display dynamic status badges.
+- `src/components/schedule/activity-card.tsx` — Added options menu with Edit/Delete and recurring scope prompts.
+- `src/components/scheduled-day-content.tsx` — Wired edit/delete handlers for the Home page selected-day view.
+- `src/screens/schedule-screen.tsx` — Activity cards are pressable, display dynamic status badges, and support edit/delete.
+- `src/screens/add-schedule-activity-screen.tsx` — Refactored to use the shared `ScheduleActivityForm`.
 - `src/screens/exercise-session-screen.tsx` — Accepts `scheduledOccurrenceId`, initializes session times from activity, links session ID, no longer persists status.
 - `src/app/session/exercise-session.tsx` — Forwards `scheduledOccurrenceId` route param.
+- `src/components/ui/icons.tsx` — Added `MoreHorizontalIcon`.
 
 ### Behavior
 - Tapping a scheduled activity opens its detail view.
+- Tapping the options menu on a scheduled activity shows **Edit** and **Delete** actions.
+- **Edit** opens the edit screen pre-filled with the activity's values.
+- **Delete** asks for confirmation and, for recurring activities, asks which occurrences to remove.
+- Recurring edits prompt for scope before applying changes.
 - Detail view shows a dynamic status badge (`Scheduled`, `Completed`, or `Skipped`).
 - Linked routines can be viewed and started (today/past only).
 - Linked sessions can be viewed (completed) or continued (in-progress).
 - Starting a routine creates a workout session with timestamps from the activity, links the session ID to the occurrence, and the activity becomes `Completed`.
 - If a routine is started and abandoned, the occurrence stays linked to the in-progress session; the user sees **Continue Session**.
 - If a linked session is deleted, the Workout Session section disappears, **Start Routine** is offered again, and the occurrence status reverts dynamically.
+- If a scheduled occurrence or series is deleted, the linked workout session remains in storage and remains visible in the Workouts section.
 - Future activities show no status actions and no Start Routine button.
 
 ## Verification

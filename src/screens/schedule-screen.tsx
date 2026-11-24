@@ -1,7 +1,7 @@
 import { format, isFuture, isSameDay, isToday, startOfDay, startOfMonth } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/header';
@@ -16,6 +16,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useScheduledOccurrences } from '@/hooks/use-scheduled-occurrences';
 import { useTheme } from '@/hooks/use-theme';
 import { useWorkoutSessions } from '@/hooks/use-workout-sessions';
+import { DeleteScope, deleteScheduledOccurrence } from '@/services/schedule-storage';
 
 
 export function ScheduleScreen() {
@@ -50,6 +51,18 @@ export function ScheduleScreen() {
 
   const handleActivityPress = (id: string) => {
     router.push(`/schedule/activity-detail?id=${id}`);
+  };
+
+  const handleEditActivity = (id: string) => {
+    router.push(`/schedule/edit-activity?id=${id}`);
+  };
+
+  const handleDeleteActivity = async (id: string, scope: DeleteScope) => {
+    try {
+      await deleteScheduledOccurrence(id, scope);
+    } catch {
+      Alert.alert('Error', 'Failed to delete activity. Please try again.');
+    }
   };
 
   return (
@@ -152,6 +165,8 @@ export function ScheduleScreen() {
                       occurrence={occurrence}
                       sessions={sessions}
                       onPress={() => handleActivityPress(occurrence.id)}
+                      onEdit={handleEditActivity}
+                      onDelete={handleDeleteActivity}
                     />
                   ))}
                 </View>

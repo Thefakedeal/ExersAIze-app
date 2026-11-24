@@ -63,7 +63,6 @@ export function WeeklyWorkoutCalendar({ selectedDate, onDateSelect }: WeeklyWork
           const { text: dayStatusText } = getDayStatusColors(statuses[index] ?? 'none', theme);
           const isSelected = index === selectedIndex;
           const isFuture = index > todayIndex;
-          const isTodayDate = index === todayIndex
           const text = isSelected?theme.primary:dayStatusText;
           return (
             <TouchableOpacity

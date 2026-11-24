@@ -13,8 +13,9 @@ The Home page (`src/app/(home)/index.tsx`) displays the user's scheduled activit
    - **Workouts** (logged workout sessions) for the selected date.
 4. Tapping a day in the calendar updates the content immediately.
 5. Tapping a scheduled activity opens the activity detail screen, where the existing start/resume flows live.
-6. Tapping a workout session opens the session view screen.
-7. If the selected day has neither scheduled activities nor logged workouts, the content area is hidden entirely.
+6. Tapping the options menu on a scheduled activity opens Edit and Delete actions.
+7. Tapping a workout session opens the session view screen.
+8. If the selected day has neither scheduled activities nor logged workouts, the content area is hidden entirely.
 
 ## Architecture
 
@@ -56,10 +57,12 @@ This matches the product requirement that activities should be shown first.
 - Render the "Scheduled Activities" section.
 - Render the "Workouts" section (only for non-future dates).
 - Return `null` when there is nothing to show.
+- Provide `onEdit` and `onDelete` handlers to `ActivityCard`.
 
 **Key behaviors:**
 - Future dates do not show the Workouts section.
 - Empty days do not render any placeholder.
+- Edit/delete actions navigate to `/schedule/edit-activity` or call `deleteScheduledOccurrence`.
 
 ### `ActivityCard`
 
@@ -69,6 +72,8 @@ This matches the product requirement that activities should be shown first.
 - Display a single scheduled occurrence.
 - Show title, scheduled time, and dynamic status.
 - Navigate to the activity detail screen on press.
+- Show an options menu with Edit and Delete actions when `onEdit`/`onDelete` are provided.
+- For recurring activities, prompt the user to choose a scope before deleting or editing.
 
 **Shared usage:**
 - Used by `ScheduleScreen`.
@@ -116,10 +121,30 @@ new Date(`${occurrence.scheduledDate}T${occurrence.startTime}`)
 | Action | Route |
 |--------|-------|
 | View scheduled activity | `/schedule/activity-detail?id={occurrence.id}` |
+| Edit scheduled activity | `/schedule/edit-activity?id={occurrence.id}` |
 | View workout session | `/session/view-session?id={session.id}` |
 | Start activity or workout | Handled by the activity detail screen via `/session/exercise-session?...` |
 
 The Home page does not duplicate start logic. Starting an activity or workout follows the existing flow initiated from the activity detail screen.
+
+## Editing and Deleting Scheduled Activities
+
+Scheduled activities can be edited or deleted directly from the selected-day view:
+
+- Tap the **⋮** menu on an activity card to open **Edit** and **Delete** actions.
+- **Edit** opens the `EditScheduleActivityScreen` pre-filled with the activity's current values.
+- **Delete** asks for confirmation. For recurring activities, it also asks which occurrences to delete:
+  - Only this occurrence
+  - This and future occurrences
+  - Entire series
+
+Recurring edits also prompt for scope before applying changes:
+
+- **Only this occurrence:** updates the selected occurrence and detaches it from the series.
+- **This and future occurrences:** keeps past occurrences unchanged and updates/regenerates the selected and future occurrences.
+- **Entire series:** updates all occurrences in the series; when recurrence or the start date changes, past occurrences keep their dates and session links while future occurrences regenerate.
+
+Historical workout sessions are never deleted by schedule operations. Deleting a scheduled activity or series removes only schedule entries; completed workouts remain visible under the Workouts section.
 
 ## Empty States
 
