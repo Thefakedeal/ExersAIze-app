@@ -19,7 +19,9 @@ export interface WalkingBreakdownChartProps {
 }
 
 const formatHour = (hour: number) => {
-  return `${hour % 12 || 12}`;
+  const period = hour < 12 ? 'am' : 'pm';
+  const formattedHour = hour % 12 || 12;
+  return `${formattedHour} ${period}`;
 };
 
 export function WalkingBreakdownChart({ day = new Date() }: WalkingBreakdownChartProps) {
@@ -160,7 +162,7 @@ export function WalkingBreakdownChart({ day = new Date() }: WalkingBreakdownChar
             {peakRecord && peakRecord.steps > 0 ? formatHour(peakRecord.hour) : '—'}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Peak time
+            Peak Hour
           </ThemedText>
         </View>
 

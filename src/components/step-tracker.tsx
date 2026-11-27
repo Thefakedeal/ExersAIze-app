@@ -69,7 +69,7 @@ export function StepTracker({
             <ThemedText
               type="smallBold"
               style={{ color: theme.primary, fontSize: 13 }}>
-              Weekly
+              View Details
             </ThemedText>
             <ChevronRightIcon size={14} color={theme.primary} />
           </TouchableOpacity>
