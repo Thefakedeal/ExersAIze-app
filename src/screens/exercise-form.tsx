@@ -84,7 +84,7 @@ export function ExerciseForm({
     ...DEFAULT_EXERCISE_CATEGORIES,
   ]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialValues?.categories ?? ['Chest']
+    initialValues?.categories ?? []
   );
   const [categorySearch, setCategorySearch] = useState('');
 
