@@ -1,5 +1,12 @@
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { Header } from '@/components/header';
 import { ThemedText } from '@/components/themed-text';
@@ -13,6 +20,27 @@ export default function RoutineScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { customRoutines, defaultRoutines } = useRoutines();
+  const [startingRoutineId, setStartingRoutineId] = useState<string | null>(null);
+
+  // Reset the loading state when the user returns from the session screen.
+  useFocusEffect(
+    useCallback(() => {
+      setStartingRoutineId(null);
+    }, [])
+  );
+
+  const handleStartRoutine = (routineId: string) => {
+    // Guard against repeated taps creating duplicate sessions.
+    if (startingRoutineId) return;
+
+    setStartingRoutineId(routineId);
+
+    try {
+      router.push(`/session/exercise-session?routineId=${routineId}`);
+    } catch {
+      setStartingRoutineId(null);
+    }
+  };
 
   return (
     <ThemedView style={[styles.container]}>
@@ -108,7 +136,11 @@ export default function RoutineScreen() {
               </View>
             )}
 
-            {defaultRoutines.map((routine) => (
+            {defaultRoutines.map((routine) => {
+              const isStarting = startingRoutineId === routine.id;
+              const startDisabled = startingRoutineId !== null;
+
+              return (
               <TouchableOpacity
                 key={routine.id}
                 activeOpacity={0.7}
@@ -144,10 +176,21 @@ export default function RoutineScreen() {
 
                   <View style={styles.cardActions}>
                     <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => router.push(`/session/exercise-session?routineId=${routine.id}`)}
-                      style={[styles.startButton, { backgroundColor: theme.primary }]}>
-                      <PlayIcon size={12} color={theme.textOnPrimary} />
+                      activeOpacity={isStarting ? 1 : 0.7}
+                      onPress={() => handleStartRoutine(routine.id)}
+                      disabled={startDisabled}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Start ${routine.name}`}
+                      accessibilityState={{ disabled: startDisabled, busy: isStarting }}
+                      style={[
+                        styles.startButton,
+                        { backgroundColor: isStarting ? theme.primaryDisabled : theme.primary },
+                      ]}>
+                      {isStarting ? (
+                        <ActivityIndicator size="small" color={theme.textOnPrimary} />
+                      ) : (
+                        <PlayIcon size={12} color={theme.textOnPrimary} />
+                      )}
                       <ThemedText type="smallBold" style={{ color: theme.textOnPrimary, fontSize: 12 }}>
                         Start
                       </ThemedText>
@@ -156,7 +199,8 @@ export default function RoutineScreen() {
                   </View>
                 </ThemedView>
               </TouchableOpacity>
-            ))}
+              );
+            })}
           </View>
         </ScrollView>
       </View>
