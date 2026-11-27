@@ -1,145 +1,168 @@
-import { StyleSheet, View } from 'react-native';
-
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { format, isSameDay } from 'date-fns';
+import { router } from 'expo-router';
+import { useMemo } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
-export type DayStatus = 'worked' | 'upcoming' | 'missed' | 'rest';
-
-export interface WeekDay {
-  day: string; // e.g., 'Mon', 'Tue'
-  date: number; // e.g., '3', '4'
-  status: DayStatus;
-}
+import { CalendarIcon } from '@/components/ui/icons';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { useWeeklyWorkoutStatus } from '@/hooks/use-weekly-workout-status';
+import { DayWorkoutStatus } from '@/types/schedule';
 
 export interface WeeklyWorkoutCalendarProps {
-  weekDays?: WeekDay[];
-  workedOutCount?: number;
-  totalWorkoutDays?: number;
+  /** The currently selected day. Must be within the displayed week. */
+  selectedDate: Date;
+  /** Called with the selected date whenever the user taps a day. */
+  onDateSelect: (date: Date) => void;
 }
 
-const defaultWeekDays: WeekDay[] = [
-  { day: 'Mon', status: 'worked', date: 2 },
-  { day: 'Tue', status: 'worked', date: 3 },
-  { day: 'Wed', status: 'missed', date: 4 },
-  { day: 'Thu', status: 'upcoming', date: 5 },
-  { day: 'Fri', status: 'rest', date: 6 },
-  { day: 'Sat', status: 'upcoming', date: 7 },
-  { day: 'Sun', status: 'rest', date: 8 },
-];
-
-export function WeeklyWorkoutCalendar({
-  weekDays = defaultWeekDays,
-  workedOutCount = weekDays.filter((d) => d.status === 'worked').length,
-  totalWorkoutDays = weekDays.filter((d) => d.status === 'worked' || d.status === 'missed' || d.status === 'upcoming').length,
-}: WeeklyWorkoutCalendarProps) {
+export function WeeklyWorkoutCalendar({ selectedDate, onDateSelect }: WeeklyWorkoutCalendarProps) {
   const theme = useTheme();
-  const todaysdate = 4; // for now
-  const getDayStyle = (status: DayStatus) => {
-    switch (status) {
-      case 'worked':
-        return {
-          backgroundColor: theme.primaryLight,
-          borderColor: theme.primaryLight,
-        };
-      case 'upcoming':
-        return {
-          backgroundColor: 'transparent',
-          borderColor: theme.primaryLight,
-        };
-      case 'missed':
-        return {
-          backgroundColor: 'transparent',
-          borderColor: theme.error,
-        };
-      case 'rest':
-        return {
-          backgroundColor: 'transparent',
-          borderColor: 'transparent',
-        };
-      default:
-        return {
-          backgroundColor: 'transparent',
-          borderColor: 'transparent',
-        };
-    }
-  };
+  const { days, statuses, todayIndex } = useWeeklyWorkoutStatus();
 
-  const getDayTextColor = (status: DayStatus) => {
-    switch (status) {
-      case 'worked':
-        return theme.primary;
-      case 'upcoming':
-        return theme.primary;
-      case 'missed':
-        return theme.error;
-      case 'rest':
-        return theme.textSecondary;
-      default:
-        return theme.text;
-    }
+  const selectedIndex = useMemo(() => {
+    const index = days.findIndex((day) => isSameDay(day, selectedDate));
+    return index >= 0 ? index : Math.max(0, todayIndex);
+  }, [days, selectedDate, todayIndex]);
+
+  if (days.length === 0) {
+    return null;
+  }
+
+  const handleSelectDay = (index: number) => {
+    onDateSelect(days[index]);
   };
 
   return (
-    <ThemedView type="backgroundElement" style={[styles.container, { borderColor: theme.border }]}>
+    <ThemedView
+      type="backgroundElement"
+      style={[styles.container, { borderColor: theme.border }]}>
       <View style={styles.header}>
-        <ThemedText type="subtitle">This Week</ThemedText>
-        <ThemedText type="small" style={{ color: theme.textSecondary }}>
-          {workedOutCount} / {totalWorkoutDays} days worked out
+        <ThemedText type="default" style={styles.headerTitle}>
+          This Week
         </ThemedText>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push('/schedule')}
+          accessibilityRole="button"
+          accessibilityLabel="View schedule"
+          style={[styles.viewScheduleButton, { backgroundColor: theme.backgroundSelected }]}>
+          <CalendarIcon size={14} color={theme.primary} />
+          <ThemedText type="smallBold" style={[styles.viewScheduleText, { color: theme.primary }]}>
+            View Schedule
+          </ThemedText>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.daysContainer}>
-        {weekDays.map((day, index) => {
-          const dayStyle = getDayStyle(day.status);
-          const textColor = getDayTextColor(day.status);
+      <View style={styles.row}>
+        {days.map((day, index) => {
+          const { text: dayStatusText } = getDayStatusColors(statuses[index] ?? 'none', theme);
+          const isSelected = index === selectedIndex;
+          const isFuture = index > todayIndex;
+          const text = isSelected?theme.primary:dayStatusText;
           return (
-            <View key={index} style={styles.dayColumn}>
-              
-              <ThemedText type="small" style={[styles.dayLabel, {color: (day.date === todaysdate) ? theme.primary : theme.textSecondary,fontWeight: (day.date === todaysdate)? 'bold' : 'normal',}]}>
-                {day.day}
+            <TouchableOpacity
+              key={day.toISOString()}
+              activeOpacity={0.7}
+              onPress={() => handleSelectDay(index)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={format(day, 'EEEE, MMMM d')}
+              style={[
+                styles.dayColumn,
+                { backgroundColor: 'transparent', borderColor: 'transparent' }
+                
+              ]}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.dayLabel,
+                  { color: isSelected ? theme.primary : theme.textSecondary },
+                ]}>
+                {format(day, 'EEE')}
               </ThemedText>
-              <View style={[styles.dayCircle, dayStyle]}>
-                <ThemedText type="smallBold" style={{ color: textColor }}>
-                  {day.date|| "0"}
+
+              <View style={[styles.dayCircle,  { backgroundColor: 'transparent', borderColor: 'transparent' }
+                  ]}>
+                <ThemedText type="smallBold" style={[{ color: text, opacity:isFuture?0.5:1}]}>
+                  {format(day, 'd')}
                 </ThemedText>
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
-  
     </ThemedView>
   );
+}
+
+function getDayStatusColors(status: DayWorkoutStatus, theme: ReturnType<typeof useTheme>) {
+  switch (status) {
+    case 'completed':
+      return {
+        dot: { backgroundColor: theme.primary },
+        text: theme.primary,
+      };
+    case 'scheduled':
+      return { dot: { backgroundColor: theme.accent }, text: theme.accent };
+    case 'skipped':
+      return { dot: { borderColor: theme.error, borderWidth: 1.5, backgroundColor: 'transparent' }, text: theme.error };
+    case 'none':
+    default:
+      return { dot: { backgroundColor: 'transparent' }, text: theme.text };
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    borderRadius: Spacing.four,
+    borderRadius: Spacing.three,
     borderWidth: 1,
-    padding: Spacing.four,
-    gap: Spacing.three,
+    padding: Spacing.three,
+    gap: Spacing.two,
   },
   header: {
-    width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
   },
-  daysContainer: {
+  headerTitle: {
+    fontWeight: '600',
+  },
+  viewScheduleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one,
+    borderRadius: Spacing.two,
+  },
+  viewScheduleText: {
+    fontSize: 12,
+  },
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
+    gap: Spacing.one,
   },
   dayColumn: {
-    alignItems: 'center',
-    gap: Spacing.two,
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.two,
+    paddingHorizontal: 2,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    gap: Spacing.two,
   },
   dayLabel: {
+    fontSize: 11,
+    fontWeight: '600',
     textTransform: 'uppercase',
   },
   dayCircle: {
@@ -149,21 +172,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 2,
   },
-  legend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.three,
+  dotContainer: {
+    height: 6,
     justifyContent: 'center',
-  },
-  legendItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.one,
+    marginTop: 2,
   },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  todayDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
 });

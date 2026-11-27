@@ -1,14 +1,16 @@
+import { format, startOfDay } from 'date-fns';
 import { Href, router } from 'expo-router';
 import type { ComponentType } from 'react';
+import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { QuoteCard } from '@/components/quote-card';
 import { SafeArea } from '@/components/safe-area';
+import { ScheduledDayContent } from '@/components/scheduled-day-content';
 import { StartWorkoutCard } from '@/components/start-workout-card';
 import { StepTracker } from '@/components/step-tracker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { TodaysWorkout } from '@/components/todays-workout';
 import { DumbbellIcon, IconProps, ListCheckIcon } from '@/components/ui/icons';
 import { WebBadge } from '@/components/web-badge';
 import { WeeklyWorkoutCalendar } from '@/components/weekly-workout-calendar';
@@ -21,6 +23,8 @@ const NAV_TILES: { label: string; href: Href; icon: ComponentType<IconProps> }[]
 ];
 
 export default function HomeScreen() {
+  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
+
   return (
     <ThemedView style={styles.container}>
       <SafeArea>
@@ -42,23 +46,21 @@ export default function HomeScreen() {
           </View>
 
           <ThemedView style={styles.sectionHeader}>
-            <ThemedText type="subtitle">{"Today's Workout"}</ThemedText>
+            <ThemedText type="subtitle">Schedule</ThemedText>
           </ThemedView>
 
-          <TodaysWorkout type="strength" name="Full Body Strength" bodyPart="Full Body" />
-          <TodaysWorkout type="cardio" name="Morning Run" duration="30 min" />
-
           <WeeklyWorkoutCalendar
-            weekDays={[
-              { day: 'Mon', status: 'worked', date: 2 },
-              { day: 'Tue', status: 'worked', date: 3 },
-              { day: 'Wed', status: 'missed', date: 4 },
-              { day: 'Thu', status: 'worked', date: 5 },
-              { day: 'Fri', status: 'rest', date: 6 },
-              { day: 'Sat', status: 'upcoming', date: 7 },
-              { day: 'Sun', status: 'rest', date: 8 },
-            ]}
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
           />
+
+          <View style={styles.dateHeader}>
+            <ThemedText type="smallBold" themeColor="textSecondary">
+              {format(selectedDate, 'EEEE, MMMM d')}
+            </ThemedText>
+          </View>
+
+          <ScheduledDayContent selectedDate={selectedDate} />
 
           <QuoteCard />
 
@@ -113,6 +115,9 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginTop: Spacing.two,
+  },
+  dateHeader: {
+    paddingHorizontal: Spacing.one,
   },
   navRow: {
     flexDirection: 'row',

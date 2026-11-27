@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
 
+import { RoutineSkeleton } from '@/components/routine/routine-skeleton';
 import { useRoutines } from '@/hooks/use-routines';
 import { EditRoutineScreen } from '@/screens/edit-routine-screen';
 
@@ -9,11 +9,7 @@ export default function EditRoutinePage() {
   const { customRoutines, loading } = useRoutines();
 
   if (loading) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
-      </View>
-    );
+    return <RoutineSkeleton title="Edit Routine" />;
   }
 
   const routine = customRoutines.find((r) => r.id === id);

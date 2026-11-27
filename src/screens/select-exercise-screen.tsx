@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '@/components/header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CheckIcon } from '@/components/ui/icons';
+import { CheckIcon, PlusIcon } from '@/components/ui/icons';
 import { SearchField } from '@/components/ui/search-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useExercises } from '@/hooks/use-exercises';
@@ -27,6 +27,8 @@ type Props = {
   onSelect: (exercise: ExerciseItem) => void;
   title?: string;
   selectedExerciseId?: string;
+  /** When provided, shows a "+ Create Exercise" action in the header. */
+  onCreateExercise?: () => void;
 };
 
 export function SelectExerciseScreen({
@@ -35,6 +37,7 @@ export function SelectExerciseScreen({
   onSelect,
   title = 'Select Exercise',
   selectedExerciseId,
+  onCreateExercise,
 }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -60,7 +63,28 @@ export function SelectExerciseScreen({
 
   const content = (
     <ThemedView style={styles.container}>
-      <Header onBackPress={onClose} title={title} />
+      <Header
+        onBackPress={onClose}
+        title={title}
+        rightAction={
+          onCreateExercise ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={onCreateExercise}
+              accessibilityRole="button"
+              accessibilityLabel="Create Exercise"
+              style={[
+                styles.createButton,
+                { backgroundColor: theme.primary },
+              ]}>
+              <PlusIcon size={14} color={theme.textOnPrimary} />
+              <ThemedText type="smallBold" themeColor="textOnPrimary" style={styles.createButtonText}>
+                Create Exercise
+              </ThemedText>
+            </TouchableOpacity>
+          ) : undefined
+        }
+      />
 
       <View style={styles.innerContainer}>
         <SearchField
@@ -331,5 +355,16 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.six,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  createButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  createButtonText: {
+    fontSize: 13,
   },
 });
