@@ -76,6 +76,9 @@ export default function RoutineScreen() {
 
               {customRoutines.map((routine) => {
                 const count = routine.exercises?.length ?? routine.exerciseCount ?? 0;
+                const isStarting = startingRoutineId === routine.id;
+                const startDisabled = startingRoutineId !== null;
+
                 return (
                   <TouchableOpacity
                     key={routine.id}
@@ -113,7 +116,27 @@ export default function RoutineScreen() {
                         </View>
                       </View>
 
-                      <View style={styles.arrowContainer}>
+                      <View style={styles.cardActions}>
+                        <TouchableOpacity
+                          activeOpacity={isStarting ? 1 : 0.7}
+                          onPress={() => handleStartRoutine(routine.id)}
+                          disabled={startDisabled}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Start ${routine.name}`}
+                          accessibilityState={{ disabled: startDisabled, busy: isStarting }}
+                          style={[
+                            styles.startButton,
+                            { backgroundColor: isStarting ? theme.primaryDisabled : theme.primary },
+                          ]}>
+                          {isStarting ? (
+                            <ActivityIndicator size="small" color={theme.textOnPrimary} />
+                          ) : (
+                            <PlayIcon size={12} color={theme.textOnPrimary} />
+                          )}
+                          <ThemedText type="smallBold" style={{ color: theme.textOnPrimary, fontSize: 12 }}>
+                            Start
+                          </ThemedText>
+                        </TouchableOpacity>
                         <ChevronRightIcon size={20} color={theme.textSecondary} />
                       </View>
                     </ThemedView>
