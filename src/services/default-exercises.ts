@@ -1,4 +1,4 @@
-import { DEFAULT_EXERCISES } from '@/data/exercises';
+import { createStore } from '@/lib/store';
 import { ExerciseItem } from '@/types/exercise';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isBefore } from 'date-fns';
@@ -11,6 +11,33 @@ type ExerciseStorage = {
   data: ExerciseItem[];
 }
 
+async function loadDefaultExercisesStorage(): Promise<ExerciseStorage> {
+  try {
+    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!rawData) {
+      return { isInitialized: false, lastSyncedAt: null, data: [] };
+    }
+    const parsed = JSON.parse(rawData);
+    return parsed;
+  } catch (error) {
+    console.error('Failed to load default exercises from storage:', error);
+    return { isInitialized: false, lastSyncedAt: null, data: [] };
+  }
+}
+
+export const defaultExerciseStore = createStore<ExerciseStorage>(loadDefaultExercisesStorage, {
+  isInitialized: false,
+  lastSyncedAt: null,
+  data: [],
+});
+
+async function loadDefaultExercises() {
+  const { DEFAULT_EXERCISES } = await import('@/data/exercises');
+  return await Promise.resolve({
+    latestUpdatedAt: Date.now(),
+    data: DEFAULT_EXERCISES
+  });
+}
 type StorageListener = () => void;
 const listeners = new Set<StorageListener>();
 
@@ -24,12 +51,6 @@ function notifyListeners() {
   });
 }
 
-async function loadDefaultExercises() {
-  return await Promise.resolve({
-    latestUpdatedAt: Date.now(),
-    data: DEFAULT_EXERCISES
-  });
-}
 export function subscribeToDefaultExerciseUpdates(listener: StorageListener): () => void {
   listeners.add(listener);
   return () => {
@@ -39,30 +60,41 @@ export function subscribeToDefaultExerciseUpdates(listener: StorageListener): ()
 
 
 export const getDefaultExercises = async (): Promise<ExerciseStorage> => {
-  try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return { isInitialized: false, lastSyncedAt: null, data: [] };
-    }
-    const parsed = JSON.parse(rawData);
-    return parsed;
-  } catch (error) {
-    console.error('Failed to load default exercises from storage:', error);
-    return { isInitialized: false, lastSyncedAt: null, data: [] };
-  }
+  await defaultExerciseStore.ensureLoaded();
+  return defaultExerciseStore.get();
 };
+
+let defaultExerciseMap: Map<string, ExerciseItem> | null = null;
+
+async function ensureDefaultExerciseMap(): Promise<Map<string, ExerciseItem>> {
+  if (!defaultExerciseMap) {
+    const { DEFAULT_EXERCISES } = await import('@/data/exercises');
+    defaultExerciseMap = new Map(DEFAULT_EXERCISES.map((e) => [e.id, e]));
+  }
+  return defaultExerciseMap;
+}
+
+export async function getDefaultExerciseById(id: string): Promise<ExerciseItem | undefined> {
+  const map = await ensureDefaultExerciseMap();
+  return map.get(id);
+}
+
+export async function findDefaultExerciseByName(name: string): Promise<ExerciseItem | undefined> {
+  const map = await ensureDefaultExerciseMap();
+  return Array.from(map.values()).find((e) => e.name === name);
+}
 
 export const syncDefaultExercises = async (): Promise<void> => {
   try {
     const newExercisesUpdate = await loadDefaultExercises();
     
     // add new exercises to storage but don't overwrite existing ones with same id
-    const defaultExercisesUpdate = await getDefaultExercises();
+    const defaultExercisesUpdate = defaultExerciseStore.get();
 
     if(!defaultExercisesUpdate.isInitialized) {
       defaultExercisesUpdate.lastSyncedAt = null;
       defaultExercisesUpdate.isInitialized = true;
-      defaultExercisesUpdate.data = DEFAULT_EXERCISES;
+      defaultExercisesUpdate.data = newExercisesUpdate.data;
     }
 
     if(defaultExercisesUpdate.lastSyncedAt && isBefore(newExercisesUpdate.latestUpdatedAt, defaultExercisesUpdate.lastSyncedAt)) {
@@ -75,7 +107,9 @@ export const syncDefaultExercises = async (): Promise<void> => {
     const newExerciseIds = new Set(newExercises.map((e) => e.id));
     const updatedExercises = defaultExercises.filter((e) => !newExerciseIds.has(e.id));
     updatedExercises.push(...newExercises);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ isInitialized: true, lastSyncedAt: Date.now(), data: updatedExercises }));
+    const updatedStorage: ExerciseStorage = { isInitialized: true, lastSyncedAt: Date.now(), data: updatedExercises };
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStorage));
+    defaultExerciseStore.setValue(updatedStorage);
     notifyListeners();
   } catch (error) {
     console.error('Failed to sync default exercises to storage:', error);

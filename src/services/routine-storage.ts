@@ -1,7 +1,27 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createStore } from '@/lib/store';
 import { RoutineItem, RoutineExercise } from '@/types/routine';
 
 const STORAGE_KEY = '@exersaize:custom_routines_v1';
+
+async function loadCustomRoutines(): Promise<RoutineItem[]> {
+  try {
+    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!rawData) {
+      return [];
+    }
+    const parsed = JSON.parse(rawData);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed;
+  } catch (error) {
+    console.error('Failed to load custom routines from storage:', error);
+    return [];
+  }
+}
+
+export const customRoutineStore = createStore<RoutineItem[]>(loadCustomRoutines, []);
 
 type StorageListener = () => void;
 const listeners = new Set<StorageListener>();
@@ -24,20 +44,8 @@ export function subscribeToRoutineUpdates(listener: StorageListener): () => void
 }
 
 export async function getCustomRoutines(): Promise<RoutineItem[]> {
-  try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return [];
-    }
-    const parsed = JSON.parse(rawData);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed;
-  } catch (error) {
-    console.error('Failed to load custom routines from storage:', error);
-    return [];
-  }
+  await customRoutineStore.ensureLoaded();
+  return customRoutineStore.get();
 }
 
 export async function getCustomRoutineById(id: string): Promise<RoutineItem | null> {
@@ -51,7 +59,7 @@ export async function saveCustomRoutine(data: {
   exercises: RoutineExercise[];
 }): Promise<RoutineItem> {
   try {
-    const currentList = await getCustomRoutines();
+    const currentList = customRoutineStore.get();
     const newRoutine: RoutineItem = {
       id: `routine_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       name: data.name.trim(),
@@ -64,6 +72,7 @@ export async function saveCustomRoutine(data: {
 
     const updatedList = [newRoutine, ...currentList];
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    customRoutineStore.setValue(updatedList);
     notifyListeners();
     return newRoutine;
   } catch (error) {
@@ -81,7 +90,7 @@ export async function updateCustomRoutine(
   }
 ): Promise<void> {
   try {
-    const currentList = await getCustomRoutines();
+    const currentList = customRoutineStore.get();
     const updatedList = currentList.map((item) =>
       item.id === id
         ? {
@@ -94,6 +103,7 @@ export async function updateCustomRoutine(
         : item
     );
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    customRoutineStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {
     console.error('Failed to update custom routine in storage:', error);
@@ -103,9 +113,10 @@ export async function updateCustomRoutine(
 
 export async function deleteCustomRoutine(id: string): Promise<void> {
   try {
-    const currentList = await getCustomRoutines();
+    const currentList = customRoutineStore.get();
     const updatedList = currentList.filter((item) => item.id !== id);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    customRoutineStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {
     console.error('Failed to delete custom routine from storage:', error);

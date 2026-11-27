@@ -1,7 +1,27 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createStore } from '@/lib/store';
 import { ExerciseItem, ExerciseType, TrackMetric } from '@/types/exercise';
 
 const STORAGE_KEY = '@exersaize:custom_exercises_v1';
+
+async function loadCustomExercises(): Promise<ExerciseItem[]> {
+  try {
+    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!rawData) {
+      return [];
+    }
+    const parsed = JSON.parse(rawData);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed;
+  } catch (error) {
+    console.error('Failed to load custom exercises from storage:', error);
+    return [];
+  }
+}
+
+export const customExerciseStore = createStore<ExerciseItem[]>(loadCustomExercises, []);
 
 type StorageListener = () => void;
 const listeners = new Set<StorageListener>();
@@ -24,20 +44,8 @@ export function subscribeToExerciseUpdates(listener: StorageListener): () => voi
 }
 
 export async function getCustomExercises(): Promise<ExerciseItem[]> {
-  try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return [];
-    }
-    const parsed = JSON.parse(rawData);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed;
-  } catch (error) {
-    console.error('Failed to load custom exercises from storage:', error);
-    return [];
-  }
+  await customExerciseStore.ensureLoaded();
+  return customExerciseStore.get();
 }
 
 export async function saveCustomExercise(data: {
@@ -48,7 +56,7 @@ export async function saveCustomExercise(data: {
   note?: string;
 }): Promise<ExerciseItem> {
   try {
-    const currentList = await getCustomExercises();
+    const currentList = customExerciseStore.get();
     const newExercise: ExerciseItem = {
       id: `custom_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       name: data.name.trim(),
@@ -62,6 +70,7 @@ export async function saveCustomExercise(data: {
 
     const updatedList = [newExercise, ...currentList];
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    customExerciseStore.setValue(updatedList);
     notifyListeners();
     return newExercise;
   } catch (error) {
@@ -81,7 +90,7 @@ export async function updateCustomExercise(
   }
 ): Promise<void> {
   try {
-    const currentList = await getCustomExercises();
+    const currentList = customExerciseStore.get();
     const updatedList = currentList.map((item) =>
       item.id === id
         ? {
@@ -95,6 +104,7 @@ export async function updateCustomExercise(
         : item
     );
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    customExerciseStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {
     console.error('Failed to update custom exercise in storage:', error);
@@ -104,9 +114,10 @@ export async function updateCustomExercise(
 
 export async function deleteCustomExercise(id: string): Promise<void> {
   try {
-    const currentList = await getCustomExercises();
+    const currentList = customExerciseStore.get();
     const updatedList = currentList.filter((item) => item.id !== id);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    customExerciseStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {
     console.error('Failed to delete custom exercise from storage:', error);

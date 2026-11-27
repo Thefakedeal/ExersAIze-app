@@ -1,4 +1,5 @@
 import { DEFAULT_ROUTINES } from "@/data/routine";
+import { createStore } from "@/lib/store";
 import { RoutineItem } from "@/types/routine";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isBefore } from "date-fns";
@@ -11,6 +12,32 @@ type RoutineStorage = {
   data: RoutineItem[];
 }
 
+async function loadDefaultRoutinesStorage(): Promise<RoutineStorage> {
+  try {
+    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!rawData) {
+      return { isInitialized: false, lastSyncedAt: null, data: [] };
+    }
+    const parsed = JSON.parse(rawData);
+    return parsed;
+  } catch (error) {
+    console.error('Failed to load default routines from storage:', error);
+    return { isInitialized: false, lastSyncedAt: null, data: [] };
+  }
+}
+
+export const defaultRoutineStore = createStore<RoutineStorage>(loadDefaultRoutinesStorage, {
+  isInitialized: false,
+  lastSyncedAt: null,
+  data: [],
+});
+
+async function loadDefaultRoutines() {
+  return await Promise.resolve({
+    latestUpdatedAt: Date.now(),
+    data: DEFAULT_ROUTINES
+  });
+}
 
 type StorageListener = () => void;
 const listeners = new Set<StorageListener>();
@@ -25,13 +52,6 @@ function notifyListeners() {
   });
 }
 
-async function loadDefaultRoutines() {
-  return await Promise.resolve({
-    latestUpdatedAt: Date.now(),
-    data: DEFAULT_ROUTINES
-  });
-}
-
 export function subscribeToDefaultRoutineUpdates(listener: StorageListener): () => void {
   listeners.add(listener);
   return () => {
@@ -40,17 +60,8 @@ export function subscribeToDefaultRoutineUpdates(listener: StorageListener): () 
 }
 
 export async function getDefaultRoutines(): Promise<RoutineStorage> {
-  try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return { isInitialized: false, lastSyncedAt: null, data: [] };
-    }
-    const parsed = JSON.parse(rawData);
-    return parsed;
-  } catch (error) {
-    console.error('Failed to load default routines from storage:', error);
-    return { isInitialized: false, lastSyncedAt: null, data: [] };
-  }
+  await defaultRoutineStore.ensureLoaded();
+  return defaultRoutineStore.get();
 }
 
 export async function syncDefaultRoutines(): Promise<void> {
@@ -58,7 +69,7 @@ export async function syncDefaultRoutines(): Promise<void> {
     const newRoutinesUpdate = await loadDefaultRoutines();
     
     // add new routines to storage but don't overwrite existing ones with same id
-    const defaultRoutinesUpdate = await getDefaultRoutines();
+    const defaultRoutinesUpdate = defaultRoutineStore.get();
 
     if(!defaultRoutinesUpdate.isInitialized) {
       defaultRoutinesUpdate.lastSyncedAt = null;
@@ -76,7 +87,9 @@ export async function syncDefaultRoutines(): Promise<void> {
     const newRoutineIds = new Set(newRoutines.map((r) => r.id));
     const updatedRoutines = defaultRoutines.filter((r) => !newRoutineIds.has(r.id));
     updatedRoutines.push(...newRoutines);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ isInitialized: true, lastSyncedAt: Date.now(), data: updatedRoutines }));
+    const updatedStorage: RoutineStorage = { isInitialized: true, lastSyncedAt: Date.now(), data: updatedRoutines };
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStorage));
+    defaultRoutineStore.setValue(updatedStorage);
     notifyListeners();
   } catch (error) {
     console.error('Failed to sync default routines to storage:', error);

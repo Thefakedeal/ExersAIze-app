@@ -1,7 +1,28 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createStore } from '@/lib/store';
 import { ReferenceMode, WorkoutSession } from '@/types/session';
 
 const STORAGE_KEY = '@exersaize:workout_sessions_v1';
+
+async function loadWorkoutSessions(): Promise<WorkoutSession[]> {
+  try {
+    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!rawData) {
+      return [];
+    }
+    const parsed = JSON.parse(rawData);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    // Sort newest first
+    return parsed.sort((a, b) => (b.startTime ?? b.createdAt) - (a.startTime ?? a.createdAt));
+  } catch (error) {
+    console.error('Failed to load workout sessions from storage:', error);
+    return [];
+  }
+}
+
+export const workoutSessionStore = createStore<WorkoutSession[]>(loadWorkoutSessions, []);
 
 type StorageListener = () => void;
 const listeners = new Set<StorageListener>();
@@ -24,21 +45,8 @@ export function subscribeToSessionUpdates(listener: StorageListener): () => void
 }
 
 export async function getWorkoutSessions(): Promise<WorkoutSession[]> {
-  try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return [];
-    }
-    const parsed = JSON.parse(rawData);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    // Sort newest first
-    return parsed.sort((a, b) => (b.startTime ?? b.createdAt) - (a.startTime ?? a.createdAt));
-  } catch (error) {
-    console.error('Failed to load workout sessions from storage:', error);
-    return [];
-  }
+  await workoutSessionStore.ensureLoaded();
+  return workoutSessionStore.get();
 }
 
 export async function getWorkoutSessionById(id: string): Promise<WorkoutSession | null> {
@@ -56,7 +64,7 @@ export async function saveWorkoutSession(data: {
   referenceMode?: ReferenceMode;
 }): Promise<WorkoutSession> {
   try {
-    const currentList = await getWorkoutSessions();
+    const currentList = workoutSessionStore.get();
     const newSession: WorkoutSession = {
       id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       title: data.title.trim() || 'Workout Session',
@@ -71,6 +79,7 @@ export async function saveWorkoutSession(data: {
 
     const updatedList = [newSession, ...currentList.filter((s) => s.id !== newSession.id)];
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    workoutSessionStore.setValue(updatedList);
     notifyListeners();
     return newSession;
   } catch (error) {
@@ -84,7 +93,7 @@ export async function updateWorkoutSession(
   data: Partial<Omit<WorkoutSession, 'id' | 'createdAt'>>
 ): Promise<WorkoutSession> {
   try {
-    const currentList = await getWorkoutSessions();
+    const currentList = workoutSessionStore.get();
     const existingIndex = currentList.findIndex((item) => item.id === id);
     if (existingIndex === -1) {
       throw new Error(`Session with id ${id} not found`);
@@ -97,8 +106,10 @@ export async function updateWorkoutSession(
       description: data.description !== undefined ? data.description.trim() || undefined : currentList[existingIndex].description,
     };
 
-    currentList[existingIndex] = updatedSession;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentList));
+    const updatedList = [...currentList];
+    updatedList[existingIndex] = updatedSession;
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    workoutSessionStore.setValue(updatedList);
     notifyListeners();
     return updatedSession;
   } catch (error) {
@@ -109,9 +120,10 @@ export async function updateWorkoutSession(
 
 export async function deleteWorkoutSession(id: string): Promise<void> {
   try {
-    const currentList = await getWorkoutSessions();
+    const currentList = workoutSessionStore.get();
     const updatedList = currentList.filter((item) => item.id !== id);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    workoutSessionStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {
     console.error('Failed to delete workout session:', error);

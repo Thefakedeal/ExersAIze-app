@@ -1,52 +1,46 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { Alert } from 'react-native';
 import {
   deleteWorkoutSession,
   getWorkoutSessionById,
-  getWorkoutSessions,
   saveWorkoutSession,
-  subscribeToSessionUpdates,
   updateWorkoutSession,
+  workoutSessionStore,
 } from '@/services/session-storage';
-import { WorkoutSession } from '@/types/session';
 
 export function useWorkoutSessions() {
-  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
+  const sessions = useSyncExternalStore(
+    workoutSessionStore.subscribe,
+    workoutSessionStore.getSnapshot
+  );
   const [loading, setLoading] = useState(true);
-
-  const loadSessions = useCallback(async () => {
-    try {
-      const stored = await getWorkoutSessions();
-      setSessions(stored);
-    } catch {
-      Alert.alert('Error', 'Failed to load workout sessions.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
 
-    void getWorkoutSessions().then((stored) => {
-      if (isMounted) {
-        setSessions(stored);
-        setLoading(false);
-      }
-    });
-
-    const unsubscribe = subscribeToSessionUpdates(() => {
-      void getWorkoutSessions().then((stored) => {
+    workoutSessionStore
+      .ensureLoaded()
+      .then(() => {
+        if (isMounted) setLoading(false);
+      })
+      .catch(() => {
         if (isMounted) {
-          setSessions(stored);
+          Alert.alert('Error', 'Failed to load workout sessions.');
+          setLoading(false);
         }
       });
-    });
 
     return () => {
       isMounted = false;
-      unsubscribe();
     };
+  }, []);
+
+  const refresh = useCallback(async () => {
+    try {
+      await workoutSessionStore.refresh();
+    } catch {
+      Alert.alert('Error', 'Failed to load workout sessions.');
+    }
   }, []);
 
   const removeSession = useCallback(async (id: string) => {
@@ -60,7 +54,7 @@ export function useWorkoutSessions() {
   return {
     sessions,
     loading,
-    refresh: loadSessions,
+    refresh,
     removeSession,
     saveSession: saveWorkoutSession,
     updateSession: updateWorkoutSession,

@@ -24,11 +24,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ClockIcon, ListCheckIcon, PlusIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
-import { useExercises } from '@/hooks/use-exercises';
-import { useRoutines } from '@/hooks/use-routines';
 import { useTheme } from '@/hooks/use-theme';
 import { SelectExerciseScreen } from '@/screens/select-exercise-screen';
-import { saveCustomRoutine } from '@/services/routine-storage';
+import { getDefaultRoutines } from '@/services/default-routines';
+import { findDefaultExerciseByName, getDefaultExerciseById } from '@/services/default-exercises';
+import { getCustomExercises } from '@/services/exercise-storage';
+import { getCustomRoutines, saveCustomRoutine } from '@/services/routine-storage';
 import {
   getScheduledOccurrenceById,
   updateScheduledOccurrence,
@@ -129,9 +130,6 @@ export function ExerciseSessionScreen({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const { defaultRoutines, customRoutines, loading: routinesLoading } = useRoutines();
-  const { defaultExercises, customExercises } = useExercises();
-
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startTime, setStartTime] = useState<number>(() => Date.now());
@@ -203,8 +201,6 @@ export function ExerciseSessionScreen({
         setActiveSessionId(null);
       }
 
-      if (routineId && routinesLoading) return;
-
       let resolvedTitle = '';
       let resolvedDescription = '';
       let resolvedStartTime = Date.now();
@@ -217,44 +213,57 @@ export function ExerciseSessionScreen({
       }
 
       if (routineId) {
+        const [customRoutines, defaultRoutines] = await Promise.all([
+          getCustomRoutines(),
+          getDefaultRoutines(),
+        ]);
         const routine =
           customRoutines.find((r) => r.id === routineId) ??
-          defaultRoutines.find((r) => r.id === routineId);
+          defaultRoutines.data.find((r) => r.id === routineId);
 
         if (routine && isMounted) {
           resolvedTitle = routine.name;
           resolvedDescription = routine.description ?? '';
 
-          const allLibExercises = [...customExercises, ...defaultExercises];
-          resolvedExercises = (routine.exercises ?? []).map((rEx, idx) => {
-            const matched = allLibExercises.find(
-              (libEx) => libEx.id === rEx.exerciseId || libEx.name === rEx.name
-            );
-            const setCount = Math.max(1, rEx.sets || 3);
-            const repNumber = rEx.repRange
-              ? parseInt(rEx.repRange.split('-')[0], 10) || undefined
-              : undefined;
+          const customExercises = await getCustomExercises();
+          resolvedExercises = await Promise.all(
+            (routine.exercises ?? []).map(async (rEx, idx) => {
+              let matched = customExercises.find(
+                (libEx) => libEx.id === rEx.exerciseId || libEx.name === rEx.name
+              );
+              if (!matched && rEx.exerciseId) {
+                matched = await getDefaultExerciseById(rEx.exerciseId);
+              }
+              if (!matched && rEx.name) {
+                matched = await findDefaultExerciseByName(rEx.name);
+              }
 
-            const sets: SessionSet[] = Array.from({ length: setCount }).map(
-              (_, sIdx) => ({
-                id: `set_${Date.now()}_${idx}_${sIdx}`,
-                setNumber: sIdx + 1,
-                reps: repNumber,
-                completed: false,
-                note: '',
-              })
-            );
+              const setCount = Math.max(1, rEx.sets || 3);
+              const repNumber = rEx.repRange
+                ? parseInt(rEx.repRange.split('-')[0], 10) || undefined
+                : undefined;
 
-            return {
-              id: `sex_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
-              exerciseId: rEx.exerciseId,
-              name: rEx.name,
-              type: rEx.type ?? matched?.type ?? 'Strength',
-              categories: rEx.categories ?? matched?.categories ?? [],
-              trackMetrics: matched?.trackMetrics ?? ['Reps'],
-              sets,
-            };
-          });
+              const sets: SessionSet[] = Array.from({ length: setCount }).map(
+                (_, sIdx) => ({
+                  id: `set_${Date.now()}_${idx}_${sIdx}`,
+                  setNumber: sIdx + 1,
+                  reps: repNumber,
+                  completed: false,
+                  note: '',
+                })
+              );
+
+              return {
+                id: `sex_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+                exerciseId: rEx.exerciseId,
+                name: rEx.name,
+                type: rEx.type ?? matched?.type ?? 'Strength',
+                categories: rEx.categories ?? matched?.categories ?? [],
+                trackMetrics: matched?.trackMetrics ?? ['Reps'],
+                sets,
+              };
+            })
+          );
         }
       }
 
@@ -315,8 +324,7 @@ export function ExerciseSessionScreen({
     return () => {
       isMounted = false;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, routineId, routinesLoading]);
+  }, [sessionId, routineId, scheduledOccurrenceId]);
 
   // Keep the ongoing duration updating while the workout has no end time
   useEffect(() => {
@@ -547,6 +555,7 @@ export function ExerciseSessionScreen({
       return;
     }
 
+    const customRoutines = await getCustomRoutines();
     if (
       customRoutines.some((routine) => routine.name.toLowerCase() === name.toLowerCase())
     ) {

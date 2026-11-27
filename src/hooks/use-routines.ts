@@ -1,81 +1,58 @@
-import { getDefaultRoutines, syncDefaultRoutines } from '@/services/default-routines';
-import {
-  deleteCustomRoutine,
-  getCustomRoutines,
-  subscribeToRoutineUpdates,
-} from '@/services/routine-storage';
-import { RoutineItem } from '@/types/routine';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { Alert } from 'react-native';
-
-
+import {
+  defaultRoutineStore,
+  syncDefaultRoutines,
+} from '@/services/default-routines';
+import {
+  customRoutineStore,
+  deleteCustomRoutine,
+} from '@/services/routine-storage';
 
 export function useRoutines() {
-  const [customRoutines, setCustomRoutines] = useState<RoutineItem[]>([]);
+  const customRoutines = useSyncExternalStore(
+    customRoutineStore.subscribe,
+    customRoutineStore.getSnapshot
+  );
+  const defaultRoutinesStorage = useSyncExternalStore(
+    defaultRoutineStore.subscribe,
+    defaultRoutineStore.getSnapshot
+  );
   const [loading, setLoading] = useState(true);
-  const [loadingDefault, setLoadingDefault] = useState(true);
-  const [defaultRoutines, setDefaultRoutines] = useState<RoutineItem[]>([]);
-
-  const loadData = useCallback(async () => {
-    try {
-      const stored = await getCustomRoutines();
-      setCustomRoutines(stored);
-    } catch {
-      Alert.alert('Error', 'Failed to load routines. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadDefaultRoutines = useCallback(async () => {
-    try {
-      await syncDefaultRoutines();
-      const stored = await getDefaultRoutines();
-      setDefaultRoutines(stored.data);
-    } catch {
-      Alert.alert('Error', 'Failed to load routines. Please try again.');
-    } finally {
-      setLoadingDefault(false);
-    }
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
 
-    void getCustomRoutines().then((stored) => {
-      if (isMounted) {
-        setCustomRoutines(stored);
-        setLoading(false);
-      }
-    });
-
-    const unsubscribe = subscribeToRoutineUpdates(() => {
-      void getCustomRoutines().then((stored) => {
+    Promise.all([customRoutineStore.ensureLoaded(), defaultRoutineStore.ensureLoaded()])
+      .then(() => {
+        if (isMounted) setLoading(false);
+      })
+      .catch(() => {
         if (isMounted) {
-          setCustomRoutines(stored);
+          Alert.alert('Error', 'Failed to load routines. Please try again.');
+          setLoading(false);
         }
       });
-    });
 
     return () => {
       isMounted = false;
-      unsubscribe();
     };
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
+  const refresh = useCallback(async () => {
+    try {
+      await customRoutineStore.refresh();
+    } catch {
+      Alert.alert('Error', 'Failed to load routines. Please try again.');
+    }
+  }, []);
 
-    void getDefaultRoutines().then((stored) => {
-      if (isMounted) {
-        setDefaultRoutines(stored.data);
-        setLoadingDefault(false);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-    };
+  const syncDefault = useCallback(async () => {
+    try {
+      await syncDefaultRoutines();
+    } catch {
+      Alert.alert('Error', 'Failed to load routines. Please try again.');
+    }
   }, []);
 
   const removeRoutine = useCallback(async (id: string) => {
@@ -88,10 +65,10 @@ export function useRoutines() {
 
   return {
     customRoutines,
-    defaultRoutines,
-    loading: loading || loadingDefault,
-    refresh: loadData,
+    defaultRoutines: defaultRoutinesStorage.data,
+    loading,
+    refresh,
     removeRoutine,
-    syncDefault: loadDefaultRoutines,
+    syncDefault,
   };
 }
