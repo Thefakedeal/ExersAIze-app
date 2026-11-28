@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   addMonths,
   addWeeks,
@@ -10,9 +9,8 @@ import {
   startOfDay,
 } from 'date-fns';
 
+import { getDb } from '@/db/database';
 import { Recurrence, ScheduledOccurrence } from '@/types/schedule';
-
-const STORAGE_KEY = '@exersaize:scheduled_occurrences_v1';
 
 /** Number of future occurrences generated for a weekly or monthly activity. */
 const RECURRENCE_LIMIT = 12;
@@ -41,29 +39,72 @@ export function subscribeToScheduleUpdates(listener: StorageListener): () => voi
   };
 }
 
+type OccurrenceRow = {
+  id: string;
+  scheduled_date: string;
+  status: string;
+  routine_id: string | null;
+  title: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  all_day: number;
+  recurrence: string;
+  notes: string | null;
+  series_id: string | null;
+  workout_session_id: string | null;
+};
+
+function rowToOccurrence(r: OccurrenceRow): ScheduledOccurrence {
+  return {
+    id: r.id,
+    scheduledDate: r.scheduled_date,
+    status: r.status as ScheduledOccurrence['status'],
+    routineId: r.routine_id ?? undefined,
+    title: r.title ?? undefined,
+    startTime: r.start_time ?? undefined,
+    endTime: r.end_time ?? undefined,
+    allDay: r.all_day === 1,
+    recurrence: r.recurrence as Recurrence,
+    notes: r.notes ?? undefined,
+    seriesId: r.series_id ?? undefined,
+    workoutSessionId: r.workout_session_id ?? undefined,
+  };
+}
+
 export async function getScheduledOccurrences(): Promise<ScheduledOccurrence[]> {
   try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return [];
-    }
-
-    const parsed = JSON.parse(rawData);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed;
+    const db = await getDb();
+    const rows = await db.getAllAsync<OccurrenceRow>('SELECT * FROM occurrences ORDER BY scheduled_date');
+    return rows.map(rowToOccurrence);
   } catch (error) {
     console.error('Failed to load scheduled occurrences from storage:', error);
     return [];
   }
 }
 
+export async function getScheduledOccurrencesInRange(
+  startKey: string,
+  endKey: string
+): Promise<ScheduledOccurrence[]> {
+  try {
+    const db = await getDb();
+    const rows = await db.getAllAsync<OccurrenceRow>(
+      'SELECT * FROM occurrences WHERE scheduled_date >= ? AND scheduled_date <= ? ORDER BY scheduled_date',
+      startKey,
+      endKey
+    );
+    return rows.map(rowToOccurrence);
+  } catch (error) {
+    console.error('Failed to load scheduled occurrences in range:', error);
+    return [];
+  }
+}
+
 export async function getScheduledOccurrenceById(id: string): Promise<ScheduledOccurrence | null> {
   try {
-    const occurrences = await getScheduledOccurrences();
-    return occurrences.find((item) => item.id === id) ?? null;
+    const db = await getDb();
+    const row = await db.getFirstAsync<OccurrenceRow>('SELECT * FROM occurrences WHERE id = ?', id);
+    return row ? rowToOccurrence(row) : null;
   } catch (error) {
     console.error('Failed to get scheduled occurrence by id:', error);
     return null;
@@ -89,8 +130,7 @@ export async function updateScheduledOccurrence(
     };
 
     currentList[existingIndex] = updatedOccurrence;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentList));
-    notifyListeners();
+    await persistOccurrences(currentList);
     return updatedOccurrence;
   } catch (error) {
     console.error('Failed to update scheduled occurrence:', error);
@@ -124,8 +164,7 @@ export async function deleteScheduledOccurrence(
       });
     }
 
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
-    notifyListeners();
+    await persistOccurrences(updatedList);
   } catch (error) {
     console.error('Failed to delete scheduled occurrence:', error);
     throw error;
@@ -162,8 +201,7 @@ export async function updateScheduledOccurrenceWithScope(
       }
 
       currentList[targetIndex] = updated;
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentList));
-      notifyListeners();
+      await persistOccurrences(currentList);
       return [updated];
     }
 
@@ -192,7 +230,29 @@ function normalizeOccurrenceData(
 }
 
 async function persistOccurrences(list: ScheduledOccurrence[]): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  const db = await getDb();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM occurrences');
+    for (const occ of list) {
+      await db.runAsync(
+        `INSERT INTO occurrences
+          (id, scheduled_date, status, routine_id, title, start_time, end_time, all_day, recurrence, notes, series_id, workout_session_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        occ.id,
+        occ.scheduledDate,
+        occ.status,
+        occ.routineId ?? null,
+        occ.title ?? null,
+        occ.startTime ?? null,
+        occ.endTime ?? null,
+        occ.allDay ? 1 : 0,
+        occ.recurrence ?? 'none',
+        occ.notes ?? null,
+        occ.seriesId ?? null,
+        occ.workoutSessionId ?? null
+      );
+    }
+  });
   notifyListeners();
 }
 
@@ -370,8 +430,7 @@ export async function saveScheduledOccurrence(data: {
     const occurrences = buildOccurrences(data, recurrence, seriesId);
 
     const updatedList = [...currentList, ...occurrences];
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
-    notifyListeners();
+    await persistOccurrences(updatedList);
 
     return occurrences;
   } catch (error) {

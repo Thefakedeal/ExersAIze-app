@@ -1,21 +1,38 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDb } from '@/db/database';
 import { createStore } from '@/lib/store';
-import { ReferenceMode, WorkoutSession } from '@/types/session';
+import { ReferenceMode, SessionExercise, WorkoutSession } from '@/types/session';
 
-const STORAGE_KEY = '@exersaize:workout_sessions_v1';
+type SessionRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  routine_id: string | null;
+  start_time: number;
+  end_time: number | null;
+  exercises: string;
+  reference_mode: string | null;
+  created_at: number;
+};
+
+function rowToSession(r: SessionRow): WorkoutSession {
+  return {
+    id: r.id,
+    title: r.title,
+    description: r.description ?? undefined,
+    routineId: r.routine_id ?? undefined,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    exercises: JSON.parse(r.exercises) as SessionExercise[],
+    referenceMode: (r.reference_mode ?? undefined) as ReferenceMode | undefined,
+    createdAt: r.created_at,
+  };
+}
 
 async function loadWorkoutSessions(): Promise<WorkoutSession[]> {
   try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return [];
-    }
-    const parsed = JSON.parse(rawData);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    // Sort newest first
-    return parsed.sort((a, b) => (b.startTime ?? b.createdAt) - (a.startTime ?? a.createdAt));
+    const db = await getDb();
+    const rows = await db.getAllAsync<SessionRow>('SELECT * FROM sessions ORDER BY start_time DESC');
+    return rows.map(rowToSession);
   } catch (error) {
     console.error('Failed to load workout sessions from storage:', error);
     return [];
@@ -77,8 +94,22 @@ export async function saveWorkoutSession(data: {
       createdAt: Date.now(),
     };
 
+    const db = await getDb();
+    await db.runAsync(
+      `INSERT INTO sessions (id, title, description, routine_id, start_time, end_time, exercises, reference_mode, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      newSession.id,
+      newSession.title,
+      newSession.description ?? null,
+      newSession.routineId ?? null,
+      newSession.startTime,
+      newSession.endTime ?? null,
+      JSON.stringify(newSession.exercises),
+      newSession.referenceMode ?? null,
+      newSession.createdAt
+    );
+
     const updatedList = [newSession, ...currentList.filter((s) => s.id !== newSession.id)];
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
     workoutSessionStore.setValue(updatedList);
     notifyListeners();
     return newSession;
@@ -102,13 +133,29 @@ export async function updateWorkoutSession(
     const updatedSession: WorkoutSession = {
       ...currentList[existingIndex],
       ...data,
-      title: data.title !== undefined ? data.title.trim() || 'Workout Session' : currentList[existingIndex].title,
-      description: data.description !== undefined ? data.description.trim() || undefined : currentList[existingIndex].description,
+      title:
+        data.title !== undefined ? data.title.trim() || 'Workout Session' : currentList[existingIndex].title,
+      description:
+        data.description !== undefined
+          ? data.description.trim() || undefined
+          : currentList[existingIndex].description,
     };
+
+    const db = await getDb();
+    await db.runAsync(
+      `UPDATE sessions SET title = ?, description = ?, start_time = ?, end_time = ?, exercises = ?, reference_mode = ?
+       WHERE id = ?`,
+      updatedSession.title,
+      updatedSession.description ?? null,
+      updatedSession.startTime,
+      updatedSession.endTime ?? null,
+      JSON.stringify(updatedSession.exercises),
+      updatedSession.referenceMode ?? null,
+      id
+    );
 
     const updatedList = [...currentList];
     updatedList[existingIndex] = updatedSession;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
     workoutSessionStore.setValue(updatedList);
     notifyListeners();
     return updatedSession;
@@ -122,7 +169,10 @@ export async function deleteWorkoutSession(id: string): Promise<void> {
   try {
     const currentList = workoutSessionStore.get();
     const updatedList = currentList.filter((item) => item.id !== id);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+
+    const db = await getDb();
+    await db.runAsync('DELETE FROM sessions WHERE id = ?', id);
+
     workoutSessionStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {

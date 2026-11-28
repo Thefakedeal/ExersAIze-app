@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import {
   getScheduledOccurrences,
+  getScheduledOccurrencesInRange,
   subscribeToScheduleUpdates,
 } from '@/services/schedule-storage';
 import { ScheduledOccurrence } from '@/types/schedule';
@@ -44,22 +45,24 @@ export function useScheduledOccurrences(
         return;
       }
 
-      if (!rangeStart || !rangeEnd) {
-        setOccurrences(all);
-      } else {
-        const startKey = format(rangeStart, 'yyyy-MM-dd');
-        const endKey = format(rangeEnd, 'yyyy-MM-dd');
-
-        setOccurrences(
-          all.filter((occurrence) => {
-            const scheduledKey = occurrence.scheduledDate;
-            return scheduledKey >= startKey && scheduledKey <= endKey;
-          })
-        );
-      }
-
+      setOccurrences(all);
       setLoading(false);
     };
+
+    if (rangeStart && rangeEnd) {
+      const startKey = format(rangeStart, 'yyyy-MM-dd');
+      const endKey = format(rangeEnd, 'yyyy-MM-dd');
+      void getScheduledOccurrencesInRange(startKey, endKey).then(applyOccurrences);
+
+      const unsubscribe = subscribeToScheduleUpdates(() => {
+        void getScheduledOccurrencesInRange(startKey, endKey).then(applyOccurrences);
+      });
+
+      return () => {
+        isMounted = false;
+        unsubscribe();
+      };
+    }
 
     void getScheduledOccurrences().then(applyOccurrences);
 

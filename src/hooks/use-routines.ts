@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { Alert } from 'react-native';
-import {
-  defaultRoutineStore,
-  syncDefaultRoutines,
-} from '@/services/default-routines';
+
+import { getDefaultRoutines } from '@/services/default-data';
 import {
   customRoutineStore,
   deleteCustomRoutine,
@@ -14,16 +12,14 @@ export function useRoutines() {
     customRoutineStore.subscribe,
     customRoutineStore.getSnapshot
   );
-  const defaultRoutinesStorage = useSyncExternalStore(
-    defaultRoutineStore.subscribe,
-    defaultRoutineStore.getSnapshot
-  );
+  const defaultRoutines = getDefaultRoutines();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([customRoutineStore.ensureLoaded(), defaultRoutineStore.ensureLoaded()])
+    customRoutineStore
+      .ensureLoaded()
       .then(() => {
         if (isMounted) setLoading(false);
       })
@@ -47,14 +43,6 @@ export function useRoutines() {
     }
   }, []);
 
-  const syncDefault = useCallback(async () => {
-    try {
-      await syncDefaultRoutines();
-    } catch {
-      Alert.alert('Error', 'Failed to load routines. Please try again.');
-    }
-  }, []);
-
   const removeRoutine = useCallback(async (id: string) => {
     try {
       await deleteCustomRoutine(id);
@@ -65,10 +53,9 @@ export function useRoutines() {
 
   return {
     customRoutines,
-    defaultRoutines: defaultRoutinesStorage.data,
+    defaultRoutines,
     loading,
     refresh,
     removeRoutine,
-    syncDefault,
   };
 }

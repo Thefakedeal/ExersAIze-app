@@ -26,8 +26,11 @@ import { ClockIcon, ListCheckIcon, PlusIcon } from '@/components/ui/icons';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { SelectExerciseScreen } from '@/screens/select-exercise-screen';
-import { getDefaultRoutines } from '@/services/default-routines';
-import { findDefaultExerciseByName, getDefaultExerciseById } from '@/services/default-exercises';
+import {
+  findDefaultExerciseByName,
+  getDefaultExerciseById,
+  getDefaultRoutines,
+} from '@/services/default-data';
 import { getCustomExercises } from '@/services/exercise-storage';
 import { getCustomRoutines, saveCustomRoutine } from '@/services/routine-storage';
 import {
@@ -213,30 +216,26 @@ export function ExerciseSessionScreen({
       }
 
       if (routineId) {
-        const [customRoutines, defaultRoutines] = await Promise.all([
-          getCustomRoutines(),
-          getDefaultRoutines(),
-        ]);
+        const customRoutines = await getCustomRoutines();
         const routine =
           customRoutines.find((r) => r.id === routineId) ??
-          defaultRoutines.data.find((r) => r.id === routineId);
+          getDefaultRoutines().find((r) => r.id === routineId);
 
         if (routine && isMounted) {
           resolvedTitle = routine.name;
           resolvedDescription = routine.description ?? '';
 
           const customExercises = await getCustomExercises();
-          resolvedExercises = await Promise.all(
-            (routine.exercises ?? []).map(async (rEx, idx) => {
-              let matched = customExercises.find(
-                (libEx) => libEx.id === rEx.exerciseId || libEx.name === rEx.name
-              );
-              if (!matched && rEx.exerciseId) {
-                matched = await getDefaultExerciseById(rEx.exerciseId);
-              }
-              if (!matched && rEx.name) {
-                matched = await findDefaultExerciseByName(rEx.name);
-              }
+          resolvedExercises = (routine.exercises ?? []).map((rEx, idx) => {
+            let matched = customExercises.find(
+              (libEx) => libEx.id === rEx.exerciseId || libEx.name === rEx.name
+            );
+            if (!matched && rEx.exerciseId) {
+              matched = getDefaultExerciseById(rEx.exerciseId);
+            }
+            if (!matched && rEx.name) {
+              matched = findDefaultExerciseByName(rEx.name);
+            }
 
               const setCount = Math.max(1, rEx.sets || 3);
               const repNumber = rEx.repRange
@@ -262,8 +261,7 @@ export function ExerciseSessionScreen({
                 trackMetrics: matched?.trackMetrics ?? ['Reps'],
                 sets,
               };
-            })
-          );
+            });
         }
       }
 

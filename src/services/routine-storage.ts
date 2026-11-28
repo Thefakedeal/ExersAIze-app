@@ -1,20 +1,32 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDb } from '@/db/database';
 import { createStore } from '@/lib/store';
 import { RoutineItem, RoutineExercise } from '@/types/routine';
 
-const STORAGE_KEY = '@exersaize:custom_routines_v1';
+type RoutineRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  exercises: string;
+  exercise_count: number | null;
+  is_custom: number;
+  created_at: number | null;
+};
 
 async function loadCustomRoutines(): Promise<RoutineItem[]> {
   try {
-    const rawData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!rawData) {
-      return [];
-    }
-    const parsed = JSON.parse(rawData);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed;
+    const db = await getDb();
+    const rows = await db.getAllAsync<RoutineRow>(
+      'SELECT * FROM routines WHERE is_custom = 1 ORDER BY created_at DESC'
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description ?? undefined,
+      exercises: JSON.parse(r.exercises) as RoutineExercise[],
+      exerciseCount: r.exercise_count ?? undefined,
+      isCustom: true,
+      createdAt: r.created_at ?? undefined,
+    }));
   } catch (error) {
     console.error('Failed to load custom routines from storage:', error);
     return [];
@@ -70,9 +82,19 @@ export async function saveCustomRoutine(data: {
       createdAt: Date.now(),
     };
 
-    const updatedList = [newRoutine, ...currentList];
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
-    customRoutineStore.setValue(updatedList);
+    const db = await getDb();
+    await db.runAsync(
+      `INSERT INTO routines (id, name, description, exercises, exercise_count, is_custom, created_at)
+       VALUES (?, ?, ?, ?, ?, 1, ?)`,
+      newRoutine.id,
+      newRoutine.name,
+      newRoutine.description ?? null,
+      JSON.stringify(newRoutine.exercises ?? []),
+      newRoutine.exerciseCount ?? null,
+      newRoutine.createdAt ?? null
+    );
+
+    customRoutineStore.setValue([newRoutine, ...currentList]);
     notifyListeners();
     return newRoutine;
   } catch (error) {
@@ -83,11 +105,7 @@ export async function saveCustomRoutine(data: {
 
 export async function updateCustomRoutine(
   id: string,
-  data: {
-    name: string;
-    description?: string;
-    exercises: RoutineExercise[];
-  }
+  data: { name: string; description?: string; exercises: RoutineExercise[] }
 ): Promise<void> {
   try {
     const currentList = customRoutineStore.get();
@@ -102,7 +120,17 @@ export async function updateCustomRoutine(
           }
         : item
     );
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+
+    const db = await getDb();
+    await db.runAsync(
+      'UPDATE routines SET name = ?, description = ?, exercises = ?, exercise_count = ? WHERE id = ?',
+      data.name.trim(),
+      data.description?.trim() || null,
+      JSON.stringify(data.exercises),
+      data.exercises.length,
+      id
+    );
+
     customRoutineStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {
@@ -115,7 +143,10 @@ export async function deleteCustomRoutine(id: string): Promise<void> {
   try {
     const currentList = customRoutineStore.get();
     const updatedList = currentList.filter((item) => item.id !== id);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+
+    const db = await getDb();
+    await db.runAsync('DELETE FROM routines WHERE id = ?', id);
+
     customRoutineStore.setValue(updatedList);
     notifyListeners();
   } catch (error) {
