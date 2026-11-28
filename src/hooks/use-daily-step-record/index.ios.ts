@@ -1,4 +1,5 @@
 import { IOSHealthService } from "@/services";
+import { addDays } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { UseDailyStepRecordOptions } from "./types";
 export const useDailyStepRecord = ({ startDate, endDate }: UseDailyStepRecordOptions) => {
@@ -12,7 +13,7 @@ export const useDailyStepRecord = ({ startDate, endDate }: UseDailyStepRecordOpt
         let currentDate = startDate;
         while (currentDate <= endDate) {
             dateArray.push(currentDate);
-            currentDate.setDate(currentDate.getDate() + 1);
+            currentDate = addDays(currentDate, 1);
         }
         return dateArray;
     }, [startDate, endDate]);

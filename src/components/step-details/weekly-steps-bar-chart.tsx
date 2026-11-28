@@ -107,6 +107,12 @@ export function WeeklyStepsBarChart({
       ) : null,
   }));
 
+  // gifted-charts only animates bar heights on mount, so it must be remounted
+  // whenever the displayed week/data changes to avoid stale bar heights.
+  const chartKey = `${weeklyOffset}-${days
+    .map((day) => day.steps)
+    .join('-')}`;
+
   return (
     <ThemedView
       type="backgroundElement"
@@ -188,6 +194,7 @@ export function WeeklyStepsBarChart({
           </View>
         ) : (
           <BarChart
+            key={chartKey}
             data={chartData}
             width={containerWidth - Spacing.four * 2}
             height={180}
